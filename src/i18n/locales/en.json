@@ -1,0 +1,208 @@
+{
+    "login": {
+        "title": "Login",
+        "email": "Email",
+        "password": "Password",
+        "submit": "Login",
+        "register_prompt": "Don't have an account? Register"
+    },
+    "register": {
+        "title": "Register",
+        "email": "Email",
+        "password": "Password",
+        "submit": "Register",
+        "login_prompt": "Already have an account? Login",
+        "error_password_length": "Password must be at least 8 characters"
+    },
+    "home": {
+        "title": "HOME",
+        "subtitle": "Decide quickly",
+        "tools": {
+            "wheel": "Wheel of Fortune",
+            "roll": "Roll Dice",
+            "dice": "Dice Roller",
+            "coin": "Coin Flip",
+            "flip": "Flip",
+            "color": "Color Picker",
+            "word": "Word Picker",
+            "movie": "Movie Picker",
+            "idea": "Random Idea",
+            "challenge": "Quick Challenge",
+            "spin": "Spin",
+            "spin_desc": "Spin the wheel to decide",
+            "roll_desc": "Try your luck with dice",
+            "flip_desc": "Heads or tails?",
+            "color_desc": "Discover your color",
+            "word_desc": "Pick a random word",
+            "movie_desc": "Decide what to watch",
+            "idea_desc": "Find a new activity",
+            "challenge_desc": "Complete a mini task"
+        },
+        "logout": "Logout"
+    },
+    "settings": {
+        "title": "Settings",
+        "language": "Language",
+        "theme": "Theme",
+        "dark_mode": "Dark Mode",
+        "logout": "Log Out",
+        "logout_desc": "End session"
+    },
+    "tools": {
+        "wheel": {
+            "title": "Wheel of Fortune",
+            "spin": "Spin",
+            "add_option": "Add Option",
+            "placeholder": "Enter option",
+            "delete": "Delete"
+        },
+        "dice": {
+            "title": "Roll Dice",
+            "roll": "Roll",
+            "one_dice": "1 Dice",
+            "two_dice": "2 Dice",
+            "play_with_button": "Play with Button",
+            "tap_to_roll": "Tap Button to Roll"
+        },
+        "coin": {
+            "title": "Coin Flip",
+            "flip": "Flip",
+            "edge": "Landed on Edge!",
+            "edge_msg": "Hahaha it landed on the edge! Try again.",
+            "heads_label": "HEADS",
+            "tails_label": "TAILS",
+            "hint": "Heads or tails?",
+            "flipping": "Flipping..."
+        },
+        "color": {
+            "title": "Pick Color",
+            "pick": "Pick",
+            "hint": "Which color is your luck today?",
+            "modes": {
+                "random": "Random",
+                "organic": "Organic 2026",
+                "vivid": "Vivid Energy",
+                "digital": "Digital Future",
+                "soft": "Soft Premium"
+            },
+            "copy_hex": "Copy HEX",
+            "save": "Save",
+            "saved": "Color Saved!",
+            "palette": "Palette",
+            "use_case": "Style Insight",
+            "names": {
+                "red": "Red",
+                "orange": "Orange",
+                "yellow": "Yellow",
+                "green": "Green",
+                "cyan": "Cyan",
+                "blue": "Blue",
+                "purple": "Purple",
+                "pink": "Pink",
+                "grey": "Grey"
+            },
+            "descriptions": {
+                "vivid": "energetic and striking",
+                "muted": "natural and calm",
+                "deep": "elegant and deep",
+                "light": "soft and fresh"
+            },
+            "suggestions": {
+                "lifestyle": "A great tone for outfit combinations or accessory selection",
+                "home": "A stylish choice for home decor or room atmosphere",
+                "main": "Works perfectly as the main focus point of a general look",
+                "detail": "An elegant touch for small details or daily accents"
+            }
+        },
+        "word": {
+            "title": "Pick Word",
+            "pick": "Pick",
+            "add_word": "Add Word",
+            "placeholder": "Enter word"
+        },
+        "movie": {
+            "title": "Pick Movie",
+            "pick": "Pick",
+            "add_movie": "Add Movie",
+            "placeholder": "Enter movie title",
+            "empty": "No movies added yet.",
+            "imdb_top": "IMDB Top",
+            "netflix": "Netflix"
+        },
+        "challenge": {
+            "title": "Random Challenge",
+            "subtitle": "One small, direct action to do right now",
+            "placeholder": "Ready for action?",
+            "generate": "GO!",
+            "feedback_label": "Did you complete it?",
+            "feedback_yes": "Done",
+            "feedback_no": "Skip",
+            "list": [
+                "Drink a glass of water",
+                "Stretch for 30 seconds",
+                "Do 5 jumping jacks",
+                "Take 3 deep breaths",
+                "Close your eyes for 20 seconds",
+                "Fix your posture right now",
+                "Smile at yourself in the mirror",
+                "Tidy up 3 items on your desk",
+                "Clap your hands 5 times",
+                "Touch your toes"
+            ]
+        },
+        "idea": {
+            "title": "Random Idea",
+            "subtitle": "Discover inspiration for your next activity",
+            "placeholder": "Tap below for inspiration",
+            "generate": "Find Inspiration",
+            "app_ideas": "App Ideas",
+            "my_ideas": "My Ideas",
+            "mood_filter": "Mood:",
+            "moods": {
+                "all": "All",
+                "relaxed": "Relaxed",
+                "productive": "Productive",
+                "fun": "Fun",
+                "social": "Social"
+            },
+            "feedback_label": "How does this sound?",
+            "feedback_yes": "Let's do it!",
+            "feedback_no": "Maybe later",
+            "app_ideas_list": [
+                { "text": "Read a book for 10 minutes", "mood": "relaxed" },
+                { "text": "Call a friend", "mood": "social" },
+                { "text": "Learn something new today", "mood": "productive" },
+                { "text": "Listen to a new podcast", "mood": "relaxed" },
+                { "text": "Take a short walk", "mood": "relaxed" },
+                { "text": "Write down one idea", "mood": "productive" },
+                { "text": "Organize a small part of your room", "mood": "productive" },
+                { "text": "Stretch for 5 minutes", "mood": "relaxed" },
+                { "text": "Watch an educational video", "mood": "productive" },
+                { "text": "Try a new recipe", "mood": "fun" },
+                { "text": "Drink a large glass of water", "mood": "relaxed" },
+                { "text": "Write 3 things you are grateful for", "mood": "relaxed" },
+                { "text": "Do 10 jumping jacks", "mood": "productive" },
+                { "text": "Message someone you haven't talked to in a while", "mood": "social" },
+                { "text": "Listen to your favorite song", "mood": "fun" },
+                { "text": "Declutter your digital desktop", "mood": "productive" },
+                { "text": "Take 5 deep breaths", "mood": "relaxed" },
+                { "text": "Plan tomorrow's outfit", "mood": "productive" },
+                { "text": "Read an interesting article", "mood": "productive" },
+                { "text": "Make a cup of tea or coffee", "mood": "relaxed" }
+            ]
+        },
+        "common": {
+            "try_again": "Try Again",
+            "home": "Home",
+            "clear": "Clear",
+            "result": "RESULT"
+        },
+        "results": {
+            "title": "LAST 48 HOURS",
+            "empty": "No activities logged yet!",
+            "heads": "Heads",
+            "tails": "Tails",
+            "edge": "Edge"
+        }
+    }
+}

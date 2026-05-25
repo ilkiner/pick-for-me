@@ -1,0 +1,208 @@
+{
+    "login": {
+        "title": "Giriş Yap",
+        "email": "E-posta",
+        "password": "Şifre",
+        "submit": "Giriş",
+        "register_prompt": "Hesabın yok mu? Kayıt Ol"
+    },
+    "register": {
+        "title": "Kayıt Ol",
+        "email": "E-posta",
+        "password": "Şifre",
+        "submit": "Kayıt Ol",
+        "login_prompt": "Zaten hesabın var mı? Giriş Yap",
+        "error_password_length": "Şifre en az 8 karakter olmalıdır"
+    },
+    "home": {
+        "title": "ANA SAYFA",
+        "subtitle": "Hızlı karar veriniz",
+        "tools": {
+            "wheel": "Çarkıfelek",
+            "roll": "Zar At",
+            "dice": "Zar At",
+            "coin": "Yazı-Tura",
+            "flip": "Cevapla",
+            "color": "Renk Seç",
+            "word": "Kelime Seç",
+            "movie": "Film Seç",
+            "idea": "Rastgele Fikir",
+            "challenge": "Hızlı Görev",
+            "spin": "Çarkı Çevir",
+            "spin_desc": "Karar vermek için çarkı çevir",
+            "roll_desc": "Şansını zarlarla dene",
+            "flip_desc": "Yazı mı yoksa tura mı?",
+            "color_desc": "Günün rengini keşfet",
+            "word_desc": "Rastgele bir kelime seç",
+            "movie_desc": "Ne izleyeceğine karar ver",
+            "idea_desc": "Yeni bir aktivite bul",
+            "challenge_desc": "Küçük bir görev tamamla"
+        },
+        "logout": "Çıkış"
+    },
+    "settings": {
+        "title": "Ayarlar",
+        "language": "Dil",
+        "theme": "Tema",
+        "dark_mode": "Koyu Mod",
+        "logout": "Çıkış Yap",
+        "logout_desc": "Oturumu sonlandır"
+    },
+    "tools": {
+        "wheel": {
+            "title": "Çarkıfelek",
+            "spin": "Çevir",
+            "add_option": "Seçenek Ekle",
+            "placeholder": "Seçenek girin",
+            "delete": "Sil"
+        },
+        "dice": {
+            "title": "Zar At",
+            "roll": "At",
+            "one_dice": "1 Zar",
+            "two_dice": "2 Zar",
+            "play_with_button": "Butonla Oyna",
+            "tap_to_roll": "Zar Atmak İçin Butona Tıklayın"
+        },
+        "coin": {
+            "title": "Yazı Tura",
+            "flip": "At",
+            "edge": "Dik Geldi!",
+            "edge_msg": "Hahaha dik geldi! Tekrar deneyin.",
+            "heads_label": "YAZI",
+            "tails_label": "TURA",
+            "hint": "Yazı mı? Tura mı?",
+            "flipping": "Havada..."
+        },
+        "color": {
+            "title": "Renk Seç",
+            "pick": "Seç",
+            "hint": "Hangi renk senin şansın?",
+            "modes": {
+                "random": "Rastgele",
+                "organic": "Organik 2026",
+                "vivid": "Canlı Enerji",
+                "digital": "Dijital Gelecek",
+                "soft": "Yumuşak Premium"
+            },
+            "copy_hex": "HEX Kopyala",
+            "save": "Kaydet",
+            "saved": "Renk Kaydedildi!",
+            "palette": "Palet",
+            "use_case": "Stil Rehberi",
+            "names": {
+                "red": "Kırmızı",
+                "orange": "Turuncu",
+                "yellow": "Sarı",
+                "green": "Yeşil",
+                "cyan": "Cam Göbeği",
+                "blue": "Mavi",
+                "purple": "Mor",
+                "pink": "Pembe",
+                "grey": "Gri"
+            },
+            "descriptions": {
+                "vivid": "enerjik ve çarpıcı",
+                "muted": "doğal ve sakin",
+                "deep": "zarif ve derin",
+                "light": "yumuşak ve ferah"
+            },
+            "suggestions": {
+                "lifestyle": "Günlük kombinler veya aksesuar seçimi için harika bir ton",
+                "home": "Ev dekorasyonu veya yaşam alanı atmosferi için şık bir seçim",
+                "main": "Genel görünümde ana odak noktası olarak mükemmel durur",
+                "detail": "Küçük detaylar veya günlük aksanlar için zarif bir dokunuş"
+            }
+        },
+        "word": {
+            "title": "Kelime Seç",
+            "pick": "Seç",
+            "add_word": "Kelime Ekle",
+            "placeholder": "Kelime girin"
+        },
+        "movie": {
+            "title": "Film Seç",
+            "pick": "Seç",
+            "add_movie": "Film Ekle",
+            "placeholder": "Film adı girin",
+            "empty": "Henüz film eklemediniz.",
+            "imdb_top": "IMDB En İyi",
+            "netflix": "Netflix"
+        },
+        "challenge": {
+            "title": "Rastgele Görev",
+            "subtitle": "Hemen şimdi yapabileceğin küçük, somut bir görev",
+            "placeholder": "Harekete geçmeye hazır mısın?",
+            "generate": "ŞİMDİ YAP",
+            "feedback_label": "Tamamladın mı?",
+            "feedback_yes": "Bitti",
+            "feedback_no": "Geç",
+            "list": [
+                "Bir bardak su iç",
+                "30 saniye esne",
+                "5 kez zıpla (Jumping Jack)",
+                "3 derin nefes al",
+                "20 saniye gözlerini kapat",
+                "Duruşunu düzelt",
+                "Aynada kendine gülümse",
+                "Masandaki 3 eşyayı düzelt",
+                "5 kez el çırp",
+                "Ayak parmaklarına dokun"
+            ]
+        },
+        "idea": {
+            "title": "Rastgele Fikir",
+            "subtitle": "Sıradaki aktiviten için ilham bul",
+            "placeholder": "İlham almak için aşağıya dokun",
+            "generate": "İlham Ver",
+            "app_ideas": "Uygulama Fikirleri",
+            "my_ideas": "Benim Fikirlerim",
+            "mood_filter": "Ruh Hali:",
+            "moods": {
+                "all": "Hepsi",
+                "relaxed": "Rahat",
+                "productive": "Verimli",
+                "fun": "Eğlenceli",
+                "social": "Sosyal"
+            },
+            "feedback_label": "Bu fikir sence nasıl?",
+            "feedback_yes": "Hadi yapalım!",
+            "feedback_no": "Belki sonra",
+            "app_ideas_list": [
+                { "text": "10 dakika kitap oku", "mood": "relaxed" },
+                { "text": "Bir arkadaşını ara", "mood": "social" },
+                { "text": "Bugün yeni bir şey öğren", "mood": "productive" },
+                { "text": "Yeni bir podcast dinle", "mood": "relaxed" },
+                { "text": "Kısa bir yürüyüşe çık", "mood": "relaxed" },
+                { "text": "Bir fikir not et", "mood": "productive" },
+                { "text": "Odanda küçük bir yeri düzenle", "mood": "productive" },
+                { "text": "5 dakika esne", "mood": "relaxed" },
+                { "text": "Eğitici bir video izle", "mood": "productive" },
+                { "text": "Yeni bir tarif dene", "mood": "fun" },
+                { "text": "Büyük bir bardak su iç", "mood": "relaxed" },
+                { "text": "Minnettar olduğun 3 şeyi yaz", "mood": "relaxed" },
+                { "text": "10 kez zıpla", "mood": "productive" },
+                { "text": "Uzun süredir konuşmadığın birine yaz", "mood": "social" },
+                { "text": "En sevdiğin şarkıyı dinle", "mood": "fun" },
+                { "text": "Dijital masaüstünü temizle", "mood": "productive" },
+                { "text": "5 derin nefes al", "mood": "relaxed" },
+                { "text": "Yarınki kıyafetini planla", "mood": "productive" },
+                { "text": "İlginç bir makale oku", "mood": "productive" },
+                { "text": "Bir çay veya kahve yap", "mood": "relaxed" }
+            ]
+        },
+        "common": {
+            "try_again": "Tekrar Dene",
+            "home": "Ana Sayfa",
+            "clear": "Temizle",
+            "result": "SONUÇ"
+        },
+        "results": {
+            "title": "SON 48 SAAT",
+            "empty": "Henüz aktivite kaydedilmedi!",
+            "heads": "Yazı",
+            "tails": "Tura",
+            "edge": "Dik"
+        }
+    }
+}
