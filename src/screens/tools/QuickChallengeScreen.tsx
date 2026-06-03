@@ -64,8 +64,13 @@ export default function QuickChallengeScreen({ navigation }: any) {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-                    <Ionicons name="arrow-back" size={28} color={Theme.colors.text} />
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                    style={styles.backBtn}
+                    accessibilityLabel="Geri"
+                    accessibilityRole="button"
+                >
+                    <Ionicons name="chevron-back" size={26} color={Theme.colors.text} />
                 </TouchableOpacity>
                 <View style={styles.headerTitleContainer}>
                     <Text style={styles.title}>{t('tools.challenge.title')}</Text>
@@ -110,7 +115,12 @@ export default function QuickChallengeScreen({ navigation }: any) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: Theme.colors.background, padding: Theme.spacing.lg },
     header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40, marginTop: 10 },
-    backBtn: { padding: 5 },
+    backBtn: {
+        width: 44, height: 44, borderRadius: 22,
+        backgroundColor: Theme.colors.surface,
+        alignItems: 'center', justifyContent: 'center',
+        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
+    },
     headerTitleContainer: { alignItems: 'center' },
     title: { fontSize: 24, fontWeight: '900', color: Theme.colors.text },
     subtitle: { fontSize: 12, color: Theme.colors.textSecondary, marginTop: 4, textAlign: 'center' },

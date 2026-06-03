@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
@@ -90,6 +90,24 @@ export default function ResultScreen({ route, navigation }: any) {
             }).start();
         }
     }, [isSingleResult, result]);
+
+    const clearHistory = () => {
+        Alert.alert(
+            t('tools.results.clear_confirm_title', 'Clear History'),
+            t('tools.results.clear_confirm_msg', 'All activity history will be deleted.'),
+            [
+                { text: t('common.cancel', 'Cancel'), style: 'cancel' },
+                {
+                    text: t('tools.results.clear', 'Clear'),
+                    style: 'destructive',
+                    onPress: async () => {
+                        await AsyncStorage.removeItem('@app_history');
+                        setHistory([]);
+                    },
+                },
+            ]
+        );
+    };
 
     const saveToHistory = async (saveType: string, val: any) => {
         try {
@@ -182,13 +200,27 @@ export default function ResultScreen({ route, navigation }: any) {
 
     if (!isSingleResult) {
         return (
-             <SafeAreaView style={styles.container}>
-                <View style={styles.header}>
+            <SafeAreaView style={styles.container}>
+                <View style={styles.historyHeader}>
                     <Text style={styles.headerTitle}>{t('tools.results.title')}</Text>
+                    {history.length > 0 && (
+                        <TouchableOpacity
+                            onPress={clearHistory}
+                            style={styles.clearBtn}
+                            accessibilityLabel={t('tools.results.clear', 'Clear History')}
+                            accessibilityRole="button"
+                        >
+                            <Ionicons name="trash-outline" size={18} color={Theme.colors.error} />
+                            <Text style={styles.clearBtnText}>{t('tools.results.clear', 'Clear')}</Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
                 <Animated.ScrollView contentContainerStyle={{ padding: Theme.spacing.lg }} style={{ opacity: fadeAnim }}>
                     {history.length === 0 ? (
-                        <Text style={styles.emptyText}>{t('tools.results.empty')}</Text>
+                        <View style={styles.emptyContainer}>
+                            <Ionicons name="time-outline" size={64} color={Theme.colors.surfaceBorder} />
+                            <Text style={styles.emptyText}>{t('tools.results.empty')}</Text>
+                        </View>
                     ) : (
                         history.map(renderHistoryItem)
                     )}
@@ -251,7 +283,26 @@ export default function ResultScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: Theme.colors.background },
     header: { padding: Theme.spacing.lg, alignItems: 'center' },
-    headerTitle: { fontSize: 14, fontWeight: '800', color: Theme.colors.textSecondary, letterSpacing: 4 },
+    headerTitle: { fontSize: 13, fontWeight: '800', color: Theme.colors.textSecondary, letterSpacing: 4 },
+    historyHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: Theme.spacing.lg,
+        paddingVertical: Theme.spacing.md,
+    },
+    clearBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingHorizontal: Theme.spacing.md,
+        paddingVertical: Theme.spacing.sm,
+        borderRadius: Theme.borderRadius.md,
+        backgroundColor: 'rgba(239,68,68,0.1)',
+        minHeight: 44,
+    },
+    clearBtnText: { color: Theme.colors.error, fontSize: 13, fontWeight: '700' },
+    emptyContainer: { alignItems: 'center', marginTop: Theme.spacing.xxl, gap: Theme.spacing.md },
     content: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: Theme.spacing.lg },
     resultContainer: { width: '100%', alignItems: 'center' },
     resultBox: { width: 300, height: 300, borderRadius: 40, alignItems: 'center', justifyContent: 'center', padding: Theme.spacing.xl },

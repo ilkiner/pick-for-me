@@ -98,8 +98,13 @@ export default function CoinFlipScreen({ navigation }: any) {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-                    <Ionicons name="chevron-back" size={28} color={Theme.colors.text} />
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                    style={styles.backBtn}
+                    accessibilityLabel="Geri"
+                    accessibilityRole="button"
+                >
+                    <Ionicons name="chevron-back" size={26} color={Theme.colors.text} />
                 </TouchableOpacity>
                 <Text style={styles.title}>{t('tools.coin.title')}</Text>
                 <View style={{ width: 44 }} />
