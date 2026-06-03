@@ -1,22 +1,20 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Animated, Platform, Switch } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { MotiView } from 'moti';
 import { PickEngine } from '../../core/PickEngine';
 import DiceFace from '../../components/DiceFace';
 import { Theme } from '../../core/Theme';
-import { GlassCard } from '../../components/GlassCard';
-
-const { width } = Dimensions.get('window');
 
 export default function DiceScreen({ navigation }: any) {
     const { t } = useTranslation();
-    const [diceCount, setDiceCount] = useState<1 | 2>(2); // Default to 2 based on image
+    const [diceCount, setDiceCount] = useState<1 | 2>(2);
     const [results, setResults] = useState<number[]>([]);
     const [isRolling, setIsRolling] = useState(false);
-    const [useButton, setUseButton] = useState(true);
+    const [rollKey, setRollKey] = useState(0);
 
     const translateX = useRef(new Animated.Value(0)).current;
     const rotateAnim = useRef(new Animated.Value(0)).current;
@@ -25,213 +23,179 @@ export default function DiceScreen({ navigation }: any) {
 
     const handleRoll = () => {
         if (isRolling) return;
-
         setIsRolling(true);
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
 
-        // Shake and rotate animation
         Animated.parallel([
             Animated.sequence([
-                Animated.timing(translateX, { toValue: -15, duration: 50, useNativeDriver: true }),
-                Animated.timing(translateX, { toValue: 15, duration: 50, useNativeDriver: true }),
-                Animated.timing(translateX, { toValue: -10, duration: 50, useNativeDriver: true }),
-                Animated.timing(translateX, { toValue: 10, duration: 50, useNativeDriver: true }),
-                Animated.timing(translateX, { toValue: 0, duration: 50, useNativeDriver: true }),
+                Animated.timing(translateX, { toValue: -14, duration: 45, useNativeDriver: true }),
+                Animated.timing(translateX, { toValue: 14, duration: 45, useNativeDriver: true }),
+                Animated.timing(translateX, { toValue: -10, duration: 45, useNativeDriver: true }),
+                Animated.timing(translateX, { toValue: 10, duration: 45, useNativeDriver: true }),
+                Animated.timing(translateX, { toValue: 0, duration: 45, useNativeDriver: true }),
             ]),
-            Animated.timing(rotateAnim, {
-                toValue: 1,
-                duration: 250,
-                useNativeDriver: true,
-            })
+            Animated.timing(rotateAnim, { toValue: 1, duration: 240, useNativeDriver: true }),
         ]).start(() => {
             rotateAnim.setValue(0);
-            completeRoll();
+            const newResults = PickEngine.rollDice(diceCount, 6);
+            setResults(newResults);
+            setRollKey(k => k + 1);
+            setIsRolling(false);
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         });
     };
 
-    const completeRoll = () => {
-        const newResults = PickEngine.rollDice(diceCount, 6);
-        setResults(newResults);
-        setIsRolling(false);
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    };
-
-    const rotation = rotateAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: ['0deg', '360deg']
-    });
+    const rotation = rotateAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
 
     return (
-        <View style={styles.container}>
-            <SafeAreaView style={styles.safeArea}>
-                {/* Top Header with Switch */}
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-                        <Ionicons name="arrow-back" size={28} color="#FFF" />
-                    </TouchableOpacity>
-                    <View style={styles.switchRow}>
-                        <Text style={styles.switchLabel}>{t('tools.dice.play_with_button')}</Text>
-                        <Switch 
-                            value={useButton} 
-                            onValueChange={setUseButton}
-                            trackColor={{ false: '#767577', true: '#4ade80' }}
-                            thumbColor={useButton ? '#FFF' : '#f4f3f4'}
-                        />
-                    </View>
-                </View>
+        <SafeAreaView style={styles.container}>
+            <View style={styles.header}>
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                    style={styles.backBtn}
+                    accessibilityLabel="Geri"
+                    accessibilityRole="button"
+                >
+                    <Ionicons name="chevron-back" size={26} color={Theme.colors.text} />
+                </TouchableOpacity>
+                <Text style={styles.title}>{t('tools.dice.title')}</Text>
+                <View style={{ width: 44 }} />
+            </View>
 
-                {/* Instruction and Sum */}
-                <View style={styles.topInfo}>
-                    <Text style={styles.instruction}>{t('tools.dice.tap_to_roll')}</Text>
-                    {results.length > 0 && (
+            <View style={styles.topInfo}>
+                <Text style={styles.instruction}>{t('tools.dice.tap_to_roll')}</Text>
+                {results.length > 0 && (
+                    <MotiView
+                        key={`sum-${rollKey}`}
+                        from={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 16 }}
+                    >
                         <Text style={styles.sumText}>{totalSum}</Text>
-                    )}
+                    </MotiView>
+                )}
+            </View>
+
+            <View style={styles.diceArea}>
+                <Animated.View style={[
+                    styles.diceRow,
+                    { transform: [{ translateX }, { rotate: rotation }] }
+                ]}>
+                    {(results.length > 0 ? results : Array(diceCount).fill(1)).map((val, idx) => (
+                        <MotiView
+                            key={`${idx}-${rollKey}`}
+                            from={results.length > 0 ? { scale: 1.25, opacity: 0 } : { scale: 1, opacity: 1 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ type: 'spring', stiffness: 280, damping: 15, delay: idx * 60 }}
+                        >
+                            <DiceFace value={val} size={diceCount === 1 ? 140 : 110} />
+                        </MotiView>
+                    ))}
+                </Animated.View>
+            </View>
+
+            <View style={styles.footer}>
+                <View style={styles.countSelector}>
+                    {([1, 2] as const).map(n => (
+                        <TouchableOpacity
+                            key={n}
+                            style={[styles.countBtn, diceCount === n && styles.countBtnActive]}
+                            onPress={() => setDiceCount(n)}
+                            accessibilityLabel={n === 1 ? t('tools.dice.one_dice') : t('tools.dice.two_dice')}
+                            accessibilityRole="button"
+                        >
+                            <Text style={[styles.countBtnText, diceCount === n && styles.countBtnTextActive]}>
+                                {n === 1 ? t('tools.dice.one_dice') : t('tools.dice.two_dice')}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
                 </View>
 
-                {/* Dice Display Area */}
-                <View style={styles.diceContent}>
-                    <Animated.View style={[
-                        styles.diceRow,
-                        { transform: [{ translateX }, { rotate: rotation }] }
-                    ]}>
-                        {(results.length > 0 ? results : Array(diceCount).fill(1)).map((val, idx) => (
-                            <View key={idx} style={styles.diceWrapper}>
-                                <DiceFace value={val} size={diceCount === 1 ? 140 : 110} />
-                            </View>
-                        ))}
-                    </Animated.View>
-                </View>
-
-                {/* Selection and Action Footer */}
-                <View style={styles.footer}>
-                    <View style={styles.countSelector}>
-                        <TouchableOpacity 
-                            style={[styles.countBtn, diceCount === 1 && styles.countBtnActive]}
-                            onPress={() => setDiceCount(1)}
-                        >
-                            <Text style={styles.countBtnText}>{t('tools.dice.one_dice')}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity 
-                            style={[styles.countBtn, diceCount === 2 && styles.countBtnActive]}
-                            onPress={() => setDiceCount(2)}
-                        >
-                            <Text style={styles.countBtnText}>{t('tools.dice.two_dice')}</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    {useButton && (
-                        <TouchableOpacity 
-                            style={styles.actionButton} 
-                            onPress={handleRoll}
-                            disabled={isRolling}
-                        >
-                            <Ionicons name="send" size={32} color="#FFF" style={{ marginLeft: 4 }} />
-                        </TouchableOpacity>
-                    )}
-                </View>
-            </SafeAreaView>
-        </View>
+                <TouchableOpacity
+                    style={[styles.rollBtn, isRolling && styles.rollBtnDisabled]}
+                    onPress={handleRoll}
+                    disabled={isRolling}
+                    accessibilityLabel={t('tools.dice.roll')}
+                    accessibilityRole="button"
+                >
+                    <Ionicons name="dice" size={34} color="#FFF" />
+                </TouchableOpacity>
+            </View>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#008B8B', // Teal background
-    },
-    safeArea: {
-        flex: 1,
-    },
+    container: { flex: 1, backgroundColor: Theme.colors.background },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingTop: 10,
+        paddingHorizontal: Theme.spacing.md,
+        paddingVertical: Theme.spacing.md,
     },
     backBtn: {
-        padding: 5,
+        width: 44, height: 44, borderRadius: 22,
+        backgroundColor: Theme.colors.surface,
+        alignItems: 'center', justifyContent: 'center',
+        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
     },
-    switchRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-    },
-    switchLabel: {
-        color: '#FFF',
-        fontSize: 14,
-        fontWeight: 'bold',
-    },
-    topInfo: {
-        alignItems: 'center',
-        marginTop: 20,
-    },
+    title: { fontSize: 22, fontWeight: '800', color: Theme.colors.text, letterSpacing: 0.5 },
+    topInfo: { alignItems: 'center', paddingTop: Theme.spacing.md },
     instruction: {
-        color: '#FFF',
-        fontSize: 18,
+        color: Theme.colors.textSecondary,
+        fontSize: 15,
         fontWeight: '600',
-        marginBottom: 10,
+        marginBottom: Theme.spacing.sm,
     },
     sumText: {
-        color: '#FFF',
-        fontSize: 80,
+        color: Theme.colors.text,
+        fontSize: 72,
         fontWeight: '900',
+        lineHeight: 80,
     },
-    diceContent: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
+    diceArea: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     diceRow: {
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        gap: 20,
-    },
-    diceWrapper: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.3,
-        shadowRadius: 15,
-        elevation: 8,
+        gap: Theme.spacing.lg,
     },
     footer: {
         alignItems: 'center',
-        paddingBottom: 40,
+        paddingBottom: Theme.spacing.xxl,
+        gap: Theme.spacing.lg,
     },
     countSelector: {
         flexDirection: 'row',
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        borderRadius: 25,
-        padding: 5,
-        marginBottom: 40,
+        backgroundColor: Theme.colors.surface,
+        borderRadius: 24,
+        padding: 4,
+        borderWidth: 1,
+        borderColor: Theme.colors.surfaceBorder,
     },
     countBtn: {
         paddingVertical: 10,
-        paddingHorizontal: 25,
+        paddingHorizontal: Theme.spacing.lg,
         borderRadius: 20,
+        minWidth: 90,
+        alignItems: 'center',
     },
-    countBtnActive: {
-        backgroundColor: 'rgba(255,255,255,0.2)',
-    },
-    countBtnText: {
-        color: '#FFF',
-        fontWeight: 'bold',
-    },
-    actionButton: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        backgroundColor: '#4ade80', // Green button
+    countBtnActive: { backgroundColor: Theme.colors.primary },
+    countBtnText: { color: Theme.colors.textSecondary, fontWeight: '700', fontSize: 14 },
+    countBtnTextActive: { color: '#fff' },
+    rollBtn: {
+        width: 96,
+        height: 96,
+        borderRadius: 48,
+        backgroundColor: Theme.colors.success,
         justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 5 },
-        shadowOpacity: 0.3,
-        shadowRadius: 10,
+        shadowColor: Theme.colors.success,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.4,
+        shadowRadius: 12,
         elevation: 10,
     },
+    rollBtnDisabled: { opacity: 0.5 },
 });
-
-
-
