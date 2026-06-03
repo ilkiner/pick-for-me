@@ -48,7 +48,7 @@ export default function App() {
                 setSession(currentSession);
                 setIsReady(true);
 
-                const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+                const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, newSession: unknown) => {
                     setSession(newSession);
                 });
 
