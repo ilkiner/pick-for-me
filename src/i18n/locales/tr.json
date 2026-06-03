@@ -60,7 +60,8 @@
             "add_option": "Seçenek Ekle",
             "placeholder": "Seçenek girin",
             "delete": "Sil",
-            "empty": "Çark boş. Seçenek ekle!"
+            "empty": "Çark boş. Seçenek ekle!",
+            "need_more": "En az 2 seçenek gerekli"
         },
         "dice": {
             "title": "Zar At",

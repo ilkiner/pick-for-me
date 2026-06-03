@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
@@ -192,7 +192,7 @@ export default function WheelOfFortuneScreen({ navigation }: any) {
                             <Text style={styles.emptyTitle}>{t('tools.wheel.empty')}</Text>
                             <Text style={styles.emptyHint}>
                                 {options.length === 1
-                                    ? 'En az 2 seçenek gerekli'
+                                    ? t('tools.wheel.need_more')
                                     : t('tools.wheel.placeholder')}
                             </Text>
                         </View>

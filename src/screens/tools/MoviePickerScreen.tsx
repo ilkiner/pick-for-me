@@ -91,7 +91,7 @@ export default function MoviePickerScreen({ navigation }: any) {
                             onChangeText={setNewMovie}
                             onSubmitEditing={addOption}
                         />
-                        <TouchableOpacity style={styles.addBtn} onPress={addOption}>
+                        <TouchableOpacity style={styles.addBtn} onPress={addOption} accessibilityLabel={t('tools.movie.add_movie')} accessibilityRole="button">
                             <Ionicons name="add" size={28} color="#fff" />
                         </TouchableOpacity>
                     </View>
@@ -105,7 +105,7 @@ export default function MoviePickerScreen({ navigation }: any) {
                     renderItem={({ item, index }) => (
                         <GlassCard style={styles.listItem}>
                             <Text style={styles.listText}>{item}</Text>
-                            <TouchableOpacity onPress={() => removeOption(index)}>
+                            <TouchableOpacity onPress={() => removeOption(index)} accessibilityLabel={t('tools.wheel.delete')} accessibilityRole="button" hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                                 <Ionicons name="trash-outline" size={20} color={Theme.colors.error} />
                             </TouchableOpacity>
                         </GlassCard>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { MotiView } from 'moti';
@@ -36,6 +36,8 @@ export default function RegisterScreen({ navigation }: any) {
 
     return (
         <SafeAreaView style={styles.container}>
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+            <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
             <MotiView
                 from={{ opacity: 0, translateY: 24 }}
                 animate={{ opacity: 1, translateY: 0 }}
@@ -95,6 +97,8 @@ export default function RegisterScreen({ navigation }: any) {
                     <Text style={styles.linkText}>{t('register.login_prompt')}</Text>
                 </TouchableOpacity>
             </MotiView>
+            </ScrollView>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 }

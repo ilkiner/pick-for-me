@@ -128,9 +128,12 @@ const styles = StyleSheet.create({
     },
     toggleBtn: {
         backgroundColor: Theme.colors.primary,
-        paddingHorizontal: 12,
-        paddingVertical: 6,
+        paddingHorizontal: 16,
         borderRadius: 8,
+        minWidth: 44,
+        minHeight: 44,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     toggleText: {
         color: '#fff',

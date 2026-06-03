@@ -60,7 +60,8 @@
             "add_option": "Add Option",
             "placeholder": "Enter option",
             "delete": "Delete",
-            "empty": "Wheel is empty. Add options!"
+            "empty": "Wheel is empty. Add options!",
+            "need_more": "At least 2 options required"
         },
         "dice": {
             "title": "Roll Dice",
