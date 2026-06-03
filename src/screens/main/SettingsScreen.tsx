@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Switch, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
@@ -50,24 +50,6 @@ export default function SettingsScreen() {
                         <TouchableOpacity style={styles.toggleBtn} onPress={toggleLanguage}>
                             <Text style={styles.toggleText}>{i18n.language === 'tr' ? 'EN' : 'TR'}</Text>
                         </TouchableOpacity>
-                    </View>
-                </GlassCard>
-
-                <GlassCard style={styles.section}>
-                    <View style={styles.row}>
-                        <View style={styles.iconWrapper}>
-                            <Ionicons name="moon" size={22} color={Theme.colors.secondary} />
-                        </View>
-                        <View style={styles.rowContent}>
-                            <Text style={styles.rowTitle}>{t('settings.theme', 'Tema')}</Text>
-                            <Text style={styles.rowSubtitle}>{t('settings.dark_mode', 'Koyu Mod')}</Text>
-                        </View>
-                        <Switch
-                            value={true}
-                            disabled
-                            trackColor={{ false: '#3e3e3e', true: Theme.colors.primary }}
-                            thumbColor={Theme.colors.text}
-                        />
                     </View>
                 </GlassCard>
 

@@ -1,10 +1,15 @@
 {
+    "common": {
+        "cancel": "İptal",
+        "ok": "Tamam"
+    },
     "login": {
         "title": "Giriş Yap",
         "email": "E-posta",
         "password": "Şifre",
         "submit": "Giriş",
-        "register_prompt": "Hesabın yok mu? Kayıt Ol"
+        "register_prompt": "Hesabın yok mu? Kayıt Ol",
+        "error_required": "E-posta ve şifre zorunludur"
     },
     "register": {
         "title": "Kayıt Ol",
@@ -43,18 +48,19 @@
     "settings": {
         "title": "Ayarlar",
         "language": "Dil",
-        "theme": "Tema",
-        "dark_mode": "Koyu Mod",
         "logout": "Çıkış Yap",
-        "logout_desc": "Oturumu sonlandır"
+        "logout_desc": "Oturumu sonlandır",
+        "logout_demo": "Demo modunda zaten giriş yapılmamış durumdasın."
     },
     "tools": {
         "wheel": {
             "title": "Çarkıfelek",
             "spin": "Çevir",
+            "spinning": "Çevriliyor...",
             "add_option": "Seçenek Ekle",
             "placeholder": "Seçenek girin",
-            "delete": "Sil"
+            "delete": "Sil",
+            "empty": "Çark boş. Seçenek ekle!"
         },
         "dice": {
             "title": "Zar At",
@@ -202,7 +208,10 @@
             "empty": "Henüz aktivite kaydedilmedi!",
             "heads": "Yazı",
             "tails": "Tura",
-            "edge": "Dik"
+            "edge": "Dik",
+            "clear": "Geçmişi Temizle",
+            "clear_confirm_title": "Geçmişi Temizle",
+            "clear_confirm_msg": "Tüm aktivite geçmişi silinecek. Emin misin?"
         }
     }
 }

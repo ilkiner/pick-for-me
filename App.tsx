@@ -1,6 +1,7 @@
 import 'react-native-url-polyfill/auto';
 import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { RootNavigator } from './src/navigation';
@@ -73,11 +74,11 @@ export default function App() {
     }
 
     return (
-        <>
+        <GestureHandlerRootView style={{ flex: 1 }}>
             <StatusBar style="auto" />
             <NavigationContainer>
                 <RootNavigator session={session} />
             </NavigationContainer>
-        </>
+        </GestureHandlerRootView>
     );
 }

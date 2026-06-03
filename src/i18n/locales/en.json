@@ -1,10 +1,15 @@
 {
+    "common": {
+        "cancel": "Cancel",
+        "ok": "OK"
+    },
     "login": {
         "title": "Login",
         "email": "Email",
         "password": "Password",
         "submit": "Login",
-        "register_prompt": "Don't have an account? Register"
+        "register_prompt": "Don't have an account? Register",
+        "error_required": "Email and password are required"
     },
     "register": {
         "title": "Register",
@@ -43,18 +48,19 @@
     "settings": {
         "title": "Settings",
         "language": "Language",
-        "theme": "Theme",
-        "dark_mode": "Dark Mode",
         "logout": "Log Out",
-        "logout_desc": "End session"
+        "logout_desc": "End session",
+        "logout_demo": "You're already signed out in demo mode."
     },
     "tools": {
         "wheel": {
             "title": "Wheel of Fortune",
             "spin": "Spin",
+            "spinning": "Spinning...",
             "add_option": "Add Option",
             "placeholder": "Enter option",
-            "delete": "Delete"
+            "delete": "Delete",
+            "empty": "Wheel is empty. Add options!"
         },
         "dice": {
             "title": "Roll Dice",
@@ -202,7 +208,10 @@
             "empty": "No activities logged yet!",
             "heads": "Heads",
             "tails": "Tails",
-            "edge": "Edge"
+            "edge": "Edge",
+            "clear": "Clear History",
+            "clear_confirm_title": "Clear History",
+            "clear_confirm_msg": "All activity history will be deleted. Are you sure?"
         }
     }
 }
