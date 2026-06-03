@@ -1,15 +1,14 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Switch, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Switch, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { Theme } from '../../core/Theme';
 import { GlassCard } from '../../components/GlassCard';
-import { supabase } from '../../storage/supabase';
+import { isSupabaseConfigured, supabase } from '../../storage/supabase';
 
 export default function SettingsScreen() {
     const { t, i18n } = useTranslation();
-    const isDark = true; // App is dark by default now
 
     const toggleLanguage = () => {
         const nextLang = i18n.language === 'tr' ? 'en' : 'tr';
@@ -17,7 +16,19 @@ export default function SettingsScreen() {
     };
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
+        if (!isSupabaseConfigured()) {
+            Alert.alert(
+                t('settings.logout', 'Çıkış Yap'),
+                t('settings.logout_demo', 'Demo modunda oturum zaten açık değil.'),
+                [{ text: t('common.ok', 'Tamam') }]
+            );
+            return;
+        }
+        try {
+            await supabase.auth.signOut();
+        } catch (e) {
+            console.error('Logout error:', e);
+        }
     };
 
     return (

@@ -1,9 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { isSupabaseConfigured, supabase } from '../../storage/supabase';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FontAwesome5, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { Theme } from '../../core/Theme';
 import { GlassCard } from '../../components/GlassCard';
@@ -23,29 +21,7 @@ const TOOLS: ToolItem[] = [
 ];
 
 export default function HomeScreen({ navigation }: any) {
-    const { t, i18n } = useTranslation();
-
-    const toggleLanguage = async () => {
-        const newLang = i18n.language === 'tr' ? 'en' : 'tr';
-        await i18n.changeLanguage(newLang);
-        await AsyncStorage.setItem('appLanguage', newLang);
-    };
-
-    const handleLogout = async () => {
-        if (!isSupabaseConfigured()) {
-            Alert.alert(
-                t('home.logout'),
-                'Demo modunda çıkış yapılamaz. Supabase yapılandırılmamış.',
-                [{ text: 'Tamam' }]
-            );
-            return;
-        }
-        try {
-            await supabase.auth.signOut();
-        } catch (e) {
-            console.error('Logout error:', e);
-        }
-    };
+    const { t } = useTranslation();
 
     const renderItem = useCallback(({ item }: { item: ToolItem }) => {
         const IconComponent = item.iconLib;
@@ -99,12 +75,6 @@ const styles = StyleSheet.create({
     headerContainer: {
         paddingVertical: Theme.spacing.lg,
     },
-    topRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: Theme.spacing.xl,
-    },
     titleSection: {
         alignItems: 'flex-start',
         paddingLeft: Theme.spacing.xs,
@@ -120,22 +90,6 @@ const styles = StyleSheet.create({
         color: Theme.colors.textSecondary,
         marginTop: 4,
         fontWeight: '500',
-    },
-    langBtn: {
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        backgroundColor: Theme.colors.surface,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: Theme.colors.surfaceBorder,
-    },
-    langText: {
-        fontWeight: '800',
-        color: Theme.colors.text,
-        fontSize: 12,
-    },
-    logoutBtn: {
-        padding: 8,
     },
     columnWrapper: {
         justifyContent: 'space-between',
