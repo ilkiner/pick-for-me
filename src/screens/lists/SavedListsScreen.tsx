@@ -11,6 +11,8 @@ import { MotiView } from 'moti';
 import { Theme } from '../../core/Theme';
 import { GlassCard } from '../../components/GlassCard';
 import { SavedListsStorage, SavedList, ListType } from '../../storage/savedLists';
+import { usePro, FREE_LIST_LIMIT, FREE_ITEM_LIMIT } from '../../store/ProContext';
+import { ProGateModal } from '../../components/ProGate';
 
 const LIST_TYPE_ICONS: Record<ListType, string> = {
     wheel: 'aperture',
@@ -33,9 +35,11 @@ interface Props {
 
 export default function SavedListsScreen({ navigation, route }: Props) {
     const { t } = useTranslation();
+    const { isPro } = usePro();
     const pickMode = route.params?.pickMode as boolean | undefined;
     const [lists, setLists] = useState<SavedList[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
+    const [proGateVisible, setProGateVisible] = useState(false);
     const [editTarget, setEditTarget] = useState<SavedList | null>(null);
     const [formName, setFormName] = useState('');
     const [formType, setFormType] = useState<ListType>('general');
@@ -48,6 +52,10 @@ export default function SavedListsScreen({ navigation, route }: Props) {
     );
 
     const openCreateModal = () => {
+        if (!isPro && lists.length >= FREE_LIST_LIMIT) {
+            setProGateVisible(true);
+            return;
+        }
         setEditTarget(null);
         setFormName('');
         setFormType('general');
@@ -66,8 +74,17 @@ export default function SavedListsScreen({ navigation, route }: Props) {
     const handleSave = async () => {
         const name = formName.trim();
         if (!name) return;
-        const items = formItems.split('\n').map(s => s.trim()).filter(Boolean);
+        let items = formItems.split('\n').map(s => s.trim()).filter(Boolean);
         if (items.length === 0) return;
+
+        // Enforce item limit for free users
+        if (!isPro && items.length > FREE_ITEM_LIMIT) {
+            items = items.slice(0, FREE_ITEM_LIMIT);
+            Alert.alert(
+                t('pro.limit_title'),
+                t('pro.item_limit_msg', { limit: FREE_ITEM_LIMIT })
+            );
+        }
 
         if (editTarget) {
             await SavedListsStorage.update(editTarget.id, { name, type: formType, items });
@@ -174,6 +191,11 @@ export default function SavedListsScreen({ navigation, route }: Props) {
                     {pickMode && (
                         <Text style={styles.subtitle}>{t('lists.pick_hint', 'Kullanmak için seç')}</Text>
                     )}
+                    {!isPro && !pickMode && (
+                        <Text style={styles.limitBadge}>
+                            {lists.length}/{FREE_LIST_LIMIT} {t('pro.free_tier')}
+                        </Text>
+                    )}
                 </View>
                 {!pickMode && (
                     <TouchableOpacity
@@ -219,6 +241,12 @@ export default function SavedListsScreen({ navigation, route }: Props) {
                     </TouchableOpacity>
                 </View>
             )}
+
+            <ProGateModal
+                visible={proGateVisible}
+                onClose={() => setProGateVisible(false)}
+                featureKey="unlimited_lists"
+            />
 
             <Modal visible={modalVisible} animationType="slide" transparent>
                 <View style={styles.modalOverlay}>
@@ -302,6 +330,7 @@ const styles = StyleSheet.create({
     headerCenter: { alignItems: 'center', flex: 1, marginHorizontal: Theme.spacing.sm },
     title: { fontSize: 22, fontWeight: '900', color: Theme.colors.text },
     subtitle: { fontSize: 12, color: Theme.colors.textSecondary, marginTop: 2 },
+    limitBadge: { fontSize: 11, color: Theme.colors.textSecondary, marginTop: 2, fontWeight: '600' },
     addHeaderBtn: {
         width: 44, height: 44, borderRadius: 22,
         backgroundColor: 'rgba(99,102,241,0.15)',

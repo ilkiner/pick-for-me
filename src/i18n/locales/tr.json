@@ -286,5 +286,55 @@
     },
     "result": {
         "share": "Paylaş"
+    },
+    "paywall": {
+        "hero_title": "Pick For Me Pro",
+        "hero_sub": "Reklamsız, sınırsız liste ve daha fazlası",
+        "best_value": "EN İYİ DEĞİR",
+        "yearly": "Yıllık",
+        "monthly": "Aylık",
+        "yearly_per_month": "ayda yaklaşık $0.67",
+        "monthly_billed": "aylık faturalandırılır",
+        "savings_67": "Aylığa göre %67 tasarruf",
+        "trial_note": "3 günlük ücretsiz deneme • İstediğin zaman iptal et",
+        "cta_yearly": "Yıllık Planı Başlat — $7.99",
+        "cta_monthly": "Aylık Planı Başlat — $1.99",
+        "restore": "Satın alımları geri yükle",
+        "restore_success_title": "Geri Yüklendi!",
+        "restore_success_msg": "Pro üyeliğin aktive edildi.",
+        "restore_none_title": "Bulunamadı",
+        "restore_none_msg": "Bu hesaba ait aktif abonelik bulunamadı.",
+        "legal": "Abonelik otomatik olarak yenilenir. App Store / Google Play hesabınızdan yönetebilirsiniz. Deneme bitiş tarihinden 24 saat önce iptal edilmezse ücretlendirilir.",
+        "already_pro": "Zaten Pro Üyesin! 🎉",
+        "enjoy": "Tüm özelliklerden yararlanıyorsun.",
+        "feature_unlimited_lists": "Sınırsız liste ve çark kaydet",
+        "feature_no_ads": "Hiç reklam görmeden kullan",
+        "feature_themes": "Premium temalar ve özelleştirme",
+        "feature_cloud_sync": "Bulut senkronu (Faz 4)",
+        "feature_no_watermark": "Paylaşımlarda filigran yok",
+        "feature_all_content": "Tüm içerik paketleri",
+        "feature_extended_history": "Genişletilmiş geçmiş"
+    },
+    "pro": {
+        "upgrade": "Pro'ya Geç",
+        "upgrade_short": "Pro'ya Geç",
+        "gate_title": "Pro Özellik",
+        "gate_cta": "Bu özelliği açmak için Pro'ya geç",
+        "free_tier": "ücretsiz",
+        "limit_title": "Ücretsiz Limit",
+        "item_limit_msg": "Ücretsiz planda liste başına en fazla {{limit}} öğe eklenebilir."
+    },
+    "settings": {
+        "title": "Ayarlar",
+        "language": "Dil",
+        "go_pro": "Pick For Me Pro",
+        "go_pro_desc": "Reklamsız, sınırsız, premium",
+        "pro_active": "Pro Üye ✦",
+        "pro_active_desc": "Tüm özellikler açık",
+        "restore": "Satın Alımları Geri Yükle",
+        "restore_desc": "Önceki aboneliğini aktive et",
+        "logout": "Çıkış Yap",
+        "logout_desc": "Oturumu sonlandır",
+        "logout_demo": "Demo modunda zaten giriş yapılmamış durumdasın."
     }
 }

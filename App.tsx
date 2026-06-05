@@ -4,7 +4,8 @@ import { View, ActivityIndicator } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
-import { RootNavigator } from './src/navigation';
+import { RootNavigator, navigationRef } from './src/navigation';
+import { ProProvider } from './src/store/ProContext';
 import './src/i18n';
 import { isSupabaseConfigured, supabase } from './src/storage/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -75,10 +76,12 @@ export default function App() {
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
-            <StatusBar style="auto" />
-            <NavigationContainer>
-                <RootNavigator session={session} />
-            </NavigationContainer>
+            <ProProvider navigationRef={navigationRef}>
+                <StatusBar style="auto" />
+                <NavigationContainer ref={navigationRef}>
+                    <RootNavigator session={session} />
+                </NavigationContainer>
+            </ProProvider>
         </GestureHandlerRootView>
     );
 }

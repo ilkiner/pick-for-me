@@ -56,6 +56,12 @@
     "settings": {
         "title": "Settings",
         "language": "Language",
+        "go_pro": "Pick For Me Pro",
+        "go_pro_desc": "Ad-free, unlimited, premium",
+        "pro_active": "Pro Member ✦",
+        "pro_active_desc": "All features unlocked",
+        "restore": "Restore Purchases",
+        "restore_desc": "Activate a previous subscription",
         "logout": "Log Out",
         "logout_desc": "End session",
         "logout_demo": "You're already signed out in demo mode."
@@ -286,5 +292,42 @@
     },
     "result": {
         "share": "Share"
+    },
+    "paywall": {
+        "hero_title": "Pick For Me Pro",
+        "hero_sub": "Ad-free, unlimited lists, and more",
+        "best_value": "BEST VALUE",
+        "yearly": "Yearly",
+        "monthly": "Monthly",
+        "yearly_per_month": "just $0.67 per month",
+        "monthly_billed": "billed monthly",
+        "savings_67": "67% cheaper than monthly",
+        "trial_note": "3-day free trial • Cancel anytime",
+        "cta_yearly": "Start Yearly Plan — $7.99",
+        "cta_monthly": "Start Monthly Plan — $1.99",
+        "restore": "Restore purchases",
+        "restore_success_title": "Restored!",
+        "restore_success_msg": "Your Pro membership has been activated.",
+        "restore_none_title": "Not Found",
+        "restore_none_msg": "No active subscription found for this account.",
+        "legal": "Subscription renews automatically. Manage from your App Store / Google Play account. Will be charged 24 hours before trial ends if not cancelled.",
+        "already_pro": "You're Already Pro! 🎉",
+        "enjoy": "Enjoy all premium features.",
+        "feature_unlimited_lists": "Unlimited saved lists & wheels",
+        "feature_no_ads": "Completely ad-free experience",
+        "feature_themes": "Premium themes & customization",
+        "feature_cloud_sync": "Cloud sync across devices (Phase 4)",
+        "feature_no_watermark": "No watermark on shared results",
+        "feature_all_content": "All content packs",
+        "feature_extended_history": "Extended history"
+    },
+    "pro": {
+        "upgrade": "Upgrade to Pro",
+        "upgrade_short": "Go Pro",
+        "gate_title": "Pro Feature",
+        "gate_cta": "Upgrade to Pro to unlock this feature",
+        "free_tier": "free",
+        "limit_title": "Free Tier Limit",
+        "item_limit_msg": "Free plan allows up to {{limit}} items per list."
     }
 }

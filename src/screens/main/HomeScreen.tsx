@@ -1,10 +1,13 @@
-import React, { useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList, Dimensions } from 'react-native';
+import React, { useCallback, useMemo, useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList, Dimensions, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { FontAwesome5, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { Theme } from '../../core/Theme';
 import { GlassCard } from '../../components/GlassCard';
+import { BannerAdView } from '../../components/BannerAdView';
+import { AdManager } from '../../core/AdManager';
+import { usePro } from '../../store/ProContext';
 
 const { width } = Dimensions.get('window');
 
@@ -25,6 +28,11 @@ const TOOLS: ToolItem[] = [
 
 export default function HomeScreen({ navigation }: any) {
     const { t } = useTranslation();
+    const { isPro, openPaywall } = usePro();
+
+    useEffect(() => {
+        AdManager.init();
+    }, []);
 
     const renderItem = useCallback(({ item }: { item: ToolItem }) => {
         const IconComponent = item.iconLib;
@@ -44,12 +52,20 @@ export default function HomeScreen({ navigation }: any) {
 
     const header = useMemo(() => (
         <View style={styles.headerContainer}>
-            <View style={styles.titleSection}>
-                <Text style={styles.title}>PICK FOR ME</Text>
-                <Text style={styles.subtitle}>{t('home.subtitle', 'Hızlı karar veriniz')}</Text>
+            <View style={styles.titleRow}>
+                <View style={styles.titleSection}>
+                    <Text style={styles.title}>PICK FOR ME</Text>
+                    <Text style={styles.subtitle}>{t('home.subtitle', 'Hızlı karar veriniz')}</Text>
+                </View>
+                {!isPro && (
+                    <TouchableOpacity style={styles.proBadge} onPress={openPaywall} activeOpacity={0.8}>
+                        <Ionicons name="diamond" size={13} color="#FFD700" />
+                        <Text style={styles.proBadgeText}>{t('pro.upgrade_short')}</Text>
+                    </TouchableOpacity>
+                )}
             </View>
         </View>
-    ), [t]);
+    ), [t, isPro, openPaywall]);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -58,6 +74,7 @@ export default function HomeScreen({ navigation }: any) {
                 keyExtractor={(item) => item.id}
                 numColumns={2}
                 ListHeaderComponent={header}
+                ListFooterComponent={<BannerAdView style={styles.banner} />}
                 contentContainerStyle={styles.listContent}
                 renderItem={renderItem}
                 columnWrapperStyle={styles.columnWrapper}
@@ -78,10 +95,22 @@ const styles = StyleSheet.create({
     headerContainer: {
         paddingVertical: Theme.spacing.lg,
     },
+    titleRow: {
+        flexDirection: 'row', alignItems: 'center',
+        justifyContent: 'space-between', paddingLeft: Theme.spacing.xs,
+    },
     titleSection: {
         alignItems: 'flex-start',
-        paddingLeft: Theme.spacing.xs,
+        flex: 1,
     },
+    proBadge: {
+        flexDirection: 'row', alignItems: 'center', gap: 5,
+        backgroundColor: 'rgba(255,215,0,0.12)',
+        borderWidth: 1, borderColor: 'rgba(255,215,0,0.3)',
+        borderRadius: 20, paddingHorizontal: 10, paddingVertical: 6,
+    },
+    proBadgeText: { color: '#FFD700', fontSize: 12, fontWeight: '800' },
+    banner: { marginTop: Theme.spacing.md, marginBottom: Theme.spacing.sm },
     title: {
         fontSize: 32,
         fontWeight: '900',

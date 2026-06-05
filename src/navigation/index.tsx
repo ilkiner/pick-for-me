@@ -1,10 +1,12 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNavigationContainerRef } from '@react-navigation/native';
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
 import HomeScreen from '../screens/main/HomeScreen';
 import ResultScreen from '../screens/main/ResultScreen';
 import SettingsScreen from '../screens/main/SettingsScreen';
+import PaywallScreen from '../screens/main/PaywallScreen';
 import WheelOfFortuneScreen from '../screens/tools/WheelOfFortuneScreen';
 import DiceScreen from '../screens/tools/DiceScreen';
 import CoinFlipScreen from '../screens/tools/CoinFlipScreen';
@@ -18,6 +20,8 @@ import SavedListsScreen from '../screens/lists/SavedListsScreen';
 import { Theme } from '../core/Theme';
 import { Ionicons } from '@expo/vector-icons';
 import { View, Platform } from 'react-native';
+
+export const navigationRef = createNavigationContainerRef<any>();
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -82,6 +86,7 @@ export function RootNavigator({ session }: { session: any }) {
                 <>
                     <Stack.Screen name="Main" component={MainTabNavigator} />
                     <Stack.Screen name="Result" component={ResultScreen} />
+                    <Stack.Screen name="Paywall" component={PaywallScreen} options={{ presentation: 'modal' }} />
                     <Stack.Screen name="WheelOfFortune" component={WheelOfFortuneScreen} />
                     <Stack.Screen name="Dice" component={DiceScreen} />
                     <Stack.Screen name="CoinFlip" component={CoinFlipScreen} />

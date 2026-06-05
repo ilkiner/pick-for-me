@@ -12,6 +12,8 @@ import QRCode from 'react-native-qrcode-svg';
 import { Theme } from '../../core/Theme';
 import { ModernButton } from '../../components/ModernButton';
 import { GlassCard } from '../../components/GlassCard';
+import { usePro } from '../../store/ProContext';
+import { AdManager } from '../../core/AdManager';
 
 interface HistoryItem {
     id: string;
@@ -22,6 +24,7 @@ interface HistoryItem {
 
 export default function ResultScreen({ route, navigation }: any) {
     const { t, i18n } = useTranslation();
+    const { isPro } = usePro();
     const { result, sourceRoute, type } = route.params || {};
 
     // If we have a direct result from a tool, we're in "Single Result" mode.
@@ -293,6 +296,11 @@ export default function ResultScreen({ route, navigation }: any) {
                             <QRCode value={qrValue || 'pick-for-me'} size={120} backgroundColor="transparent" color={Theme.colors.text} />
                         </View>
                     )}
+
+                    {/* Watermark for free users — removed for Pro */}
+                    {!isPro && (
+                        <Text style={styles.watermark}>Pick For Me</Text>
+                    )}
                 </ViewShot>
 
                 <View style={styles.shareRow}>
@@ -397,6 +405,10 @@ const styles = StyleSheet.create({
     coinEdgeView: { width: 40, height: 250, backgroundColor: '#888', borderRadius: 20, borderWidth: 4, borderColor: '#555', shadowColor: '#000', shadowOffset: { width: 10, height: 10 }, shadowOpacity: 0.5, shadowRadius: 10 },
     edgeJoke: { marginTop: 30, fontSize: 20, fontWeight: 'bold', color: Theme.colors.primary, textAlign: 'center', paddingHorizontal: 20 },
     hCoinRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-    hCoinIcon: { width: 12, height: 12, borderRadius: 6 }
+    hCoinIcon: { width: 12, height: 12, borderRadius: 6 },
+    watermark: {
+        marginTop: 8, color: 'rgba(255,255,255,0.25)',
+        fontSize: 11, fontWeight: '700', letterSpacing: 1,
+    },
 });
 

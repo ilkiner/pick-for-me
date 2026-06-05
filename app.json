@@ -13,13 +13,18 @@
       "backgroundColor": "#0F0F1E"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.pickforme.app",
+      "infoPlist": {
+        "NSUserTrackingUsageDescription": "This identifier is used to personalize ads and measure their effectiveness."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.pickforme.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -27,7 +32,16 @@
     "plugins": [
       "expo-secure-store",
       "expo-localization",
-      "expo-asset"
+      "expo-asset",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511",
+          "userTrackingUsageDescription": "This identifier is used to personalize ads and measure their effectiveness."
+        }
+      ],
+      "react-native-purchases"
     ]
   }
 }
