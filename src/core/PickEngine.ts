@@ -4,6 +4,13 @@ interface WheelOption {
     color?: string;
 }
 
+export interface BracketMatch {
+    id: string;
+    a: string;
+    b: string | null; // null = bye
+    winner?: string;
+}
+
 export class PickEngine {
     // Wheel of Fortune
     static spinWheel(options: WheelOption[]): WheelOption | null {
@@ -120,6 +127,45 @@ export class PickEngine {
             return Math.round(255 * color).toString(16).padStart(2, '0');
         };
         return `#${f(0)}${f(8)}${f(4)}`.toUpperCase();
+    }
+
+    // Tournament bracket
+    static buildBracket(items: string[]): BracketMatch[] {
+        const shuffled = [...items].sort(() => Math.random() - 0.5);
+        const matches: BracketMatch[] = [];
+        for (let i = 0; i < shuffled.length; i += 2) {
+            matches.push({
+                id: `m-${i}`,
+                a: shuffled[i],
+                b: i + 1 < shuffled.length ? shuffled[i + 1] : null,
+            });
+        }
+        return matches;
+    }
+
+    static nextBracketRound(winners: string[]): { matches: BracketMatch[], champion: string | null } {
+        if (winners.length === 1) return { matches: [], champion: winners[0] };
+        const matches: BracketMatch[] = [];
+        for (let i = 0; i < winners.length; i += 2) {
+            matches.push({
+                id: `m-${i}`,
+                a: winners[i],
+                b: i + 1 < winners.length ? winners[i + 1] : null,
+            });
+        }
+        return { matches, champion: null };
+    }
+
+    // Order & Teams
+    static shuffleOrder(items: string[]): string[] {
+        return [...items].sort(() => Math.random() - 0.5);
+    }
+
+    static splitTeams(items: string[], n: number): string[][] {
+        const shuffled = this.shuffleOrder(items);
+        const teams: string[][] = Array.from({ length: n }, () => []);
+        shuffled.forEach((item, i) => teams[i % n].push(item));
+        return teams;
     }
 
     private static getColorMetadata(h: number, s: number, l: number) {
