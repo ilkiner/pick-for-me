@@ -1,0 +1,54 @@
+{
+  "truth": {
+    "tr": [
+      "En utanç verici anın neydi?",
+      "Şimdiye kadar en büyük yalanın neydi?",
+      "Seni en çok ne korkutuyor?",
+      "Hiç kimseye söylemediğin bir sırrın var mı?",
+      "En çok kimi seviyorsun?",
+      "Hayatında en çok pişman olduğun şey nedir?",
+      "Bir süper güç seçmek zorunda olsaydın ne seçerdin?",
+      "En garip hayalin nedir?",
+      "Hiç arkadaşına ihanet ettin mi?",
+      "En büyük hayalin nedir?"
+    ],
+    "en": [
+      "What was your most embarrassing moment?",
+      "What's the biggest lie you've ever told?",
+      "What scares you the most?",
+      "Do you have a secret you've never told anyone?",
+      "Who do you love the most?",
+      "What's your biggest regret in life?",
+      "If you had to choose one superpower, what would it be?",
+      "What's your strangest dream?",
+      "Have you ever betrayed a friend?",
+      "What's your biggest dream in life?"
+    ]
+  },
+  "dare": {
+    "tr": [
+      "En sevdiğin şarkıyı söyle",
+      "Komik bir dans yap",
+      "Biri için şiir oku",
+      "30 saniye dondur",
+      "Ellerinin üzerinde yürümeye çalış",
+      "Gözlerin kapalıyken bir şey çiz",
+      "En kötü şarkıyı söyle",
+      "Bir dakika geriye doğru yürü",
+      "Birine iltifat et",
+      "Bir fil sesi çıkar"
+    ],
+    "en": [
+      "Sing your favorite song",
+      "Do a funny dance",
+      "Read a poem out loud",
+      "Freeze for 30 seconds",
+      "Try to walk on your hands",
+      "Draw something with your eyes closed",
+      "Sing the worst song you know",
+      "Walk backwards for one minute",
+      "Compliment someone",
+      "Make an elephant sound"
+    ]
+  }
+}

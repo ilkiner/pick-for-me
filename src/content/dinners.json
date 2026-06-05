@@ -1,0 +1,20 @@
+{
+  "tr": [
+    "Mercimek çorbası", "Tavuk sote", "Köfte", "Makarna bolonez", "Pilav + tavuk",
+    "Lahmacun", "Pide", "Mantı", "Dolma", "Sarma", "İmam bayıldı", "Menemen",
+    "Kuru fasulye", "Nohutlu pilav", "Tavuk çorbası", "Domates çorbası",
+    "Izgara balık", "Karides güveç", "Sebzeli güveç", "Zeytinyağlı enginar",
+    "Karnıyarık", "Hünkar beğendi", "Türlü", "Etli taze fasulye",
+    "Pizza margherita", "Burger", "Döner dürüm", "Sandviç", "Omlet",
+    "Pancake", "Tost", "Çorba + ekmek", "Salata tabağı"
+  ],
+  "en": [
+    "Lentil soup", "Chicken stir-fry", "Meatballs", "Spaghetti bolognese", "Rice + chicken",
+    "Grilled fish", "Shrimp casserole", "Vegetable stew", "Stuffed peppers",
+    "Pizza margherita", "Burger", "Tacos", "Sandwich", "Omelette",
+    "Pancakes", "Grilled cheese toast", "Soup + bread", "Caesar salad",
+    "Pasta carbonara", "Risotto", "Steak + salad", "Curry + rice",
+    "Ramen", "Pho", "Fried rice", "Noodles", "Burritos",
+    "Quesadillas", "Sushi", "Dumplings", "Shakshuka", "Avocado toast"
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "action": [
+    "Mad Max: Fury Road", "John Wick", "The Dark Knight", "Inception", "Interstellar",
+    "The Matrix", "Die Hard", "Mission: Impossible – Fallout", "Top Gun: Maverick",
+    "Avengers: Endgame", "Spider-Man: No Way Home", "Black Panther"
+  ],
+  "comedy": [
+    "The Grand Budapest Hotel", "Superbad", "Game Night", "The Nice Guys",
+    "Knives Out", "Parasite", "Clueless", "Some Like It Hot", "Airplane!",
+    "Monty Python and the Holy Grail", "The Big Lebowski"
+  ],
+  "drama": [
+    "The Shawshank Redemption", "The Godfather", "Schindler's List", "Forrest Gump",
+    "12 Angry Men", "Requiem for a Dream", "American History X", "Good Will Hunting",
+    "A Beautiful Mind", "The Pursuit of Happyness", "Manchester by the Sea"
+  ],
+  "horror": [
+    "Get Out", "Hereditary", "A Quiet Place", "Midsommar", "It Follows",
+    "The Conjuring", "Scream", "Halloween", "Psycho", "The Shining",
+    "Alien", "The Babadook"
+  ],
+  "scifi": [
+    "Arrival", "Ex Machina", "Blade Runner 2049", "Everything Everywhere All at Once",
+    "District 9", "Her", "Annihilation", "Moon", "Children of Men",
+    "Dune", "Avatar", "The Martian"
+  ],
+  "romance": [
+    "La La Land", "About Time", "Before Sunrise", "Pride and Prejudice",
+    "The Notebook", "When Harry Met Sally", "Eternal Sunshine of the Spotless Mind",
+    "Amélie", "Call Me by Your Name", "Portrait of a Lady on Fire"
+  ],
+  "animation": [
+    "Spider-Man: Into the Spider-Verse", "Spirited Away", "WALL-E", "Up",
+    "The Lion King", "Coco", "Soul", "Toy Story", "Princess Mononoke",
+    "Your Name", "Howl's Moving Castle", "Encanto"
+  ],
+  "thriller": [
+    "Parasite", "Gone Girl", "Prisoners", "Zodiac", "Se7en",
+    "No Country for Old Men", "Nightcrawler", "Whiplash", "The Silence of the Lambs",
+    "Oldboy", "Memento", "Black Swan"
+  ],
+  "netflix": [
+    "Squid Game", "Stranger Things", "Money Heist", "Dark", "Narcos",
+    "Mindhunter", "Lupin", "The Witcher", "Bridgerton", "Ozark",
+    "Breaking Bad", "Better Call Saul"
+  ],
+  "imdb_top": [
+    "The Shawshank Redemption", "The Godfather", "The Dark Knight", "12 Angry Men",
+    "Schindler's List", "Pulp Fiction", "Forrest Gump", "Inception", "The Matrix",
+    "Goodfellas", "The Lord of the Rings: The Return of the King", "Fight Club",
+    "Interstellar", "The Silence of the Lambs", "Se7en", "Parasite"
+  ]
+}

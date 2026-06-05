@@ -1,0 +1,40 @@
+{
+  "tr": {
+    "easy": [
+      "Bir bardak su iç", "30 saniye esne", "3 derin nefes al",
+      "Duruşunu düzelt", "Masandaki 3 eşyayı düzelt", "Aynada gülümse",
+      "Birinin adını söyle ve teşekkür et", "5 dakika telefonu bırak",
+      "Bir sevdiğine mesaj at", "Pencereden dışarı bak"
+    ],
+    "medium": [
+      "5 şınav çek", "10 squat yap", "1 dakika plank yap",
+      "10 dakika yürü", "Bir bardak su iç ve 5 dakika egzersiz yap",
+      "Odayı bir kez temizle", "Bulaşıkları yıka", "Bir şeyi öğren: Wikipedia'da rastgele bir makale oku",
+      "5 dakika meditasyon yap", "Kısa bir nap (20 dakika) al"
+    ],
+    "social": [
+      "Bir arkadaşını ara", "Uzun süredir görmediğin birine mesaj at",
+      "Aileye iyi geceler yaz", "Bir meslektaşına teşekkür et",
+      "Sosyal medyada pozitif bir yorum yap", "Birini bir kahveye davet et"
+    ]
+  },
+  "en": {
+    "easy": [
+      "Drink a glass of water", "Stretch for 30 seconds", "Take 3 deep breaths",
+      "Fix your posture", "Tidy 3 items on your desk", "Smile at yourself in the mirror",
+      "Say someone's name and thank them", "Put your phone down for 5 minutes",
+      "Text someone you appreciate", "Look outside the window for a moment"
+    ],
+    "medium": [
+      "Do 5 push-ups", "Do 10 squats", "Hold a 1-minute plank",
+      "Walk for 10 minutes", "Drink water and do 5 minutes of exercise",
+      "Clean one area of your room", "Do the dishes", "Learn something: read a random Wikipedia article",
+      "Meditate for 5 minutes", "Take a short nap (20 minutes)"
+    ],
+    "social": [
+      "Call a friend", "Message someone you haven't talked to in a while",
+      "Wish family goodnight", "Thank a coworker",
+      "Leave a positive comment on social media", "Invite someone for coffee"
+    ]
+  }
+}
