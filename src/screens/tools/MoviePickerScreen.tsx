@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Platform, KeyboardAvoidingView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,6 +8,7 @@ import { LocalStorage } from '../../storage/local';
 import { Theme } from '../../core/Theme';
 import { GlassCard } from '../../components/GlassCard';
 import { ModernButton } from '../../components/ModernButton';
+import MOVIES_DATA from '../../content/movies.json';
 
 export default function MoviePickerScreen({ navigation }: any) {
     const { t } = useTranslation();
@@ -37,15 +38,7 @@ export default function MoviePickerScreen({ navigation }: any) {
         saveOptions(newOpts);
     };
 
-    const IMDB_TOP_250 = [
-        'The Shawshank Redemption', 'The Godfather', 'The Dark Knight', '12 Angry Men',
-        'Schindler\'s List', 'Pulp Fiction', 'Forrest Gump', 'Inception', 'The Matrix'
-    ];
-
-    const NETFLIX_HITS = [
-        'Squid Game', 'Stranger Things', 'Bridgerton', 'Money Heist', 'Lupin', 'The Witcher',
-        'Dark', 'Narcos', 'Mindhunter'
-    ];
+    const moviesData = MOVIES_DATA as Record<string, string[]>;
 
     const addPredefinedList = (list: string[]) => {
         const newOpts = Array.from(new Set([...movies, ...list]));
@@ -69,17 +62,22 @@ export default function MoviePickerScreen({ navigation }: any) {
                     <View style={{ width: 44 }} />
                 </View>
 
-                <View style={styles.quickAddContainer}>
-                    <TouchableOpacity style={styles.quickAddBtn} onPress={() => addPredefinedList(IMDB_TOP_250)}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickAddScroll} contentContainerStyle={styles.quickAddContainer}>
+                    <TouchableOpacity style={styles.quickAddBtn} onPress={() => addPredefinedList(moviesData.imdb_top)}>
                         <Text style={styles.quickAddText}>{t('tools.movie.imdb_top')}</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.quickAddBtn} onPress={() => addPredefinedList(NETFLIX_HITS)}>
+                    <TouchableOpacity style={styles.quickAddBtn} onPress={() => addPredefinedList(moviesData.netflix)}>
                         <Text style={styles.quickAddText}>{t('tools.movie.netflix')}</Text>
                     </TouchableOpacity>
+                    {(['action', 'comedy', 'horror', 'scifi', 'romance', 'animation'] as const).map(genre => (
+                        <TouchableOpacity key={genre} style={styles.quickAddBtn} onPress={() => addPredefinedList(moviesData[genre])}>
+                            <Text style={styles.quickAddText}>{t(`tools.movie.genre_${genre}`, genre)}</Text>
+                        </TouchableOpacity>
+                    ))}
                     <TouchableOpacity style={[styles.quickAddBtn, styles.clearBtn]} onPress={() => saveOptions([])}>
-                        <Text style={styles.quickAddText}>{t('common.clear', t('tools.common.clear'))}</Text>
+                        <Text style={styles.quickAddText}>{t('tools.common.clear', 'Temizle')}</Text>
                     </TouchableOpacity>
-                </View>
+                </ScrollView>
 
                 <View style={styles.inputSection}>
                     <View style={styles.inputContainer}>
@@ -137,8 +135,9 @@ const styles = StyleSheet.create({
     header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Theme.spacing.md, paddingVertical: Theme.spacing.lg },
     backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: Theme.colors.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Theme.colors.surfaceBorder },
     title: { fontSize: 24, fontWeight: '800', color: Theme.colors.text, letterSpacing: 1 },
-    quickAddContainer: { flexDirection: 'row', paddingHorizontal: Theme.spacing.md, marginBottom: Theme.spacing.md },
-    quickAddBtn: { backgroundColor: Theme.colors.surface, paddingVertical: 10, paddingHorizontal: 12, borderRadius: Theme.borderRadius.md, flex: 1, marginHorizontal: 4, alignItems: 'center', borderWidth: 1, borderColor: Theme.colors.surfaceBorder },
+    quickAddScroll: { marginBottom: Theme.spacing.md },
+    quickAddContainer: { flexDirection: 'row', paddingHorizontal: Theme.spacing.md, gap: 8 },
+    quickAddBtn: { backgroundColor: Theme.colors.surface, paddingVertical: 10, paddingHorizontal: 14, borderRadius: Theme.borderRadius.md, alignItems: 'center', borderWidth: 1, borderColor: Theme.colors.surfaceBorder },
     clearBtn: { borderColor: 'rgba(239, 68, 68, 0.3)' },
     quickAddText: { color: Theme.colors.text, fontSize: 12, fontWeight: '700' },
     inputSection: { paddingHorizontal: Theme.spacing.md, marginBottom: Theme.spacing.md },

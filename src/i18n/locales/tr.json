@@ -1,7 +1,9 @@
 {
     "common": {
         "cancel": "İptal",
-        "ok": "Tamam"
+        "ok": "Tamam",
+        "back": "Geri",
+        "clear": "Temizle"
     },
     "login": {
         "title": "Giriş Yap",
@@ -33,6 +35,9 @@
             "movie": "Film Seç",
             "idea": "Rastgele Fikir",
             "challenge": "Hızlı Görev",
+            "tournament": "Turnuva",
+            "orderteam": "Sıra & Takım",
+            "lists": "Listelerim",
             "spin": "Çarkı Çevir",
             "spin_desc": "Karar vermek için çarkı çevir",
             "roll_desc": "Şansını zarlarla dene",
@@ -41,7 +46,10 @@
             "word_desc": "Rastgele bir kelime seç",
             "movie_desc": "Ne izleyeceğine karar ver",
             "idea_desc": "Yeni bir aktivite bul",
-            "challenge_desc": "Küçük bir görev tamamla"
+            "challenge_desc": "Küçük bir görev tamamla",
+            "tournament_desc": "Eleme usulü kazan",
+            "orderteam_desc": "Karıştır veya takımlara böl",
+            "lists_desc": "Listelerini kaydet ve yeniden kullan"
         },
         "logout": "Çıkış"
     },
@@ -134,7 +142,13 @@
             "placeholder": "Film adı girin",
             "empty": "Henüz film eklemediniz.",
             "imdb_top": "IMDB En İyi",
-            "netflix": "Netflix"
+            "netflix": "Netflix",
+            "genre_action": "Aksiyon",
+            "genre_comedy": "Komedi",
+            "genre_horror": "Korku",
+            "genre_scifi": "Sci-Fi",
+            "genre_romance": "Romantik",
+            "genre_animation": "Animasyon"
         },
         "challenge": {
             "title": "Rastgele Görev",
@@ -213,6 +227,64 @@
             "clear": "Geçmişi Temizle",
             "clear_confirm_title": "Geçmişi Temizle",
             "clear_confirm_msg": "Tüm aktivite geçmişi silinecek. Emin misin?"
+        },
+        "tournament": {
+            "title": "Turnuva",
+            "subtitle": "Eleme usulü tek galip",
+            "participants": "Katılımcılar",
+            "add_participant": "Katılımcı ekle...",
+            "start": "Turnuvayı Başlat",
+            "round": "Tur",
+            "match": "maç",
+            "pick_winner": "Kazananı Seç",
+            "tap_win": "Seç",
+            "bye": "BYE",
+            "bye_hint": "Otomatik geç",
+            "passed": "Geçenler",
+            "reset": "Sıfırla",
+            "need_items_title": "Yetersiz",
+            "need_items_msg": "En az 2 katılımcı gerekli."
+        },
+        "orderteam": {
+            "title": "Sıra & Takım",
+            "subtitle": "Karıştır veya takımlara böl",
+            "mode_order": "Sırala",
+            "mode_teams": "Takımlar",
+            "team_count": "Takım sayısı:",
+            "add_person": "Kişi/öğe ekle...",
+            "shuffle": "Karıştır",
+            "split": "Takımlara Böl",
+            "order_result": "SIRALAMA",
+            "teams_result": "TAKIMLAR",
+            "team_label": "Takım"
         }
+    },
+    "lists": {
+        "title": "Kayıtlı Listeler",
+        "pick_hint": "Kullanmak için seç",
+        "create": "Liste Oluştur",
+        "edit": "Düzenle",
+        "save": "Kaydet",
+        "load": "Kayıtlı listeden yükle",
+        "items": "öğe",
+        "empty_title": "Henüz liste yok",
+        "empty_hint": "\"+\" ile yeni liste oluştur",
+        "delete_title": "Listeyi Sil",
+        "delete_msg": "{{name}} silinecek.",
+        "delete_confirm": "Sil",
+        "name_label": "Liste adı",
+        "name_placeholder": "Örn: Film Gecesi",
+        "type_label": "Tür",
+        "items_label": "Öğeler (her satıra bir tane)",
+        "items_placeholder": "Örn:\nDomino's\nPaperMoon\nÇiya",
+        "types": {
+            "general": "Genel",
+            "wheel": "Çark",
+            "movie": "Film",
+            "order": "Sıra/Takım"
+        }
+    },
+    "result": {
+        "share": "Paylaş"
     }
 }

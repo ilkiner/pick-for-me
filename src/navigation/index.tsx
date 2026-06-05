@@ -12,6 +12,9 @@ import ColorPickerScreen from '../screens/tools/ColorPickerScreen';
 import IdeaGeneratorScreen from '../screens/tools/IdeaGeneratorScreen';
 import QuickChallengeScreen from '../screens/tools/QuickChallengeScreen';
 import MoviePickerScreen from '../screens/tools/MoviePickerScreen';
+import TournamentScreen from '../screens/tools/TournamentScreen';
+import OrderTeamScreen from '../screens/tools/OrderTeamScreen';
+import SavedListsScreen from '../screens/lists/SavedListsScreen';
 import { Theme } from '../core/Theme';
 import { Ionicons } from '@expo/vector-icons';
 import { View, Platform } from 'react-native';
@@ -86,6 +89,9 @@ export function RootNavigator({ session }: { session: any }) {
                     <Stack.Screen name="IdeaGenerator" component={IdeaGeneratorScreen} />
                     <Stack.Screen name="QuickChallenge" component={QuickChallengeScreen} />
                     <Stack.Screen name="MoviePicker" component={MoviePickerScreen} />
+                    <Stack.Screen name="Tournament" component={TournamentScreen} />
+                    <Stack.Screen name="OrderTeam" component={OrderTeamScreen} />
+                    <Stack.Screen name="SavedLists" component={SavedListsScreen} />
                 </>
             ) : (
                 // Auth Stack

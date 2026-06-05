@@ -30,7 +30,7 @@ const COLORS = [
     '#14B8A6',
 ];
 
-export default function WheelOfFortuneScreen({ navigation }: any) {
+export default function WheelOfFortuneScreen({ navigation, route }: any) {
     const { t } = useTranslation();
     const [options, setOptions] = useState<{ id: string; label: string }[]>([]);
     const [newOption, setNewOption] = useState('');
@@ -48,6 +48,18 @@ export default function WheelOfFortuneScreen({ navigation }: any) {
             if (data) setOptions(data);
         });
     }, []);
+
+    // Accept list injected from SavedListsScreen
+    useEffect(() => {
+        if (route.params?.pickedList) {
+            const list = route.params.pickedList;
+            const newOpts = (list.items as string[]).map((label: string, i: number) => ({
+                id: `imported-${i}`,
+                label,
+            }));
+            saveOptions(newOpts);
+        }
+    }, [route.params?.pickedList]);
 
     const saveOptions = (newOpts: { id: string; label: string }[]) => {
         setOptions(newOpts);
@@ -200,6 +212,14 @@ export default function WheelOfFortuneScreen({ navigation }: any) {
                 </View>
 
                 <View style={styles.controls}>
+                    <TouchableOpacity
+                        style={styles.loadListBtn}
+                        onPress={() => navigation.navigate('SavedLists', { pickMode: true, returnScreen: 'WheelOfFortune' })}
+                        accessibilityRole="button"
+                    >
+                        <Ionicons name="bookmark-outline" size={16} color={Theme.colors.primary} />
+                        <Text style={styles.loadListText}>{t('lists.load', 'Kayıtlı listeden yükle')}</Text>
+                    </TouchableOpacity>
                     <View style={styles.inputRow}>
                         <TextInput
                             style={styles.input}
@@ -363,4 +383,12 @@ const styles = StyleSheet.create({
     },
     listText: { fontSize: 15, color: Theme.colors.text, fontWeight: '600', flex: 1, marginRight: Theme.spacing.sm },
     spinBtn: { marginBottom: Platform.OS === 'ios' ? 0 : Theme.spacing.sm },
+    loadListBtn: {
+        flexDirection: 'row', alignItems: 'center', gap: 8,
+        padding: Theme.spacing.sm, paddingHorizontal: Theme.spacing.md,
+        borderRadius: Theme.borderRadius.md, backgroundColor: 'rgba(99,102,241,0.12)',
+        borderWidth: 1, borderColor: 'rgba(99,102,241,0.3)',
+        marginBottom: Theme.spacing.sm,
+    },
+    loadListText: { color: Theme.colors.primary, fontWeight: '700', fontSize: 13 },
 });

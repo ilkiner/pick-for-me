@@ -1,7 +1,9 @@
 {
     "common": {
         "cancel": "Cancel",
-        "ok": "OK"
+        "ok": "OK",
+        "back": "Back",
+        "clear": "Clear"
     },
     "login": {
         "title": "Login",
@@ -33,6 +35,9 @@
             "movie": "Movie Picker",
             "idea": "Random Idea",
             "challenge": "Quick Challenge",
+            "tournament": "Tournament",
+            "orderteam": "Order & Teams",
+            "lists": "My Lists",
             "spin": "Spin",
             "spin_desc": "Spin the wheel to decide",
             "roll_desc": "Try your luck with dice",
@@ -41,7 +46,10 @@
             "word_desc": "Pick a random word",
             "movie_desc": "Decide what to watch",
             "idea_desc": "Find a new activity",
-            "challenge_desc": "Complete a mini task"
+            "challenge_desc": "Complete a mini task",
+            "tournament_desc": "Elimination bracket winner",
+            "orderteam_desc": "Shuffle or split into teams",
+            "lists_desc": "Save and reuse your lists"
         },
         "logout": "Logout"
     },
@@ -134,7 +142,13 @@
             "placeholder": "Enter movie title",
             "empty": "No movies added yet.",
             "imdb_top": "IMDB Top",
-            "netflix": "Netflix"
+            "netflix": "Netflix",
+            "genre_action": "Action",
+            "genre_comedy": "Comedy",
+            "genre_horror": "Horror",
+            "genre_scifi": "Sci-Fi",
+            "genre_romance": "Romance",
+            "genre_animation": "Animation"
         },
         "challenge": {
             "title": "Random Challenge",
@@ -213,6 +227,64 @@
             "clear": "Clear History",
             "clear_confirm_title": "Clear History",
             "clear_confirm_msg": "All activity history will be deleted. Are you sure?"
+        },
+        "tournament": {
+            "title": "Tournament",
+            "subtitle": "Elimination bracket",
+            "participants": "Participants",
+            "add_participant": "Add participant...",
+            "start": "Start Tournament",
+            "round": "Round",
+            "match": "match",
+            "pick_winner": "Pick the Winner",
+            "tap_win": "Pick",
+            "bye": "BYE",
+            "bye_hint": "Auto advance",
+            "passed": "Advanced",
+            "reset": "Reset",
+            "need_items_title": "Not enough",
+            "need_items_msg": "At least 2 participants required."
+        },
+        "orderteam": {
+            "title": "Order & Teams",
+            "subtitle": "Shuffle or split into teams",
+            "mode_order": "Order",
+            "mode_teams": "Teams",
+            "team_count": "Teams:",
+            "add_person": "Add person/item...",
+            "shuffle": "Shuffle",
+            "split": "Split into Teams",
+            "order_result": "ORDER",
+            "teams_result": "TEAMS",
+            "team_label": "Team"
         }
+    },
+    "lists": {
+        "title": "My Lists",
+        "pick_hint": "Tap to use",
+        "create": "Create List",
+        "edit": "Edit",
+        "save": "Save",
+        "load": "Load from saved lists",
+        "items": "items",
+        "empty_title": "No lists yet",
+        "empty_hint": "Create your first list with \"+\"",
+        "delete_title": "Delete List",
+        "delete_msg": "{{name}} will be deleted.",
+        "delete_confirm": "Delete",
+        "name_label": "List name",
+        "name_placeholder": "E.g. Movie Night",
+        "type_label": "Type",
+        "items_label": "Items (one per line)",
+        "items_placeholder": "E.g.:\nPizza\nSushi\nBurger",
+        "types": {
+            "general": "General",
+            "wheel": "Wheel",
+            "movie": "Movies",
+            "order": "Order/Teams"
+        }
+    },
+    "result": {
+        "share": "Share"
     }
 }

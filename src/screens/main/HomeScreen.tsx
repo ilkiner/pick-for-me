@@ -18,6 +18,9 @@ const TOOLS: ToolItem[] = [
     { id: '5', key: 'idea', iconLib: FontAwesome5, iconName: 'lightbulb', route: 'IdeaGenerator', color: '#FFD60A', desc: 'idea' },
     { id: '6', key: 'challenge', iconLib: Ionicons, iconName: 'flash', route: 'QuickChallenge', color: '#FF9500', desc: 'challenge' },
     { id: '7', key: 'movie', iconLib: MaterialCommunityIcons, iconName: 'movie-open', route: 'MoviePicker', color: Theme.colors.success, desc: 'movie' },
+    { id: '8', key: 'tournament', iconLib: Ionicons, iconName: 'trophy', route: 'Tournament', color: '#FFD60A', desc: 'tournament' },
+    { id: '9', key: 'orderteam', iconLib: Ionicons, iconName: 'people', route: 'OrderTeam', color: Theme.colors.accent, desc: 'orderteam' },
+    { id: '10', key: 'lists', iconLib: Ionicons, iconName: 'bookmark', route: 'SavedLists', color: Theme.colors.primary, desc: 'lists' },
 ];
 
 export default function HomeScreen({ navigation }: any) {
