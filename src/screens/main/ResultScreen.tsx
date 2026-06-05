@@ -6,6 +6,9 @@ import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import ViewShot, { captureRef } from 'react-native-view-shot';
+import * as Sharing from 'expo-sharing';
+import QRCode from 'react-native-qrcode-svg';
 import { Theme } from '../../core/Theme';
 import { ModernButton } from '../../components/ModernButton';
 import { GlassCard } from '../../components/GlassCard';
@@ -20,15 +23,18 @@ interface HistoryItem {
 export default function ResultScreen({ route, navigation }: any) {
     const { t, i18n } = useTranslation();
     const { result, sourceRoute, type } = route.params || {};
-    
+
     // If we have a direct result from a tool, we're in "Single Result" mode.
     // Otherwise, we're in "History" mode.
     const isSingleResult = result !== undefined && result !== null;
 
     const scaleAnim = useRef(new Animated.Value(0.5)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
-    
+    const viewShotRef = useRef<any>(null);
+
     const [history, setHistory] = useState<HistoryItem[]>([]);
+    const [showQR, setShowQR] = useState(false);
+    const [isSharing, setIsSharing] = useState(false);
 
     const loadHistory = async () => {
         try {
@@ -123,6 +129,22 @@ export default function ResultScreen({ route, navigation }: any) {
             await AsyncStorage.setItem('@app_history', JSON.stringify(parsed));
         } catch (e) {
             console.error("Failed to save history", e);
+        }
+    };
+
+    const handleShare = async () => {
+        if (isSharing || !viewShotRef.current) return;
+        setIsSharing(true);
+        try {
+            const uri = await captureRef(viewShotRef, { format: 'png', quality: 0.95 });
+            const canShare = await Sharing.isAvailableAsync();
+            if (canShare) {
+                await Sharing.shareAsync(uri, { mimeType: 'image/png' });
+            }
+        } catch {
+            // share cancelled or failed silently
+        } finally {
+            setIsSharing(false);
         }
     };
 
@@ -229,6 +251,10 @@ export default function ResultScreen({ route, navigation }: any) {
         );
     }
 
+    const qrValue = type === 'coin' ? getResultText(result, type)
+        : type === 'color' ? (result?.hex || String(result))
+        : getResultText(result, type);
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
@@ -236,30 +262,59 @@ export default function ResultScreen({ route, navigation }: any) {
             </View>
 
             <View style={styles.content}>
-                <Animated.View style={[
-                    styles.resultContainer,
-                    { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
-                ]}>
-                    {type === 'coin' ? (
-                        renderCoinResult(result)
-                    ) : (
-                        <GlassCard style={[
-                            styles.resultBox,
-                            type === 'color' ? { backgroundColor: result.hex || result, borderColor: 'rgba(255,255,255,0.3)' } : undefined
-                        ] as any}>
-                            <Text style={[
-                                styles.resultText,
-                                type === 'color' ? { color: '#fff', textShadowColor: 'rgba(0, 0, 0, 0.3)', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 10 } : undefined
-                            ] as any} adjustsFontSizeToFit numberOfLines={3}>
-                                {getResultText(result, type)}
-                            </Text>
-                        </GlassCard>
-                    )}
-                </Animated.View>
+                <ViewShot ref={viewShotRef} style={styles.viewShot}>
+                    <Animated.View style={[
+                        styles.resultContainer,
+                        { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
+                    ]}>
+                        {type === 'coin' ? (
+                            renderCoinResult(result)
+                        ) : (
+                            <GlassCard style={[
+                                styles.resultBox,
+                                type === 'color' ? { backgroundColor: result.hex || result, borderColor: 'rgba(255,255,255,0.3)' } : undefined
+                            ] as any}>
+                                <Text style={[
+                                    styles.resultText,
+                                    type === 'color' ? { color: '#fff', textShadowColor: 'rgba(0, 0, 0, 0.3)', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 10 } : undefined
+                                ] as any} adjustsFontSizeToFit numberOfLines={3}>
+                                    {getResultText(result, type)}
+                                </Text>
+                            </GlassCard>
+                        )}
+                    </Animated.View>
 
-                {type === 'color' && (
-                    <Text style={styles.colorHex}>{result.hex || result}</Text>
-                )}
+                    {type === 'color' && (
+                        <Text style={styles.colorHex}>{result.hex || result}</Text>
+                    )}
+
+                    {showQR && (
+                        <View style={styles.qrContainer}>
+                            <QRCode value={qrValue || 'pick-for-me'} size={120} backgroundColor="transparent" color={Theme.colors.text} />
+                        </View>
+                    )}
+                </ViewShot>
+
+                <View style={styles.shareRow}>
+                    <TouchableOpacity
+                        style={styles.shareBtn}
+                        onPress={handleShare}
+                        disabled={isSharing}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('result.share', 'Paylaş')}
+                    >
+                        <Ionicons name="share-outline" size={20} color="#FFF" />
+                        <Text style={styles.shareBtnText}>{isSharing ? '…' : t('result.share', 'Paylaş')}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.qrBtn, showQR && styles.qrBtnActive]}
+                        onPress={() => setShowQR(v => !v)}
+                        accessibilityRole="button"
+                        accessibilityLabel="QR"
+                    >
+                        <Ionicons name="qr-code-outline" size={20} color={showQR ? '#FFF' : Theme.colors.textSecondary} />
+                    </TouchableOpacity>
+                </View>
             </View>
 
             <View style={styles.footer}>
@@ -310,6 +365,22 @@ const styles = StyleSheet.create({
     colorHex: { marginTop: Theme.spacing.xl, fontSize: 24, fontWeight: '700', color: Theme.colors.textSecondary, letterSpacing: 2 },
     footer: { padding: Theme.spacing.lg, paddingBottom: Platform.OS === 'ios' ? Theme.spacing.xl : Theme.spacing.xxl, gap: Theme.spacing.md },
     actionBtn: { width: '100%' },
+    viewShot: { alignItems: 'center', backgroundColor: Theme.colors.background },
+    shareRow: { flexDirection: 'row', gap: Theme.spacing.md, marginTop: Theme.spacing.lg, justifyContent: 'center' },
+    shareBtn: {
+        flexDirection: 'row', alignItems: 'center', gap: 8,
+        backgroundColor: Theme.colors.primary, borderRadius: Theme.borderRadius.md,
+        paddingHorizontal: Theme.spacing.xl, paddingVertical: Theme.spacing.md,
+        minHeight: 44,
+    },
+    shareBtnText: { color: '#FFF', fontWeight: '700', fontSize: 15 },
+    qrBtn: {
+        width: 44, height: 44, borderRadius: Theme.borderRadius.md,
+        backgroundColor: Theme.colors.surface, alignItems: 'center', justifyContent: 'center',
+        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
+    },
+    qrBtnActive: { backgroundColor: Theme.colors.primary, borderColor: Theme.colors.primary },
+    qrContainer: { marginTop: Theme.spacing.lg, padding: Theme.spacing.md, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: Theme.borderRadius.md },
     emptyText: { color: Theme.colors.textSecondary, textAlign: 'center', marginTop: 50, fontSize: 16 },
     historyCard: { padding: 20, marginBottom: 15, borderRadius: 15 },
     hHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
