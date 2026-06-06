@@ -6,6 +6,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import { pushHistoryItemToCloud } from '../../storage/syncService';
 import ViewShot, { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
 import QRCode from 'react-native-qrcode-svg';
@@ -130,6 +131,7 @@ export default function ResultScreen({ route, navigation }: any) {
             };
             parsed.push(newItem);
             await AsyncStorage.setItem('@app_history', JSON.stringify(parsed));
+            pushHistoryItemToCloud(newItem).catch(() => {});
         } catch (e) {
             console.error("Failed to save history", e);
         }

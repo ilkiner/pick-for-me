@@ -26,6 +26,7 @@
       },
       "package": "com.pickforme.app"
     },
+    "scheme": "pickforme",
     "web": {
       "favicon": "./assets/favicon.png"
     },

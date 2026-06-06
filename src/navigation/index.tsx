@@ -3,6 +3,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNavigationContainerRef } from '@react-navigation/native';
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
+import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
+import EmailVerificationScreen from '../screens/auth/EmailVerificationScreen';
 import HomeScreen from '../screens/main/HomeScreen';
 import ResultScreen from '../screens/main/ResultScreen';
 import SettingsScreen from '../screens/main/SettingsScreen';
@@ -25,6 +27,19 @@ export const navigationRef = createNavigationContainerRef<any>();
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+
+// Deep link mapping for pickforme:// scheme
+export const linking = {
+    prefixes: ['pickforme://'],
+    config: {
+        screens: {
+            Login: 'login',
+            Register: 'register',
+            ForgotPassword: 'reset-password',
+            EmailVerification: 'verify-email',
+        },
+    },
+};
 
 function MainTabNavigator() {
     return (
@@ -82,7 +97,6 @@ export function RootNavigator({ session }: { session: any }) {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             {session && session.user ? (
-                // App Stack
                 <>
                     <Stack.Screen name="Main" component={MainTabNavigator} />
                     <Stack.Screen name="Result" component={ResultScreen} />
@@ -99,10 +113,11 @@ export function RootNavigator({ session }: { session: any }) {
                     <Stack.Screen name="SavedLists" component={SavedListsScreen} />
                 </>
             ) : (
-                // Auth Stack
                 <>
                     <Stack.Screen name="Login" component={LoginScreen} />
                     <Stack.Screen name="Register" component={RegisterScreen} />
+                    <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+                    <Stack.Screen name="EmailVerification" component={EmailVerificationScreen} />
                 </>
             )}
         </Stack.Navigator>

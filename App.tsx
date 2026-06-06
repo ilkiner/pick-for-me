@@ -4,8 +4,9 @@ import { View, ActivityIndicator } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
-import { RootNavigator, navigationRef } from './src/navigation';
+import { RootNavigator, navigationRef, linking } from './src/navigation';
 import { ProProvider } from './src/store/ProContext';
+import { SavedListsStorage } from './src/storage/savedLists';
 import './src/i18n';
 import { isSupabaseConfigured, supabase } from './src/storage/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -26,20 +27,15 @@ export default function App() {
                     i18n.changeLanguage(savedLang);
                 } else {
                     const deviceLang = Localization.getLocales()[0]?.languageCode;
-                    if (deviceLang === 'tr') {
-                        i18n.changeLanguage('tr');
-                    } else {
-                        i18n.changeLanguage('en');
-                    }
+                    i18n.changeLanguage(deviceLang === 'tr' ? 'tr' : 'en');
                 }
             } catch (e) {
                 console.error('Error loading language', e);
             }
 
-            // 2. Load Session (only if Supabase is properly configured)
+            // 2. Load session (demo mode when Supabase not configured)
             if (!isSupabaseConfigured()) {
-                // Demo mode: skip auth, go straight to the app
-                console.warn('Supabase is not configured. Running in demo mode (no auth).');
+                console.warn('Supabase not configured. Running in demo mode.');
                 setSession({ user: { id: 'demo', email: 'demo@pickforme.app' } });
                 setIsReady(true);
                 return;
@@ -50,8 +46,12 @@ export default function App() {
                 setSession(currentSession);
                 setIsReady(true);
 
-                const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, newSession: unknown) => {
+                const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: string, newSession: any) => {
                     setSession(newSession);
+                    // Pull cloud lists on sign-in (new device sync)
+                    if (_event === 'SIGNED_IN' && newSession) {
+                        SavedListsStorage.syncWithCloud().catch(() => {});
+                    }
                 });
 
                 return () => {
@@ -68,8 +68,8 @@ export default function App() {
 
     if (!isReady) {
         return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator size="large" color="#007AFF" />
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0F0F1E' }}>
+                <ActivityIndicator size="large" color="#6366F1" />
             </View>
         );
     }
@@ -78,7 +78,7 @@ export default function App() {
         <GestureHandlerRootView style={{ flex: 1 }}>
             <ProProvider navigationRef={navigationRef}>
                 <StatusBar style="auto" />
-                <NavigationContainer ref={navigationRef}>
+                <NavigationContainer ref={navigationRef} linking={linking}>
                     <RootNavigator session={session} />
                 </NavigationContainer>
             </ProProvider>
