@@ -7,26 +7,39 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0F0F1E",
+    "scheme": "pickforme",
     "splash": {
       "image": "./assets/splash.png",
-      "resizeMode": "contain",
+      "resizeMode": "cover",
       "backgroundColor": "#0F0F1E"
     },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.pickforme.app",
+      "buildNumber": "1",
+      "requireFullScreen": false,
       "infoPlist": {
-        "NSUserTrackingUsageDescription": "This identifier is used to personalize ads and measure their effectiveness."
+        "NSUserTrackingUsageDescription": "This identifier is used to deliver personalized ads. You can opt out at any time.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "config": {
+        "usesNonExemptEncryption": false
       }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#0F0F1E"
       },
-      "package": "com.pickforme.app"
+      "package": "com.pickforme.app",
+      "versionCode": 1,
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "VIBRATE"
+      ],
+      "allowBackup": false
     },
-    "scheme": "pickforme",
     "web": {
       "favicon": "./assets/favicon.png"
     },
@@ -39,10 +52,14 @@
         {
           "androidAppId": "ca-app-pub-3940256099942544~3347511713",
           "iosAppId": "ca-app-pub-3940256099942544~1458002511",
-          "userTrackingUsageDescription": "This identifier is used to personalize ads and measure their effectiveness."
+          "userTrackingUsageDescription": "This identifier is used to deliver personalized ads. You can opt out at any time.",
+          "skAdNetworkItems": []
         }
       ],
       "react-native-purchases"
-    ]
+    ],
+    "extra": {
+      "privacyPolicyUrl": "https://pickforme.app/privacy"
+    }
   }
 }
