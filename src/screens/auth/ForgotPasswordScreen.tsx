@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     View, Text, TextInput, TouchableOpacity, StyleSheet,
     ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView,
@@ -8,10 +8,58 @@ import { useTranslation } from 'react-i18next';
 import { MotiView } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../storage/supabase';
-import { Theme } from '../../core/Theme';
+import { useTheme } from '../../store/ThemeContext';
+import { AppTheme } from '../../core/Theme';
+
+function createStyles(theme: AppTheme) {
+    return StyleSheet.create({
+        container: { flex: 1, backgroundColor: theme.colors.background },
+        backBtn: { padding: theme.spacing.md, marginLeft: theme.spacing.sm },
+        inner: { flex: 1, padding: theme.spacing.lg, paddingTop: theme.spacing.sm },
+        iconArea: { alignItems: 'center', marginBottom: theme.spacing.xl },
+        iconCircle: {
+            width: 80, height: 80, borderRadius: 40,
+            backgroundColor: theme.colors.surface,
+            borderWidth: 1, borderColor: theme.colors.surfaceBorder,
+            alignItems: 'center', justifyContent: 'center',
+        },
+        title: { fontSize: 28, fontWeight: '800', color: theme.colors.text, marginBottom: theme.spacing.sm },
+        subtitle: { fontSize: 15, color: theme.colors.textSecondary, marginBottom: theme.spacing.xl, lineHeight: 22 },
+        input: {
+            backgroundColor: theme.colors.surface, color: theme.colors.text,
+            padding: theme.spacing.md, borderRadius: theme.borderRadius.md,
+            marginBottom: theme.spacing.md,
+            borderWidth: 1, borderColor: theme.colors.surfaceBorder,
+            fontSize: 16, minHeight: 52,
+        },
+        errorText: { color: theme.colors.error, marginBottom: theme.spacing.md, fontSize: 14, fontWeight: '500' },
+        button: {
+            backgroundColor: theme.colors.primary,
+            borderRadius: theme.borderRadius.md,
+            alignItems: 'center', justifyContent: 'center',
+            minHeight: 52, marginTop: theme.spacing.sm,
+        },
+        buttonDisabled: { opacity: 0.6 },
+        buttonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+        link: { marginTop: theme.spacing.xl, alignItems: 'center', minHeight: 44, justifyContent: 'center' },
+        linkText: { color: theme.colors.primary, fontSize: 15, fontWeight: '600' },
+        successBox: {
+            alignItems: 'center', padding: theme.spacing.xl,
+            backgroundColor: theme.colors.surface,
+            borderRadius: theme.borderRadius.lg,
+            borderWidth: 1, borderColor: theme.colors.surfaceBorder,
+            marginBottom: theme.spacing.xl,
+            gap: theme.spacing.sm,
+        },
+        successText: { fontSize: 17, fontWeight: '700', color: theme.colors.text, textAlign: 'center' },
+        successSub: { fontSize: 14, color: theme.colors.textSecondary, textAlign: 'center', lineHeight: 20 },
+    });
+}
 
 export default function ForgotPasswordScreen({ navigation }: any) {
     const { t } = useTranslation();
+    const { theme } = useTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [sent, setSent] = useState(false);
@@ -40,7 +88,7 @@ export default function ForgotPasswordScreen({ navigation }: any) {
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
                 <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
                     <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-                        <Ionicons name="chevron-back" size={24} color={Theme.colors.text} />
+                        <Ionicons name="chevron-back" size={24} color={theme.colors.text} />
                     </TouchableOpacity>
 
                     <MotiView
@@ -51,7 +99,7 @@ export default function ForgotPasswordScreen({ navigation }: any) {
                     >
                         <View style={styles.iconArea}>
                             <View style={styles.iconCircle}>
-                                <Ionicons name="lock-open-outline" size={36} color={Theme.colors.primary} />
+                                <Ionicons name="lock-open-outline" size={36} color={theme.colors.primary} />
                             </View>
                         </View>
 
@@ -64,7 +112,7 @@ export default function ForgotPasswordScreen({ navigation }: any) {
                                 animate={{ opacity: 1, scale: 1 }}
                                 style={styles.successBox}
                             >
-                                <Ionicons name="checkmark-circle" size={32} color={Theme.colors.success} />
+                                <Ionicons name="checkmark-circle" size={32} color={theme.colors.success} />
                                 <Text style={styles.successText}>{t('auth.forgot_sent')}</Text>
                                 <Text style={styles.successSub}>{t('auth.forgot_sent_sub')}</Text>
                             </MotiView>
@@ -73,7 +121,7 @@ export default function ForgotPasswordScreen({ navigation }: any) {
                                 <TextInput
                                     style={styles.input}
                                     placeholder={t('login.email')}
-                                    placeholderTextColor={Theme.colors.textSecondary}
+                                    placeholderTextColor={theme.colors.textSecondary}
                                     value={email}
                                     onChangeText={setEmail}
                                     autoCapitalize="none"
@@ -105,54 +153,3 @@ export default function ForgotPasswordScreen({ navigation }: any) {
         </SafeAreaView>
     );
 }
-
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: Theme.colors.background },
-    backBtn: { padding: Theme.spacing.md, marginLeft: Theme.spacing.sm },
-    inner: { flex: 1, padding: Theme.spacing.lg, paddingTop: Theme.spacing.sm },
-    iconArea: { alignItems: 'center', marginBottom: Theme.spacing.xl },
-    iconCircle: {
-        width: 80, height: 80, borderRadius: 40,
-        backgroundColor: Theme.colors.surface,
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
-        alignItems: 'center', justifyContent: 'center',
-    },
-    title: {
-        fontSize: 28, fontWeight: '800', color: Theme.colors.text,
-        marginBottom: Theme.spacing.sm,
-    },
-    subtitle: {
-        fontSize: 15, color: Theme.colors.textSecondary,
-        marginBottom: Theme.spacing.xl, lineHeight: 22,
-    },
-    input: {
-        backgroundColor: Theme.colors.surface,
-        color: Theme.colors.text,
-        padding: Theme.spacing.md,
-        borderRadius: Theme.borderRadius.md,
-        marginBottom: Theme.spacing.md,
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
-        fontSize: 16, minHeight: 52,
-    },
-    errorText: { color: Theme.colors.error, marginBottom: Theme.spacing.md, fontSize: 14, fontWeight: '500' },
-    button: {
-        backgroundColor: Theme.colors.primary,
-        borderRadius: Theme.borderRadius.md,
-        alignItems: 'center', justifyContent: 'center',
-        minHeight: 52, marginTop: Theme.spacing.sm,
-    },
-    buttonDisabled: { opacity: 0.6 },
-    buttonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-    link: { marginTop: Theme.spacing.xl, alignItems: 'center', minHeight: 44, justifyContent: 'center' },
-    linkText: { color: Theme.colors.primary, fontSize: 15, fontWeight: '600' },
-    successBox: {
-        alignItems: 'center', padding: Theme.spacing.xl,
-        backgroundColor: Theme.colors.surface,
-        borderRadius: Theme.borderRadius.lg,
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
-        marginBottom: Theme.spacing.xl,
-        gap: Theme.spacing.sm,
-    },
-    successText: { fontSize: 17, fontWeight: '700', color: Theme.colors.text, textAlign: 'center' },
-    successSub: { fontSize: 14, color: Theme.colors.textSecondary, textAlign: 'center', lineHeight: 20 },
-});

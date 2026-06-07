@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -10,11 +10,12 @@ import { pushHistoryItemToCloud } from '../../storage/syncService';
 import ViewShot, { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
 import QRCode from 'react-native-qrcode-svg';
-import { Theme } from '../../core/Theme';
 import { ModernButton } from '../../components/ModernButton';
 import { GlassCard } from '../../components/GlassCard';
 import { usePro } from '../../store/ProContext';
 import { AdManager } from '../../core/AdManager';
+import { useTheme } from '../../store/ThemeContext';
+import { AppTheme } from '../../core/Theme';
 
 interface HistoryItem {
     id: string;
@@ -23,9 +24,69 @@ interface HistoryItem {
     timestamp: number;
 }
 
+function createStyles(theme: AppTheme) {
+    return StyleSheet.create({
+        container: { flex: 1, backgroundColor: theme.colors.background },
+        header: { padding: theme.spacing.lg, alignItems: 'center' },
+        headerTitle: { fontSize: 13, fontWeight: '800', color: theme.colors.textSecondary, letterSpacing: 4 },
+        historyHeader: {
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+            paddingHorizontal: theme.spacing.lg, paddingVertical: theme.spacing.md,
+        },
+        clearBtn: {
+            flexDirection: 'row', alignItems: 'center', gap: 6,
+            paddingHorizontal: theme.spacing.md, paddingVertical: theme.spacing.sm,
+            borderRadius: theme.borderRadius.md, backgroundColor: 'rgba(239,68,68,0.1)', minHeight: 44,
+        },
+        clearBtnText: { color: theme.colors.error, fontSize: 13, fontWeight: '700' },
+        emptyContainer: { alignItems: 'center', marginTop: theme.spacing.xxl, gap: theme.spacing.md },
+        content: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: theme.spacing.lg },
+        resultContainer: { width: '100%', alignItems: 'center' },
+        resultBox: { width: 300, height: 300, borderRadius: 40, alignItems: 'center', justifyContent: 'center', padding: theme.spacing.xl },
+        resultText: { fontSize: 56, fontWeight: '900', color: theme.colors.text, textAlign: 'center' },
+        colorHex: { marginTop: theme.spacing.xl, fontSize: 24, fontWeight: '700', color: theme.colors.textSecondary, letterSpacing: 2 },
+        footer: { padding: theme.spacing.lg, paddingBottom: Platform.OS === 'ios' ? theme.spacing.xl : theme.spacing.xxl, gap: theme.spacing.md },
+        actionBtn: { width: '100%' },
+        viewShot: { alignItems: 'center', backgroundColor: theme.colors.background },
+        shareRow: { flexDirection: 'row', gap: theme.spacing.md, marginTop: theme.spacing.lg, justifyContent: 'center' },
+        shareBtn: {
+            flexDirection: 'row', alignItems: 'center', gap: 8,
+            backgroundColor: theme.colors.primary, borderRadius: theme.borderRadius.md,
+            paddingHorizontal: theme.spacing.xl, paddingVertical: theme.spacing.md, minHeight: 44,
+        },
+        shareBtnText: { color: '#FFF', fontWeight: '700', fontSize: 15 },
+        qrBtn: {
+            width: 44, height: 44, borderRadius: theme.borderRadius.md,
+            backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center',
+            borderWidth: 1, borderColor: theme.colors.surfaceBorder,
+        },
+        qrBtnActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+        qrContainer: { marginTop: theme.spacing.lg, padding: theme.spacing.md, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: theme.borderRadius.md },
+        emptyText: { color: theme.colors.textSecondary, textAlign: 'center', marginTop: 50, fontSize: 16 },
+        historyCard: { padding: 20, marginBottom: 15, borderRadius: 15 },
+        hHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
+        hType: { color: theme.colors.primary, fontWeight: '800', fontSize: 12, letterSpacing: 1 },
+        hTime: { color: theme.colors.textSecondary, fontSize: 12 },
+        hResultText: { color: theme.colors.text, fontSize: 18, fontWeight: 'bold' },
+        coinResultCard: { width: 280, height: 280, borderRadius: 140, alignItems: 'center', justifyContent: 'center', elevation: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.5, shadowRadius: 15 },
+        headsBg: { backgroundColor: '#FFD700', borderWidth: 8, borderColor: '#DAA520' },
+        tailsBg: { backgroundColor: '#E8E8E8', borderWidth: 8, borderColor: '#C0C0C0' },
+        coinDetail: { width: 220, height: 220, borderRadius: 110, borderWidth: 3, borderStyle: 'solid', alignItems: 'center', justifyContent: 'center' },
+        coinLabel: { fontSize: 32, fontWeight: '900', marginBottom: 10 },
+        edgeContainer: { alignItems: 'center', justifyContent: 'center' },
+        coinEdgeView: { width: 40, height: 250, backgroundColor: '#888', borderRadius: 20, borderWidth: 4, borderColor: '#555', shadowColor: '#000', shadowOffset: { width: 10, height: 10 }, shadowOpacity: 0.5, shadowRadius: 10 },
+        edgeJoke: { marginTop: 30, fontSize: 20, fontWeight: 'bold', color: theme.colors.primary, textAlign: 'center', paddingHorizontal: 20 },
+        hCoinRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+        hCoinIcon: { width: 12, height: 12, borderRadius: 6 },
+        watermark: { marginTop: 8, color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
+    });
+}
+
 export default function ResultScreen({ route, navigation }: any) {
     const { t, i18n } = useTranslation();
     const { isPro } = usePro();
+    const { theme } = useTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const { result, sourceRoute, type } = route.params || {};
 
     // If we have a direct result from a tool, we're in "Single Result" mode.
@@ -237,15 +298,15 @@ export default function ResultScreen({ route, navigation }: any) {
                             accessibilityLabel={t('tools.results.clear', 'Clear History')}
                             accessibilityRole="button"
                         >
-                            <Ionicons name="trash-outline" size={18} color={Theme.colors.error} />
+                            <Ionicons name="trash-outline" size={18} color={theme.colors.error} />
                             <Text style={styles.clearBtnText}>{t('tools.results.clear', 'Clear')}</Text>
                         </TouchableOpacity>
                     )}
                 </View>
-                <Animated.ScrollView contentContainerStyle={{ padding: Theme.spacing.lg }} style={{ opacity: fadeAnim }}>
+                <Animated.ScrollView contentContainerStyle={{ padding: theme.spacing.lg }} style={{ opacity: fadeAnim }}>
                     {history.length === 0 ? (
                         <View style={styles.emptyContainer}>
-                            <Ionicons name="time-outline" size={64} color={Theme.colors.surfaceBorder} />
+                            <Ionicons name="time-outline" size={64} color={theme.colors.surfaceBorder} />
                             <Text style={styles.emptyText}>{t('tools.results.empty')}</Text>
                         </View>
                     ) : (
@@ -295,7 +356,7 @@ export default function ResultScreen({ route, navigation }: any) {
 
                     {showQR && (
                         <View style={styles.qrContainer}>
-                            <QRCode value={qrValue || 'pick-for-me'} size={120} backgroundColor="transparent" color={Theme.colors.text} />
+                            <QRCode value={qrValue || 'pick-for-me'} size={120} backgroundColor="transparent" color={theme.colors.text} />
                         </View>
                     )}
 
@@ -322,7 +383,7 @@ export default function ResultScreen({ route, navigation }: any) {
                         accessibilityRole="button"
                         accessibilityLabel="QR"
                     >
-                        <Ionicons name="qr-code-outline" size={20} color={showQR ? '#FFF' : Theme.colors.textSecondary} />
+                        <Ionicons name="qr-code-outline" size={20} color={showQR ? '#FFF' : theme.colors.textSecondary} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -345,72 +406,4 @@ export default function ResultScreen({ route, navigation }: any) {
     );
 }
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: Theme.colors.background },
-    header: { padding: Theme.spacing.lg, alignItems: 'center' },
-    headerTitle: { fontSize: 13, fontWeight: '800', color: Theme.colors.textSecondary, letterSpacing: 4 },
-    historyHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: Theme.spacing.lg,
-        paddingVertical: Theme.spacing.md,
-    },
-    clearBtn: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        paddingHorizontal: Theme.spacing.md,
-        paddingVertical: Theme.spacing.sm,
-        borderRadius: Theme.borderRadius.md,
-        backgroundColor: 'rgba(239,68,68,0.1)',
-        minHeight: 44,
-    },
-    clearBtnText: { color: Theme.colors.error, fontSize: 13, fontWeight: '700' },
-    emptyContainer: { alignItems: 'center', marginTop: Theme.spacing.xxl, gap: Theme.spacing.md },
-    content: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: Theme.spacing.lg },
-    resultContainer: { width: '100%', alignItems: 'center' },
-    resultBox: { width: 300, height: 300, borderRadius: 40, alignItems: 'center', justifyContent: 'center', padding: Theme.spacing.xl },
-    resultText: { fontSize: 56, fontWeight: '900', color: Theme.colors.text, textAlign: 'center' },
-    colorHex: { marginTop: Theme.spacing.xl, fontSize: 24, fontWeight: '700', color: Theme.colors.textSecondary, letterSpacing: 2 },
-    footer: { padding: Theme.spacing.lg, paddingBottom: Platform.OS === 'ios' ? Theme.spacing.xl : Theme.spacing.xxl, gap: Theme.spacing.md },
-    actionBtn: { width: '100%' },
-    viewShot: { alignItems: 'center', backgroundColor: Theme.colors.background },
-    shareRow: { flexDirection: 'row', gap: Theme.spacing.md, marginTop: Theme.spacing.lg, justifyContent: 'center' },
-    shareBtn: {
-        flexDirection: 'row', alignItems: 'center', gap: 8,
-        backgroundColor: Theme.colors.primary, borderRadius: Theme.borderRadius.md,
-        paddingHorizontal: Theme.spacing.xl, paddingVertical: Theme.spacing.md,
-        minHeight: 44,
-    },
-    shareBtnText: { color: '#FFF', fontWeight: '700', fontSize: 15 },
-    qrBtn: {
-        width: 44, height: 44, borderRadius: Theme.borderRadius.md,
-        backgroundColor: Theme.colors.surface, alignItems: 'center', justifyContent: 'center',
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
-    },
-    qrBtnActive: { backgroundColor: Theme.colors.primary, borderColor: Theme.colors.primary },
-    qrContainer: { marginTop: Theme.spacing.lg, padding: Theme.spacing.md, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: Theme.borderRadius.md },
-    emptyText: { color: Theme.colors.textSecondary, textAlign: 'center', marginTop: 50, fontSize: 16 },
-    historyCard: { padding: 20, marginBottom: 15, borderRadius: 15 },
-    hHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
-    hType: { color: Theme.colors.primary, fontWeight: '800', fontSize: 12, letterSpacing: 1 },
-    hTime: { color: Theme.colors.textSecondary, fontSize: 12 },
-    hResultText: { color: Theme.colors.text, fontSize: 18, fontWeight: 'bold' },
-    // Coin Specific Styles
-    coinResultCard: { width: 280, height: 280, borderRadius: 140, alignItems: 'center', justifyContent: 'center', elevation: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.5, shadowRadius: 15 },
-    headsBg: { backgroundColor: '#FFD700', borderWidth: 8, borderColor: '#DAA520' },
-    tailsBg: { backgroundColor: '#E8E8E8', borderWidth: 8, borderColor: '#C0C0C0' },
-    coinDetail: { width: 220, height: 220, borderRadius: 110, borderWidth: 3, borderStyle: 'solid', alignItems: 'center', justifyContent: 'center' },
-    coinLabel: { fontSize: 32, fontWeight: '900', marginBottom: 10 },
-    edgeContainer: { alignItems: 'center', justifyContent: 'center' },
-    coinEdgeView: { width: 40, height: 250, backgroundColor: '#888', borderRadius: 20, borderWidth: 4, borderColor: '#555', shadowColor: '#000', shadowOffset: { width: 10, height: 10 }, shadowOpacity: 0.5, shadowRadius: 10 },
-    edgeJoke: { marginTop: 30, fontSize: 20, fontWeight: 'bold', color: Theme.colors.primary, textAlign: 'center', paddingHorizontal: 20 },
-    hCoinRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-    hCoinIcon: { width: 12, height: 12, borderRadius: 6 },
-    watermark: {
-        marginTop: 8, color: 'rgba(255,255,255,0.25)',
-        fontSize: 11, fontWeight: '700', letterSpacing: 1,
-    },
-});
 

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
     View, Text, StyleSheet, TouchableOpacity, FlatList,
     TextInput, Alert, Modal, ScrollView,
@@ -8,11 +8,12 @@ import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { MotiView } from 'moti';
-import { Theme } from '../../core/Theme';
+import { AppTheme } from '../../core/Theme';
 import { GlassCard } from '../../components/GlassCard';
 import { SavedListsStorage, SavedList, ListType } from '../../storage/savedLists';
 import { usePro, FREE_LIST_LIMIT, FREE_ITEM_LIMIT } from '../../store/ProContext';
 import { ProGateModal } from '../../components/ProGate';
+import { useTheme } from '../../store/ThemeContext';
 
 const LIST_TYPE_ICONS: Record<ListType, string> = {
     wheel: 'aperture',
@@ -21,12 +22,100 @@ const LIST_TYPE_ICONS: Record<ListType, string> = {
     general: 'bookmark',
 };
 
-const LIST_TYPE_COLORS: Record<ListType, string> = {
-    wheel: Theme.colors.secondary,
-    movie: Theme.colors.success,
-    order: Theme.colors.accent,
-    general: Theme.colors.primary,
-};
+function getListTypeColors(theme: AppTheme): Record<ListType, string> {
+    return {
+        wheel: theme.colors.secondary,
+        movie: theme.colors.success,
+        order: theme.colors.accent,
+        general: theme.colors.primary,
+    };
+}
+
+function createStyles(theme: AppTheme) {
+    return StyleSheet.create({
+        container: { flex: 1, backgroundColor: theme.colors.background },
+        header: {
+            flexDirection: 'row', alignItems: 'center',
+            paddingHorizontal: theme.spacing.md, paddingVertical: theme.spacing.md,
+            justifyContent: 'space-between',
+        },
+        backBtn: {
+            width: 44, height: 44, borderRadius: 22,
+            backgroundColor: theme.colors.surface,
+            alignItems: 'center', justifyContent: 'center',
+            borderWidth: 1, borderColor: theme.colors.surfaceBorder,
+        },
+        headerCenter: { alignItems: 'center', flex: 1, marginHorizontal: theme.spacing.sm },
+        title: { fontSize: 22, fontWeight: '900', color: theme.colors.text },
+        subtitle: { fontSize: 12, color: theme.colors.textSecondary, marginTop: 2 },
+        limitBadge: { fontSize: 11, color: theme.colors.textSecondary, marginTop: 2, fontWeight: '600' },
+        addHeaderBtn: {
+            width: 44, height: 44, borderRadius: 22,
+            backgroundColor: 'rgba(99,102,241,0.15)',
+            alignItems: 'center', justifyContent: 'center',
+        },
+        listContent: { padding: theme.spacing.md, paddingBottom: 100 },
+        listCard: { marginBottom: theme.spacing.sm, borderRadius: theme.borderRadius.lg },
+        listCardInner: {
+            flexDirection: 'row', alignItems: 'center',
+            padding: theme.spacing.md, gap: theme.spacing.md,
+        },
+        typeIcon: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+        listInfo: { flex: 1 },
+        listName: { fontSize: 16, fontWeight: '700', color: theme.colors.text, marginBottom: 2 },
+        listMeta: { fontSize: 12, color: theme.colors.textSecondary },
+        actionBtns: { flexDirection: 'row', gap: theme.spacing.md, alignItems: 'center' },
+        emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: theme.spacing.xl, gap: theme.spacing.md },
+        emptyTitle: { fontSize: 20, fontWeight: '800', color: theme.colors.text },
+        emptySubtitle: { fontSize: 14, color: theme.colors.textSecondary, textAlign: 'center' },
+        createBtn: {
+            flexDirection: 'row', alignItems: 'center', gap: 8,
+            backgroundColor: theme.colors.primary,
+            paddingHorizontal: theme.spacing.xl, paddingVertical: theme.spacing.md,
+            borderRadius: theme.borderRadius.lg, marginTop: theme.spacing.md,
+        },
+        createBtnText: { color: '#FFF', fontWeight: '800', fontSize: 16 },
+        fab: { position: 'absolute', bottom: 32, right: 24 },
+        fabBtn: {
+            width: 56, height: 56, borderRadius: 28,
+            backgroundColor: theme.colors.primary,
+            alignItems: 'center', justifyContent: 'center',
+            shadowColor: theme.colors.primary, shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.4, shadowRadius: 8, elevation: 8,
+        },
+        modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
+        modalSheet: {
+            backgroundColor: theme.colors.modalSheet,
+            borderTopLeftRadius: 28, borderTopRightRadius: 28,
+            padding: theme.spacing.lg, paddingBottom: 40,
+            borderTopWidth: 1, borderTopColor: theme.colors.surfaceBorder,
+        },
+        modalTitle: { fontSize: 20, fontWeight: '900', color: theme.colors.text, marginBottom: theme.spacing.lg, textAlign: 'center' },
+        fieldLabel: { fontSize: 13, color: theme.colors.textSecondary, fontWeight: '600', marginBottom: 6, marginTop: theme.spacing.md },
+        modalInput: {
+            backgroundColor: theme.colors.surface, color: theme.colors.text,
+            borderRadius: theme.borderRadius.md, padding: theme.spacing.md,
+            borderWidth: 1, borderColor: theme.colors.surfaceBorder, fontSize: 15, minHeight: 52,
+        },
+        modalTextArea: { minHeight: 120, maxHeight: 200 },
+        typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+        typeChip: {
+            flexDirection: 'row', alignItems: 'center', gap: 4,
+            paddingHorizontal: 12, paddingVertical: 8,
+            borderRadius: 20, borderWidth: 1, borderColor: theme.colors.surfaceBorder,
+            backgroundColor: theme.colors.surface,
+        },
+        typeChipText: { fontSize: 13, color: theme.colors.textSecondary, fontWeight: '600' },
+        modalBtns: { flexDirection: 'row', gap: theme.spacing.md, marginTop: theme.spacing.xl },
+        modalCancelBtn: {
+            flex: 1, padding: theme.spacing.md, borderRadius: theme.borderRadius.md,
+            borderWidth: 1, borderColor: theme.colors.surfaceBorder, alignItems: 'center',
+        },
+        modalCancelText: { color: theme.colors.textSecondary, fontWeight: '700' },
+        modalSaveBtn: { flex: 1, padding: theme.spacing.md, borderRadius: theme.borderRadius.md, backgroundColor: theme.colors.primary, alignItems: 'center' },
+        modalSaveText: { color: '#FFF', fontWeight: '800' },
+    });
+}
 
 interface Props {
     navigation: any;
@@ -36,6 +125,9 @@ interface Props {
 export default function SavedListsScreen({ navigation, route }: Props) {
     const { t } = useTranslation();
     const { isPro } = usePro();
+    const { theme } = useTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
+    const LIST_TYPE_COLORS = useMemo(() => getListTypeColors(theme), [theme]);
     const pickMode = route.params?.pickMode as boolean | undefined;
     const [lists, setLists] = useState<SavedList[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
@@ -148,7 +240,7 @@ export default function SavedListsScreen({ navigation, route }: Props) {
                             </Text>
                         </View>
                         {pickMode ? (
-                            <Ionicons name="chevron-forward" size={20} color={Theme.colors.primary} />
+                            <Ionicons name="chevron-forward" size={20} color={theme.colors.primary} />
                         ) : (
                             <View style={styles.actionBtns}>
                                 <TouchableOpacity
@@ -157,7 +249,7 @@ export default function SavedListsScreen({ navigation, route }: Props) {
                                     accessibilityRole="button"
                                     accessibilityLabel={t('lists.edit', 'Düzenle')}
                                 >
-                                    <Ionicons name="pencil-outline" size={18} color={Theme.colors.textSecondary} />
+                                    <Ionicons name="pencil-outline" size={18} color={theme.colors.textSecondary} />
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     onPress={() => handleDelete(item)}
@@ -165,7 +257,7 @@ export default function SavedListsScreen({ navigation, route }: Props) {
                                     accessibilityRole="button"
                                     accessibilityLabel={t('lists.delete_confirm', 'Sil')}
                                 >
-                                    <Ionicons name="trash-outline" size={18} color={Theme.colors.error} />
+                                    <Ionicons name="trash-outline" size={18} color={theme.colors.error} />
                                 </TouchableOpacity>
                             </View>
                         )}
@@ -184,7 +276,7 @@ export default function SavedListsScreen({ navigation, route }: Props) {
                     accessibilityRole="button"
                     accessibilityLabel={t('common.back', 'Geri')}
                 >
-                    <Ionicons name="chevron-back" size={26} color={Theme.colors.text} />
+                    <Ionicons name="chevron-back" size={26} color={theme.colors.text} />
                 </TouchableOpacity>
                 <View style={styles.headerCenter}>
                     <Text style={styles.title}>{t('lists.title', 'Kayıtlı Listeler')}</Text>
@@ -204,7 +296,7 @@ export default function SavedListsScreen({ navigation, route }: Props) {
                         accessibilityRole="button"
                         accessibilityLabel={t('lists.create', 'Liste Oluştur')}
                     >
-                        <Ionicons name="add" size={26} color={Theme.colors.primary} />
+                        <Ionicons name="add" size={26} color={theme.colors.primary} />
                     </TouchableOpacity>
                 )}
                 {pickMode && <View style={{ width: 44 }} />}
@@ -212,7 +304,7 @@ export default function SavedListsScreen({ navigation, route }: Props) {
 
             {lists.length === 0 ? (
                 <View style={styles.emptyContainer}>
-                    <Ionicons name="bookmark-outline" size={72} color={Theme.colors.surfaceBorder} />
+                    <Ionicons name="bookmark-outline" size={72} color={theme.colors.surfaceBorder} />
                     <Text style={styles.emptyTitle}>{t('lists.empty_title', 'Henüz liste yok')}</Text>
                     <Text style={styles.emptySubtitle}>{t('lists.empty_hint', '"+" ile yeni liste oluştur')}</Text>
                     <TouchableOpacity style={styles.createBtn} onPress={openCreateModal}>
@@ -261,7 +353,7 @@ export default function SavedListsScreen({ navigation, route }: Props) {
                             value={formName}
                             onChangeText={setFormName}
                             placeholder={t('lists.name_placeholder', 'Örn: Film Gecesi')}
-                            placeholderTextColor={Theme.colors.textSecondary}
+                            placeholderTextColor={theme.colors.textSecondary}
                         />
 
                         <Text style={styles.fieldLabel}>{t('lists.type_label', 'Tür')}</Text>
@@ -275,7 +367,7 @@ export default function SavedListsScreen({ navigation, route }: Props) {
                                     <Ionicons
                                         name={LIST_TYPE_ICONS[tp] as any}
                                         size={14}
-                                        color={formType === tp ? '#FFF' : Theme.colors.textSecondary}
+                                        color={formType === tp ? '#FFF' : theme.colors.textSecondary}
                                     />
                                     <Text style={[styles.typeChipText, formType === tp && { color: '#FFF' }]}>
                                         {t(`lists.types.${tp}`, tp)}
@@ -290,7 +382,7 @@ export default function SavedListsScreen({ navigation, route }: Props) {
                             value={formItems}
                             onChangeText={setFormItems}
                             placeholder={t('lists.items_placeholder', 'Örn:\nDomino\'s\nPaperMoon\nÇiya')}
-                            placeholderTextColor={Theme.colors.textSecondary}
+                            placeholderTextColor={theme.colors.textSecondary}
                             multiline
                             numberOfLines={6}
                             textAlignVertical="top"
@@ -314,106 +406,3 @@ export default function SavedListsScreen({ navigation, route }: Props) {
     );
 }
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: Theme.colors.background },
-    header: {
-        flexDirection: 'row', alignItems: 'center',
-        paddingHorizontal: Theme.spacing.md, paddingVertical: Theme.spacing.md,
-        justifyContent: 'space-between',
-    },
-    backBtn: {
-        width: 44, height: 44, borderRadius: 22,
-        backgroundColor: Theme.colors.surface,
-        alignItems: 'center', justifyContent: 'center',
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
-    },
-    headerCenter: { alignItems: 'center', flex: 1, marginHorizontal: Theme.spacing.sm },
-    title: { fontSize: 22, fontWeight: '900', color: Theme.colors.text },
-    subtitle: { fontSize: 12, color: Theme.colors.textSecondary, marginTop: 2 },
-    limitBadge: { fontSize: 11, color: Theme.colors.textSecondary, marginTop: 2, fontWeight: '600' },
-    addHeaderBtn: {
-        width: 44, height: 44, borderRadius: 22,
-        backgroundColor: 'rgba(99,102,241,0.15)',
-        alignItems: 'center', justifyContent: 'center',
-    },
-    listContent: { padding: Theme.spacing.md, paddingBottom: 100 },
-    listCard: { marginBottom: Theme.spacing.sm, borderRadius: Theme.borderRadius.lg },
-    listCardInner: {
-        flexDirection: 'row', alignItems: 'center',
-        padding: Theme.spacing.md, gap: Theme.spacing.md,
-    },
-    typeIcon: {
-        width: 44, height: 44, borderRadius: 12,
-        alignItems: 'center', justifyContent: 'center',
-    },
-    listInfo: { flex: 1 },
-    listName: { fontSize: 16, fontWeight: '700', color: Theme.colors.text, marginBottom: 2 },
-    listMeta: { fontSize: 12, color: Theme.colors.textSecondary },
-    actionBtns: { flexDirection: 'row', gap: Theme.spacing.md, alignItems: 'center' },
-    emptyContainer: {
-        flex: 1, alignItems: 'center', justifyContent: 'center',
-        padding: Theme.spacing.xl, gap: Theme.spacing.md,
-    },
-    emptyTitle: { fontSize: 20, fontWeight: '800', color: Theme.colors.text },
-    emptySubtitle: { fontSize: 14, color: Theme.colors.textSecondary, textAlign: 'center' },
-    createBtn: {
-        flexDirection: 'row', alignItems: 'center', gap: 8,
-        backgroundColor: Theme.colors.primary,
-        paddingHorizontal: Theme.spacing.xl, paddingVertical: Theme.spacing.md,
-        borderRadius: Theme.borderRadius.lg, marginTop: Theme.spacing.md,
-    },
-    createBtnText: { color: '#FFF', fontWeight: '800', fontSize: 16 },
-    fab: { position: 'absolute', bottom: 32, right: 24 },
-    fabBtn: {
-        width: 56, height: 56, borderRadius: 28,
-        backgroundColor: Theme.colors.primary,
-        alignItems: 'center', justifyContent: 'center',
-        shadowColor: Theme.colors.primary, shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.4, shadowRadius: 8, elevation: 8,
-    },
-    modalOverlay: {
-        flex: 1, backgroundColor: 'rgba(0,0,0,0.7)',
-        justifyContent: 'flex-end',
-    },
-    modalSheet: {
-        backgroundColor: '#1A1A2E',
-        borderTopLeftRadius: 28, borderTopRightRadius: 28,
-        padding: Theme.spacing.lg,
-        paddingBottom: 40,
-        borderTopWidth: 1, borderTopColor: Theme.colors.surfaceBorder,
-    },
-    modalTitle: {
-        fontSize: 20, fontWeight: '900', color: Theme.colors.text,
-        marginBottom: Theme.spacing.lg, textAlign: 'center',
-    },
-    fieldLabel: {
-        fontSize: 13, color: Theme.colors.textSecondary, fontWeight: '600',
-        marginBottom: 6, marginTop: Theme.spacing.md,
-    },
-    modalInput: {
-        backgroundColor: Theme.colors.surface, color: Theme.colors.text,
-        borderRadius: Theme.borderRadius.md, padding: Theme.spacing.md,
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder, fontSize: 15,
-        minHeight: 52,
-    },
-    modalTextArea: { minHeight: 120, maxHeight: 200 },
-    typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-    typeChip: {
-        flexDirection: 'row', alignItems: 'center', gap: 4,
-        paddingHorizontal: 12, paddingVertical: 8,
-        borderRadius: 20, borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
-        backgroundColor: Theme.colors.surface,
-    },
-    typeChipText: { fontSize: 13, color: Theme.colors.textSecondary, fontWeight: '600' },
-    modalBtns: { flexDirection: 'row', gap: Theme.spacing.md, marginTop: Theme.spacing.xl },
-    modalCancelBtn: {
-        flex: 1, padding: Theme.spacing.md, borderRadius: Theme.borderRadius.md,
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder, alignItems: 'center',
-    },
-    modalCancelText: { color: Theme.colors.textSecondary, fontWeight: '700' },
-    modalSaveBtn: {
-        flex: 1, padding: Theme.spacing.md, borderRadius: Theme.borderRadius.md,
-        backgroundColor: Theme.colors.primary, alignItems: 'center',
-    },
-    modalSaveText: { color: '#FFF', fontWeight: '800' },
-});

@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Animated, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import { Theme } from '../../core/Theme';
+import { useTheme } from '../../store/ThemeContext';
+import { AppTheme } from '../../core/Theme';
 import { GlassCard } from '../../components/GlassCard';
 
 type IdeaMode = 'app' | 'my';
@@ -22,6 +23,8 @@ interface Idea {
 
 export default function IdeaGeneratorScreen({ navigation }: any) {
     const { t } = useTranslation();
+    const { theme } = useTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const [mode, setMode] = useState<IdeaMode>('app');
     const [moodFilter, setMoodFilter] = useState<Mood>('all');
     const [locationFilter, setLocationFilter] = useState<Location>('all');
@@ -138,7 +141,7 @@ export default function IdeaGeneratorScreen({ navigation }: any) {
                     accessibilityLabel="Geri"
                     accessibilityRole="button"
                 >
-                    <Ionicons name="chevron-back" size={26} color={Theme.colors.text} />
+                    <Ionicons name="chevron-back" size={26} color={theme.colors.text} />
                 </TouchableOpacity>
                 <View style={styles.headerTitleContainer}>
                     <Text style={styles.title}>{t('tools.idea.title')}</Text>
@@ -175,7 +178,7 @@ export default function IdeaGeneratorScreen({ navigation }: any) {
                 <View style={styles.customContainer}>
                     <View style={styles.inputRow}>
                         <View style={styles.inputWrapper}>
-                             <Text style={{color: Theme.colors.textSecondary, marginBottom: 5, fontSize: 12}}>{t('tools.idea.add_label', 'New Idea:')}</Text>
+                             <Text style={{color: theme.colors.textSecondary, marginBottom: 5, fontSize: 12}}>{t('tools.idea.add_label', 'New Idea:')}</Text>
                              <TextInput
                                 style={styles.textInput}
                                 value={newIdeaText}
@@ -197,7 +200,7 @@ export default function IdeaGeneratorScreen({ navigation }: any) {
                                 <View key={idx} style={styles.myIdeaItem}>
                                     <Text style={styles.myIdeaItemText} numberOfLines={1}>{item.text}</Text>
                                     <TouchableOpacity onPress={() => deleteIdea(idx)}>
-                                        <Ionicons name="trash-outline" size={20} color={Theme.colors.error} />
+                                        <Ionicons name="trash-outline" size={20} color={theme.colors.error} />
                                     </TouchableOpacity>
                                 </View>
                             ))
@@ -242,49 +245,51 @@ export default function IdeaGeneratorScreen({ navigation }: any) {
     );
 }
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: Theme.colors.background, padding: Theme.spacing.lg },
+function createStyles(theme: AppTheme) {
+    return StyleSheet.create({
+    container: { flex: 1, backgroundColor: theme.colors.background, padding: theme.spacing.lg },
     header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
     backBtn: {
         width: 44, height: 44, borderRadius: 22,
-        backgroundColor: Theme.colors.surface,
+        backgroundColor: theme.colors.surface,
         alignItems: 'center', justifyContent: 'center',
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
+        borderWidth: 1, borderColor: theme.colors.surfaceBorder,
     },
     headerTitleContainer: { alignItems: 'center' },
-    title: { fontSize: 24, fontWeight: '900', color: Theme.colors.text },
-    subtitle: { fontSize: 12, color: Theme.colors.textSecondary, marginTop: 4 },
+    title: { fontSize: 24, fontWeight: '900', color: theme.colors.text },
+    subtitle: { fontSize: 12, color: theme.colors.textSecondary, marginTop: 4 },
     modeContainer: { flexDirection: 'row', justifyContent: 'center', marginBottom: 20, gap: 10 },
     modeBtn: { padding: 10, borderRadius: 20, borderWidth: 1, borderColor: '#333' },
-    modeBtnActive: { backgroundColor: Theme.colors.primary, borderColor: Theme.colors.primary },
-    modeText: { color: Theme.colors.textSecondary, fontWeight: '600' },
+    modeBtnActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+    modeText: { color: theme.colors.textSecondary, fontWeight: '600' },
     modeTextActive: { color: '#FFF' },
     filtersContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 20, alignItems: 'center' },
     filterLabel: { color: '#888', marginRight: 5 },
     filterText: { color: '#555', padding: 5, borderRadius: 10 },
-    filterActive: { color: Theme.colors.primary, fontWeight: 'bold' },
+    filterActive: { color: theme.colors.primary, fontWeight: 'bold' },
     customContainer: { marginBottom: 20, height: 180 },
     inputRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 10, marginBottom: 15 },
     inputWrapper: { flex: 1 },
-    inputCard: { backgroundColor: Theme.colors.surface, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: Theme.colors.surfaceBorder },
-    textInput: { backgroundColor: Theme.colors.surface, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: Theme.colors.surfaceBorder, color: Theme.colors.text, fontSize: 14 },
-    addBtn: { backgroundColor: Theme.colors.primary, width: 50, height: 50, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+    inputCard: { backgroundColor: theme.colors.surface, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: theme.colors.surfaceBorder },
+    textInput: { backgroundColor: theme.colors.surface, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: theme.colors.surfaceBorder, color: theme.colors.text, fontSize: 14 },
+    addBtn: { backgroundColor: theme.colors.primary, width: 50, height: 50, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
     myIdeasList: { flex: 1 },
     myIdeaItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.05)', padding: 10, borderRadius: 8, marginBottom: 5 },
-    myIdeaItemText: { color: Theme.colors.text, fontSize: 14, flex: 1, marginRight: 10 },
-    emptyText: { color: Theme.colors.textSecondary, textAlign: 'center', marginTop: 20, fontStyle: 'italic' },
+    myIdeaItemText: { color: theme.colors.text, fontSize: 14, flex: 1, marginRight: 10 },
+    emptyText: { color: theme.colors.textSecondary, textAlign: 'center', marginTop: 20, fontStyle: 'italic' },
     resultCard: { minHeight: 180, justifyContent: 'center', alignItems: 'center', padding: 20, marginBottom: 30, overflow: 'hidden' },
-    ideaText: { fontSize: 24, color: Theme.colors.text, textAlign: 'center', fontWeight: 'bold' },
+    ideaText: { fontSize: 24, color: theme.colors.text, textAlign: 'center', fontWeight: 'bold' },
     ideaTextBlur: { color: '#A0A0A0', opacity: 0.8 }, 
     badge: { backgroundColor: '#FFD60A', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, marginBottom: 12 },
     badgeText: { color: '#000', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
-    generateBtn: { backgroundColor: Theme.colors.primary, padding: 18, borderRadius: 15, alignItems: 'center', marginBottom: 30 },
+    generateBtn: { backgroundColor: theme.colors.primary, padding: 18, borderRadius: 15, alignItems: 'center', marginBottom: 30 },
     generateBtnText: { color: '#FFF', fontSize: 18, fontWeight: '800' },
     feedbackContainer: { alignItems: 'center' },
-    feedbackLabel: { color: Theme.colors.textSecondary, marginBottom: 10 },
+    feedbackLabel: { color: theme.colors.textSecondary, marginBottom: 10 },
     feedbackBtns: { flexDirection: 'row', gap: 20 },
     fBtn: { flexDirection: 'row', alignItems: 'center', padding: 10, borderRadius: 10, gap: 5, minWidth: 80, justifyContent: 'center' },
-    fBtnYes: { backgroundColor: Theme.colors.success },
-    fBtnNo: { backgroundColor: Theme.colors.error },
+    fBtnYes: { backgroundColor: theme.colors.success },
+    fBtnNo: { backgroundColor: theme.colors.error },
     fBtnText: { color: '#FFF', fontWeight: 'bold' }
-});
+    });
+}

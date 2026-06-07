@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import {
     View, Text, StyleSheet, TouchableOpacity,
     Animated, ScrollView,
@@ -8,7 +8,8 @@ import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
-import { Theme } from '../../core/Theme';
+import { useTheme } from '../../store/ThemeContext';
+import { AppTheme } from '../../core/Theme';
 import { GlassCard } from '../../components/GlassCard';
 
 type Category = 'physical' | 'mindfulness' | 'focus' | 'social' | 'mental' | 'health';
@@ -37,6 +38,8 @@ function todayKey() {
 
 export default function QuickChallengeScreen({ navigation }: any) {
     const { t } = useTranslation();
+    const { theme } = useTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const challengesList = t('tools.challenge.list', { returnObjects: true }) as Challenge[];
 
     const [challenge, setChallenge] = useState<Challenge | null>(null);
@@ -169,7 +172,7 @@ export default function QuickChallengeScreen({ navigation }: any) {
                         accessibilityLabel="Back"
                         accessibilityRole="button"
                     >
-                        <Ionicons name="chevron-back" size={26} color={Theme.colors.text} />
+                        <Ionicons name="chevron-back" size={26} color={theme.colors.text} />
                     </TouchableOpacity>
 
                     <View style={styles.headerCenter}>
@@ -215,12 +218,12 @@ export default function QuickChallengeScreen({ navigation }: any) {
                                             {timerLeft}s
                                         </Text>
                                         <TouchableOpacity onPress={stopTimer} style={styles.timerStop}>
-                                            <Ionicons name="stop-circle-outline" size={18} color={Theme.colors.textSecondary} />
+                                            <Ionicons name="stop-circle-outline" size={18} color={theme.colors.textSecondary} />
                                         </TouchableOpacity>
                                     </>
                                 ) : (
                                     <View style={styles.timerDoneRow}>
-                                        <Ionicons name="checkmark-circle" size={18} color={Theme.colors.success} />
+                                        <Ionicons name="checkmark-circle" size={18} color={theme.colors.success} />
                                         <Text style={styles.timerDoneText}>{t('tools.challenge.timer_done')}</Text>
                                     </View>
                                 )}
@@ -232,11 +235,11 @@ export default function QuickChallengeScreen({ navigation }: any) {
                 {/* Timer start button (for timed challenges) */}
                 {challenge && !isShuffling && challenge.duration > 0 && !timerActive && timerLeft === 0 && (
                     <TouchableOpacity
-                        style={[styles.timerBtn, { borderColor: catMeta?.color ?? Theme.colors.primary }]}
+                        style={[styles.timerBtn, { borderColor: catMeta?.color ?? theme.colors.primary }]}
                         onPress={() => startTimer(challenge.duration)}
                     >
-                        <Ionicons name="timer-outline" size={18} color={catMeta?.color ?? Theme.colors.primary} />
-                        <Text style={[styles.timerBtnText, { color: catMeta?.color ?? Theme.colors.primary }]}>
+                        <Ionicons name="timer-outline" size={18} color={catMeta?.color ?? theme.colors.primary} />
+                        <Text style={[styles.timerBtnText, { color: catMeta?.color ?? theme.colors.primary }]}>
                             {t('tools.challenge.timer_start')} ({challenge.duration}s)
                         </Text>
                     </TouchableOpacity>
@@ -291,9 +294,10 @@ export default function QuickChallengeScreen({ navigation }: any) {
     );
 }
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: Theme.colors.background },
-    scroll: { padding: Theme.spacing.lg, paddingBottom: Theme.spacing.xxl },
+function createStyles(theme: AppTheme) {
+    return StyleSheet.create({
+    container: { flex: 1, backgroundColor: theme.colors.background },
+    scroll: { padding: theme.spacing.lg, paddingBottom: theme.spacing.xxl },
 
     header: {
         flexDirection: 'row', alignItems: 'center',
@@ -302,13 +306,13 @@ const styles = StyleSheet.create({
     },
     backBtn: {
         width: 44, height: 44, borderRadius: 22,
-        backgroundColor: Theme.colors.surface,
+        backgroundColor: theme.colors.surface,
         alignItems: 'center', justifyContent: 'center',
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
+        borderWidth: 1, borderColor: theme.colors.surfaceBorder,
     },
     headerCenter: { alignItems: 'center', flex: 1, paddingHorizontal: 8 },
-    title: { fontSize: 22, fontWeight: '900', color: Theme.colors.text },
-    subtitle: { fontSize: 11, color: Theme.colors.textSecondary, marginTop: 3, textAlign: 'center' },
+    title: { fontSize: 22, fontWeight: '900', color: theme.colors.text },
+    subtitle: { fontSize: 11, color: theme.colors.textSecondary, marginTop: 3, textAlign: 'center' },
 
     streakBadge: {
         width: 44, alignItems: 'center',
@@ -316,14 +320,14 @@ const styles = StyleSheet.create({
         borderRadius: 10, paddingVertical: 6,
         borderWidth: 1, borderColor: 'rgba(99,102,241,0.25)',
     },
-    streakNum: { fontSize: 18, fontWeight: '900', color: Theme.colors.primary },
-    streakLabel: { fontSize: 9, color: Theme.colors.textSecondary, fontWeight: '600', letterSpacing: 0.5 },
+    streakNum: { fontSize: 18, fontWeight: '900', color: theme.colors.primary },
+    streakLabel: { fontSize: 9, color: theme.colors.textSecondary, fontWeight: '600', letterSpacing: 0.5 },
 
     card: {
         minHeight: 200, justifyContent: 'center', alignItems: 'center',
         padding: 28, marginBottom: 16,
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
-        gap: Theme.spacing.md,
+        borderWidth: 1, borderColor: theme.colors.surfaceBorder,
+        gap: theme.spacing.md,
     },
 
     categoryChip: {
@@ -334,17 +338,17 @@ const styles = StyleSheet.create({
     categoryText: { fontSize: 12, fontWeight: '700', letterSpacing: 0.5 },
 
     challengeText: {
-        fontSize: 26, color: Theme.colors.text,
+        fontSize: 26, color: theme.colors.text,
         textAlign: 'center', fontWeight: '800', lineHeight: 34,
     },
     shufflingText: { color: '#FF9500', opacity: 0.8 },
 
     timerRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 },
-    timerNum: { fontSize: 32, fontWeight: '900', color: Theme.colors.primary },
+    timerNum: { fontSize: 32, fontWeight: '900', color: theme.colors.primary },
     timerNumUrgent: { color: '#FF6B6B' },
     timerStop: { padding: 4 },
     timerDoneRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    timerDoneText: { color: Theme.colors.success, fontWeight: '700', fontSize: 15 },
+    timerDoneText: { color: theme.colors.success, fontWeight: '700', fontSize: 15 },
 
     timerBtn: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
@@ -355,10 +359,10 @@ const styles = StyleSheet.create({
     timerBtnText: { fontWeight: '700', fontSize: 14 },
 
     generateBtn: {
-        backgroundColor: Theme.colors.primary,
+        backgroundColor: theme.colors.primary,
         padding: 18, borderRadius: 16,
         alignItems: 'center', marginBottom: 24,
-        shadowColor: Theme.colors.primary,
+        shadowColor: theme.colors.primary,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.35, shadowRadius: 12,
         elevation: 6,
@@ -367,14 +371,14 @@ const styles = StyleSheet.create({
     generateBtnText: { color: '#FFF', fontSize: 18, fontWeight: '900', letterSpacing: 0.5 },
 
     feedbackContainer: { alignItems: 'center', marginBottom: 28 },
-    feedbackLabel: { color: Theme.colors.textSecondary, marginBottom: 14, fontSize: 15 },
+    feedbackLabel: { color: theme.colors.textSecondary, marginBottom: 14, fontSize: 15 },
     feedbackBtns: { flexDirection: 'row', gap: 16 },
     fBtn: {
         flexDirection: 'row', alignItems: 'center',
         paddingVertical: 14, paddingHorizontal: 20,
         borderRadius: 14, gap: 8, minWidth: 110, justifyContent: 'center',
     },
-    fBtnYes: { backgroundColor: Theme.colors.success },
+    fBtnYes: { backgroundColor: theme.colors.success },
     fBtnSkip: { backgroundColor: '#FF9500' },
     fBtnText: { color: '#FFF', fontWeight: '800', fontSize: 15 },
 
@@ -385,4 +389,5 @@ const styles = StyleSheet.create({
     },
     legendItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
     legendText: { fontSize: 11, fontWeight: '600' },
-});
+    });
+}

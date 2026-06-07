@@ -19,9 +19,9 @@ import MoviePickerScreen from '../screens/tools/MoviePickerScreen';
 import TournamentScreen from '../screens/tools/TournamentScreen';
 import OrderTeamScreen from '../screens/tools/OrderTeamScreen';
 import SavedListsScreen from '../screens/lists/SavedListsScreen';
-import { Theme } from '../core/Theme';
 import { Ionicons } from '@expo/vector-icons';
 import { View, Platform } from 'react-native';
+import { useTheme } from '../store/ThemeContext';
 
 export const navigationRef = createNavigationContainerRef<any>();
 
@@ -42,6 +42,7 @@ export const linking = {
 };
 
 function MainTabNavigator() {
+    const { theme } = useTheme();
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
@@ -66,12 +67,12 @@ function MainTabNavigator() {
                         </View>
                     );
                 },
-                tabBarActiveTintColor: Theme.colors.primary,
-                tabBarInactiveTintColor: Theme.colors.textSecondary,
+                tabBarActiveTintColor: theme.colors.primary,
+                tabBarInactiveTintColor: theme.colors.textSecondary,
                 tabBarStyle: {
-                    backgroundColor: Theme.colors.background,
+                    backgroundColor: theme.colors.background,
                     borderTopWidth: 1,
-                    borderTopColor: Theme.colors.surfaceBorder,
+                    borderTopColor: theme.colors.surfaceBorder,
                     height: Platform.OS === 'ios' ? 88 : 68,
                     paddingBottom: Platform.OS === 'ios' ? 30 : 12,
                     paddingTop: 12,

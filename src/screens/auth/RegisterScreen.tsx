@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     View, Text, TextInput, TouchableOpacity, StyleSheet,
     ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView,
@@ -8,7 +8,8 @@ import { useTranslation } from 'react-i18next';
 import { MotiView } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../storage/supabase';
-import { Theme } from '../../core/Theme';
+import { useTheme } from '../../store/ThemeContext';
+import { AppTheme } from '../../core/Theme';
 
 function mapAuthError(msg: string, t: (k: string) => string): string {
     if (msg.includes('User already registered')) return t('auth.error_already_registered');
@@ -18,8 +19,56 @@ function mapAuthError(msg: string, t: (k: string) => string): string {
     return msg;
 }
 
+function createStyles(theme: AppTheme) {
+    return StyleSheet.create({
+        container: { flex: 1, backgroundColor: theme.colors.background },
+        backBtn: { padding: theme.spacing.md, marginLeft: theme.spacing.sm },
+        inner: { flex: 1, justifyContent: 'center', padding: theme.spacing.lg, paddingTop: 0 },
+        logoArea: { alignItems: 'center', marginBottom: theme.spacing.xl },
+        logoCircle: {
+            width: 80, height: 80, borderRadius: 40,
+            backgroundColor: theme.colors.surface,
+            borderWidth: 1, borderColor: theme.colors.surfaceBorder,
+            alignItems: 'center', justifyContent: 'center',
+            marginBottom: theme.spacing.md,
+        },
+        appName: { fontSize: 18, fontWeight: '900', color: theme.colors.text, letterSpacing: 3 },
+        title: { fontSize: 28, fontWeight: '800', color: theme.colors.text, marginBottom: theme.spacing.xl },
+        input: {
+            backgroundColor: theme.colors.surface, color: theme.colors.text,
+            padding: theme.spacing.md, borderRadius: theme.borderRadius.md,
+            marginBottom: theme.spacing.md,
+            borderWidth: 1, borderColor: theme.colors.surfaceBorder,
+            fontSize: 16, minHeight: 52,
+        },
+        pwWrapper: {
+            flexDirection: 'row', alignItems: 'center',
+            backgroundColor: theme.colors.surface,
+            borderRadius: theme.borderRadius.md,
+            borderWidth: 1, borderColor: theme.colors.surfaceBorder,
+            marginBottom: theme.spacing.xs, minHeight: 52,
+        },
+        pwInput: { flex: 1, color: theme.colors.text, padding: theme.spacing.md, fontSize: 16 },
+        eyeBtn: { padding: theme.spacing.md },
+        pwHint: { color: theme.colors.textSecondary, fontSize: 12, marginBottom: theme.spacing.md },
+        errorText: { color: theme.colors.error, marginBottom: theme.spacing.md, fontSize: 14, fontWeight: '500' },
+        button: {
+            backgroundColor: theme.colors.secondary,
+            borderRadius: theme.borderRadius.md,
+            alignItems: 'center', justifyContent: 'center',
+            minHeight: 52, marginTop: theme.spacing.sm,
+        },
+        buttonDisabled: { opacity: 0.6 },
+        buttonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+        link: { marginTop: theme.spacing.xl, alignItems: 'center', minHeight: 44, justifyContent: 'center' },
+        linkText: { color: theme.colors.primary, fontSize: 15, fontWeight: '600' },
+    });
+}
+
 export default function RegisterScreen({ navigation }: any) {
     const { t } = useTranslation();
+    const { theme } = useTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -55,7 +104,7 @@ export default function RegisterScreen({ navigation }: any) {
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
                 <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
                     <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-                        <Ionicons name="chevron-back" size={24} color={Theme.colors.text} />
+                        <Ionicons name="chevron-back" size={24} color={theme.colors.text} />
                     </TouchableOpacity>
 
                     <MotiView
@@ -66,7 +115,7 @@ export default function RegisterScreen({ navigation }: any) {
                     >
                         <View style={styles.logoArea}>
                             <View style={styles.logoCircle}>
-                                <Ionicons name="person-add" size={36} color={Theme.colors.secondary} />
+                                <Ionicons name="person-add" size={36} color={theme.colors.secondary} />
                             </View>
                             <Text style={styles.appName}>PICK FOR ME</Text>
                         </View>
@@ -76,7 +125,7 @@ export default function RegisterScreen({ navigation }: any) {
                         <TextInput
                             style={styles.input}
                             placeholder={t('register.email')}
-                            placeholderTextColor={Theme.colors.textSecondary}
+                            placeholderTextColor={theme.colors.textSecondary}
                             value={email}
                             onChangeText={setEmail}
                             autoCapitalize="none"
@@ -89,7 +138,7 @@ export default function RegisterScreen({ navigation }: any) {
                             <TextInput
                                 style={styles.pwInput}
                                 placeholder={t('register.password')}
-                                placeholderTextColor={Theme.colors.textSecondary}
+                                placeholderTextColor={theme.colors.textSecondary}
                                 value={password}
                                 onChangeText={setPassword}
                                 secureTextEntry={!showPw}
@@ -101,7 +150,7 @@ export default function RegisterScreen({ navigation }: any) {
                                 <Ionicons
                                     name={showPw ? 'eye-off-outline' : 'eye-outline'}
                                     size={20}
-                                    color={Theme.colors.textSecondary}
+                                    color={theme.colors.textSecondary}
                                 />
                             </TouchableOpacity>
                         </View>
@@ -137,50 +186,3 @@ export default function RegisterScreen({ navigation }: any) {
         </SafeAreaView>
     );
 }
-
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: Theme.colors.background },
-    backBtn: { padding: Theme.spacing.md, marginLeft: Theme.spacing.sm },
-    inner: { flex: 1, justifyContent: 'center', padding: Theme.spacing.lg, paddingTop: 0 },
-    logoArea: { alignItems: 'center', marginBottom: Theme.spacing.xl },
-    logoCircle: {
-        width: 80, height: 80, borderRadius: 40,
-        backgroundColor: Theme.colors.surface,
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
-        alignItems: 'center', justifyContent: 'center',
-        marginBottom: Theme.spacing.md,
-    },
-    appName: { fontSize: 18, fontWeight: '900', color: Theme.colors.text, letterSpacing: 3 },
-    title: { fontSize: 28, fontWeight: '800', color: Theme.colors.text, marginBottom: Theme.spacing.xl },
-    input: {
-        backgroundColor: Theme.colors.surface,
-        color: Theme.colors.text,
-        padding: Theme.spacing.md,
-        borderRadius: Theme.borderRadius.md,
-        marginBottom: Theme.spacing.md,
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
-        fontSize: 16, minHeight: 52,
-    },
-    pwWrapper: {
-        flexDirection: 'row', alignItems: 'center',
-        backgroundColor: Theme.colors.surface,
-        borderRadius: Theme.borderRadius.md,
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
-        marginBottom: Theme.spacing.xs,
-        minHeight: 52,
-    },
-    pwInput: { flex: 1, color: Theme.colors.text, padding: Theme.spacing.md, fontSize: 16 },
-    eyeBtn: { padding: Theme.spacing.md },
-    pwHint: { color: Theme.colors.textSecondary, fontSize: 12, marginBottom: Theme.spacing.md },
-    errorText: { color: Theme.colors.error, marginBottom: Theme.spacing.md, fontSize: 14, fontWeight: '500' },
-    button: {
-        backgroundColor: Theme.colors.secondary,
-        borderRadius: Theme.borderRadius.md,
-        alignItems: 'center', justifyContent: 'center',
-        minHeight: 52, marginTop: Theme.spacing.sm,
-    },
-    buttonDisabled: { opacity: 0.6 },
-    buttonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-    link: { marginTop: Theme.spacing.xl, alignItems: 'center', minHeight: 44, justifyContent: 'center' },
-    linkText: { color: Theme.colors.primary, fontSize: 15, fontWeight: '600' },
-});

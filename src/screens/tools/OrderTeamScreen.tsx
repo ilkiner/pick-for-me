@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView,
 } from 'react-native';
@@ -8,19 +8,21 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { MotiView } from 'moti';
 import { PickEngine } from '../../core/PickEngine';
-import { Theme } from '../../core/Theme';
+import { useTheme } from '../../store/ThemeContext';
+import { AppTheme } from '../../core/Theme';
 import { GlassCard } from '../../components/GlassCard';
 import { SavedList } from '../../storage/savedLists';
 
 type Mode = 'order' | 'teams';
 
-const TEAM_COLORS = [
-    Theme.colors.primary, Theme.colors.secondary, Theme.colors.accent,
-    Theme.colors.error, Theme.colors.success, '#FF9500', '#FF3B30', '#AF52DE',
-];
-
 export default function OrderTeamScreen({ navigation, route }: any) {
     const { t } = useTranslation();
+    const { theme } = useTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
+    const TEAM_COLORS = useMemo(() => [
+        theme.colors.primary, theme.colors.secondary, theme.colors.accent,
+        theme.colors.error, theme.colors.success, '#FF9500', '#FF3B30', '#AF52DE',
+    ], [theme]);
     const [mode, setMode] = useState<Mode>('order');
     const [items, setItems] = useState<string[]>([]);
     const [newItem, setNewItem] = useState('');
@@ -78,7 +80,7 @@ export default function OrderTeamScreen({ navigation, route }: any) {
                     accessibilityRole="button"
                     accessibilityLabel={t('common.back', 'Geri')}
                 >
-                    <Ionicons name="chevron-back" size={26} color={Theme.colors.text} />
+                    <Ionicons name="chevron-back" size={26} color={theme.colors.text} />
                 </TouchableOpacity>
                 <View style={styles.headerCenter}>
                     <Text style={styles.title}>{t('tools.orderteam.title', 'Sıra & Takım')}</Text>
@@ -94,7 +96,7 @@ export default function OrderTeamScreen({ navigation, route }: any) {
                         style={[styles.modeBtn, mode === 'order' && styles.modeBtnActive]}
                         onPress={() => { setMode('order'); setHasResult(false); }}
                     >
-                        <Ionicons name="list-outline" size={18} color={mode === 'order' ? '#FFF' : Theme.colors.textSecondary} />
+                        <Ionicons name="list-outline" size={18} color={mode === 'order' ? '#FFF' : theme.colors.textSecondary} />
                         <Text style={[styles.modeBtnText, mode === 'order' && styles.modeBtnTextActive]}>
                             {t('tools.orderteam.mode_order', 'Sırala')}
                         </Text>
@@ -103,7 +105,7 @@ export default function OrderTeamScreen({ navigation, route }: any) {
                         style={[styles.modeBtn, mode === 'teams' && styles.modeBtnActive]}
                         onPress={() => { setMode('teams'); setHasResult(false); }}
                     >
-                        <Ionicons name="people-outline" size={18} color={mode === 'teams' ? '#FFF' : Theme.colors.textSecondary} />
+                        <Ionicons name="people-outline" size={18} color={mode === 'teams' ? '#FFF' : theme.colors.textSecondary} />
                         <Text style={[styles.modeBtnText, mode === 'teams' && styles.modeBtnTextActive]}>
                             {t('tools.orderteam.mode_teams', 'Takımlar')}
                         </Text>
@@ -128,7 +130,7 @@ export default function OrderTeamScreen({ navigation, route }: any) {
 
                 {/* Load + Input */}
                 <TouchableOpacity style={styles.loadListBtn} onPress={loadFromSavedLists}>
-                    <Ionicons name="bookmark-outline" size={16} color={Theme.colors.primary} />
+                    <Ionicons name="bookmark-outline" size={16} color={theme.colors.primary} />
                     <Text style={styles.loadListText}>{t('lists.load', 'Kayıtlı listeden yükle')}</Text>
                 </TouchableOpacity>
 
@@ -139,7 +141,7 @@ export default function OrderTeamScreen({ navigation, route }: any) {
                         onChangeText={setNewItem}
                         onSubmitEditing={addItem}
                         placeholder={t('tools.orderteam.add_person', 'Kişi/öğe ekle...')}
-                        placeholderTextColor={Theme.colors.textSecondary}
+                        placeholderTextColor={theme.colors.textSecondary}
                     />
                     <TouchableOpacity style={styles.addBtn} onPress={addItem} accessibilityRole="button">
                         <Ionicons name="add" size={26} color="#FFF" />
@@ -151,7 +153,7 @@ export default function OrderTeamScreen({ navigation, route }: any) {
                         <View key={idx} style={styles.chip}>
                             <Text style={styles.chipText} numberOfLines={1}>{item}</Text>
                             <TouchableOpacity onPress={() => removeItem(idx)} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
-                                <Ionicons name="close" size={14} color={Theme.colors.textSecondary} />
+                                <Ionicons name="close" size={14} color={theme.colors.textSecondary} />
                             </TouchableOpacity>
                         </View>
                     ))}
@@ -213,91 +215,93 @@ export default function OrderTeamScreen({ navigation, route }: any) {
     );
 }
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: Theme.colors.background },
+function createStyles(theme: AppTheme) {
+    return StyleSheet.create({
+    container: { flex: 1, backgroundColor: theme.colors.background },
     header: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingHorizontal: Theme.spacing.md, paddingVertical: Theme.spacing.md,
+        paddingHorizontal: theme.spacing.md, paddingVertical: theme.spacing.md,
     },
     backBtn: {
         width: 44, height: 44, borderRadius: 22,
-        backgroundColor: Theme.colors.surface, alignItems: 'center', justifyContent: 'center',
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
+        backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center',
+        borderWidth: 1, borderColor: theme.colors.surfaceBorder,
     },
     headerCenter: { alignItems: 'center', flex: 1 },
-    title: { fontSize: 22, fontWeight: '900', color: Theme.colors.text },
-    subtitle: { fontSize: 12, color: Theme.colors.textSecondary, marginTop: 2 },
-    content: { padding: Theme.spacing.md, paddingBottom: 60 },
+    title: { fontSize: 22, fontWeight: '900', color: theme.colors.text },
+    subtitle: { fontSize: 12, color: theme.colors.textSecondary, marginTop: 2 },
+    content: { padding: theme.spacing.md, paddingBottom: 60 },
     modeRow: {
-        flexDirection: 'row', gap: Theme.spacing.sm,
-        marginBottom: Theme.spacing.md,
+        flexDirection: 'row', gap: theme.spacing.sm,
+        marginBottom: theme.spacing.md,
     },
     modeBtn: {
         flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-        padding: Theme.spacing.md, borderRadius: Theme.borderRadius.lg,
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder, backgroundColor: Theme.colors.surface,
+        padding: theme.spacing.md, borderRadius: theme.borderRadius.lg,
+        borderWidth: 1, borderColor: theme.colors.surfaceBorder, backgroundColor: theme.colors.surface,
     },
-    modeBtnActive: { backgroundColor: Theme.colors.primary, borderColor: Theme.colors.primary },
-    modeBtnText: { color: Theme.colors.textSecondary, fontWeight: '700', fontSize: 14 },
+    modeBtnActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+    modeBtnText: { color: theme.colors.textSecondary, fontWeight: '700', fontSize: 14 },
     modeBtnTextActive: { color: '#FFF' },
     teamCountRow: {
-        flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: Theme.spacing.md, flexWrap: 'wrap',
+        flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: theme.spacing.md, flexWrap: 'wrap',
     },
-    teamCountLabel: { color: Theme.colors.textSecondary, fontSize: 13, fontWeight: '600', marginRight: 4 },
+    teamCountLabel: { color: theme.colors.textSecondary, fontSize: 13, fontWeight: '600', marginRight: 4 },
     countChip: {
         width: 40, height: 40, borderRadius: 20,
-        backgroundColor: Theme.colors.surface, alignItems: 'center', justifyContent: 'center',
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
+        backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center',
+        borderWidth: 1, borderColor: theme.colors.surfaceBorder,
     },
-    countChipActive: { backgroundColor: Theme.colors.primary, borderColor: Theme.colors.primary },
-    countChipText: { color: Theme.colors.textSecondary, fontWeight: '800', fontSize: 14 },
+    countChipActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+    countChipText: { color: theme.colors.textSecondary, fontWeight: '800', fontSize: 14 },
     countChipTextActive: { color: '#FFF' },
     loadListBtn: {
-        flexDirection: 'row', alignItems: 'center', gap: 8, padding: Theme.spacing.md,
-        borderRadius: Theme.borderRadius.md, backgroundColor: 'rgba(99,102,241,0.12)',
-        borderWidth: 1, borderColor: 'rgba(99,102,241,0.3)', marginBottom: Theme.spacing.md,
+        flexDirection: 'row', alignItems: 'center', gap: 8, padding: theme.spacing.md,
+        borderRadius: theme.borderRadius.md, backgroundColor: 'rgba(99,102,241,0.12)',
+        borderWidth: 1, borderColor: 'rgba(99,102,241,0.3)', marginBottom: theme.spacing.md,
     },
-    loadListText: { color: Theme.colors.primary, fontWeight: '700', fontSize: 14 },
-    inputRow: { flexDirection: 'row', gap: Theme.spacing.sm, marginBottom: Theme.spacing.md },
+    loadListText: { color: theme.colors.primary, fontWeight: '700', fontSize: 14 },
+    inputRow: { flexDirection: 'row', gap: theme.spacing.sm, marginBottom: theme.spacing.md },
     input: {
-        flex: 1, backgroundColor: Theme.colors.surface, color: Theme.colors.text,
-        borderRadius: Theme.borderRadius.md, padding: Theme.spacing.md,
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder, fontSize: 15, minHeight: 52,
+        flex: 1, backgroundColor: theme.colors.surface, color: theme.colors.text,
+        borderRadius: theme.borderRadius.md, padding: theme.spacing.md,
+        borderWidth: 1, borderColor: theme.colors.surfaceBorder, fontSize: 15, minHeight: 52,
     },
     addBtn: {
-        width: 52, height: 52, borderRadius: Theme.borderRadius.md,
-        backgroundColor: Theme.colors.primary, alignItems: 'center', justifyContent: 'center',
+        width: 52, height: 52, borderRadius: theme.borderRadius.md,
+        backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center',
     },
-    chipList: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: Theme.spacing.md },
+    chipList: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: theme.spacing.md },
     chip: {
         flexDirection: 'row', alignItems: 'center', gap: 6,
-        backgroundColor: Theme.colors.surface, borderRadius: 20,
+        backgroundColor: theme.colors.surface, borderRadius: 20,
         paddingHorizontal: 12, paddingVertical: 6,
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
+        borderWidth: 1, borderColor: theme.colors.surfaceBorder,
     },
-    chipText: { color: Theme.colors.text, fontSize: 14, maxWidth: 120 },
+    chipText: { color: theme.colors.text, fontSize: 14, maxWidth: 120 },
     goBtn: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-        backgroundColor: Theme.colors.primary, borderRadius: Theme.borderRadius.lg,
-        padding: Theme.spacing.md, marginBottom: Theme.spacing.xl,
+        backgroundColor: theme.colors.primary, borderRadius: theme.borderRadius.lg,
+        padding: theme.spacing.md, marginBottom: theme.spacing.xl,
     },
     goBtnText: { color: '#FFF', fontSize: 18, fontWeight: '800' },
-    resultSection: { marginTop: Theme.spacing.sm },
-    resultTitle: { fontSize: 14, fontWeight: '800', color: Theme.colors.textSecondary, letterSpacing: 2, marginBottom: Theme.spacing.md },
+    resultSection: { marginTop: theme.spacing.sm },
+    resultTitle: { fontSize: 14, fontWeight: '800', color: theme.colors.textSecondary, letterSpacing: 2, marginBottom: theme.spacing.md },
     orderRow: {
-        flexDirection: 'row', alignItems: 'center', padding: Theme.spacing.md,
-        marginBottom: Theme.spacing.sm, borderRadius: Theme.borderRadius.md, gap: Theme.spacing.md,
+        flexDirection: 'row', alignItems: 'center', padding: theme.spacing.md,
+        marginBottom: theme.spacing.sm, borderRadius: theme.borderRadius.md, gap: theme.spacing.md,
     },
     rankBadge: {
         width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(99,102,241,0.2)',
         alignItems: 'center', justifyContent: 'center',
     },
-    rankText: { color: Theme.colors.primary, fontWeight: '900', fontSize: 14 },
-    orderItemText: { color: Theme.colors.text, fontSize: 16, fontWeight: '600', flex: 1 },
+    rankText: { color: theme.colors.primary, fontWeight: '900', fontSize: 14 },
+    orderItemText: { color: theme.colors.text, fontSize: 16, fontWeight: '600', flex: 1 },
     teamCard: {
-        padding: Theme.spacing.md, marginBottom: Theme.spacing.md,
-        borderRadius: Theme.borderRadius.md, borderLeftWidth: 4,
+        padding: theme.spacing.md, marginBottom: theme.spacing.md,
+        borderRadius: theme.borderRadius.md, borderLeftWidth: 4,
     },
     teamTitle: { fontSize: 14, fontWeight: '900', letterSpacing: 1, marginBottom: 8 },
-    memberText: { color: Theme.colors.text, fontSize: 15, paddingVertical: 2 },
-});
+    memberText: { color: theme.colors.text, fontSize: 15, paddingVertical: 2 },
+    });
+}

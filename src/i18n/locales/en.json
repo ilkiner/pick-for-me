@@ -81,6 +81,10 @@
     "settings": {
         "title": "Settings",
         "language": "Language",
+        "theme": "Theme",
+        "theme_dark": "Dark",
+        "theme_light": "Light",
+        "theme_system": "System",
         "go_pro": "Pick For Me Pro",
         "go_pro_desc": "Ad-free, unlimited, premium",
         "pro_active": "Pro Member ✦",

@@ -81,6 +81,10 @@
     "settings": {
         "title": "Ayarlar",
         "language": "Dil",
+        "theme": "Tema",
+        "theme_dark": "Koyu",
+        "theme_light": "Açık",
+        "theme_system": "Sistem",
         "logout": "Çıkış Yap",
         "logout_desc": "Oturumu sonlandır",
         "logout_demo": "Demo modunda zaten giriş yapılmamış durumdasın."
@@ -373,6 +377,10 @@
     "settings": {
         "title": "Ayarlar",
         "language": "Dil",
+        "theme": "Tema",
+        "theme_dark": "Koyu",
+        "theme_light": "Açık",
+        "theme_system": "Sistem",
         "go_pro": "Pick For Me Pro",
         "go_pro_desc": "Reklamsız, sınırsız, premium",
         "pro_active": "Pro Üye ✦",

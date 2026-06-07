@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     View, Text, TextInput, TouchableOpacity, StyleSheet,
     ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView,
@@ -8,7 +8,8 @@ import { useTranslation } from 'react-i18next';
 import { MotiView } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase, isSupabaseConfigured } from '../../storage/supabase';
-import { Theme } from '../../core/Theme';
+import { useTheme } from '../../store/ThemeContext';
+import { AppTheme } from '../../core/Theme';
 
 function mapAuthError(msg: string, t: (k: string) => string): string {
     if (msg.includes('Invalid login credentials')) return t('auth.error_invalid_credentials');
@@ -17,8 +18,64 @@ function mapAuthError(msg: string, t: (k: string) => string): string {
     return msg;
 }
 
+function createStyles(theme: AppTheme) {
+    return StyleSheet.create({
+        container: { flex: 1, backgroundColor: theme.colors.background },
+        inner: { flex: 1, justifyContent: 'center', padding: theme.spacing.lg },
+        logoArea: { alignItems: 'center', marginBottom: theme.spacing.xxl },
+        logoCircle: {
+            width: 80, height: 80, borderRadius: 40,
+            backgroundColor: theme.colors.surface,
+            borderWidth: 1, borderColor: theme.colors.surfaceBorder,
+            alignItems: 'center', justifyContent: 'center',
+            marginBottom: theme.spacing.md,
+        },
+        appName: { fontSize: 18, fontWeight: '900', color: theme.colors.text, letterSpacing: 3 },
+        title: { fontSize: 28, fontWeight: '800', color: theme.colors.text, marginBottom: theme.spacing.xl },
+        demoBox: {
+            flexDirection: 'row', alignItems: 'center', gap: 6,
+            backgroundColor: 'rgba(251,191,36,0.1)',
+            borderRadius: theme.borderRadius.sm,
+            borderWidth: 1, borderColor: 'rgba(251,191,36,0.3)',
+            padding: theme.spacing.sm, marginBottom: theme.spacing.md,
+        },
+        demoText: { flex: 1, color: theme.colors.accent, fontSize: 13, lineHeight: 18 },
+        input: {
+            backgroundColor: theme.colors.surface, color: theme.colors.text,
+            padding: theme.spacing.md, borderRadius: theme.borderRadius.md,
+            marginBottom: theme.spacing.md,
+            borderWidth: 1, borderColor: theme.colors.surfaceBorder,
+            fontSize: 16, minHeight: 52,
+        },
+        pwWrapper: {
+            flexDirection: 'row', alignItems: 'center',
+            backgroundColor: theme.colors.surface,
+            borderRadius: theme.borderRadius.md,
+            borderWidth: 1, borderColor: theme.colors.surfaceBorder,
+            marginBottom: theme.spacing.sm, minHeight: 52,
+        },
+        pwInput: { flex: 1, color: theme.colors.text, padding: theme.spacing.md, fontSize: 16 },
+        eyeBtn: { padding: theme.spacing.md },
+        forgotLink: { alignSelf: 'flex-end', marginBottom: theme.spacing.md, minHeight: 36, justifyContent: 'center' },
+        forgotText: { color: theme.colors.primary, fontSize: 13, fontWeight: '600' },
+        errorText: { color: theme.colors.error, marginBottom: theme.spacing.md, fontSize: 14, fontWeight: '500' },
+        button: {
+            backgroundColor: theme.colors.primary,
+            borderRadius: theme.borderRadius.md,
+            alignItems: 'center', justifyContent: 'center',
+            minHeight: 52, marginTop: theme.spacing.sm,
+        },
+        buttonDisabled: { opacity: 0.6 },
+        buttonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+        link: { marginTop: theme.spacing.xl, alignItems: 'center', minHeight: 44, justifyContent: 'center' },
+        linkText: { color: theme.colors.primary, fontSize: 15, fontWeight: '600' },
+    });
+}
+
 export default function LoginScreen({ navigation }: any) {
     const { t } = useTranslation();
+    const { theme } = useTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -54,7 +111,7 @@ export default function LoginScreen({ navigation }: any) {
                     >
                         <View style={styles.logoArea}>
                             <View style={styles.logoCircle}>
-                                <Ionicons name="shuffle" size={40} color={Theme.colors.primary} />
+                                <Ionicons name="shuffle" size={40} color={theme.colors.primary} />
                             </View>
                             <Text style={styles.appName}>PICK FOR ME</Text>
                         </View>
@@ -63,7 +120,7 @@ export default function LoginScreen({ navigation }: any) {
 
                         {isDemoMode && (
                             <View style={styles.demoBox}>
-                                <Ionicons name="information-circle-outline" size={16} color={Theme.colors.accent} />
+                                <Ionicons name="information-circle-outline" size={16} color={theme.colors.accent} />
                                 <Text style={styles.demoText}>{t('auth.demo_mode_hint')}</Text>
                             </View>
                         )}
@@ -71,7 +128,7 @@ export default function LoginScreen({ navigation }: any) {
                         <TextInput
                             style={styles.input}
                             placeholder={t('login.email')}
-                            placeholderTextColor={Theme.colors.textSecondary}
+                            placeholderTextColor={theme.colors.textSecondary}
                             value={email}
                             onChangeText={setEmail}
                             autoCapitalize="none"
@@ -84,7 +141,7 @@ export default function LoginScreen({ navigation }: any) {
                             <TextInput
                                 style={styles.pwInput}
                                 placeholder={t('login.password')}
-                                placeholderTextColor={Theme.colors.textSecondary}
+                                placeholderTextColor={theme.colors.textSecondary}
                                 value={password}
                                 onChangeText={setPassword}
                                 secureTextEntry={!showPw}
@@ -96,7 +153,7 @@ export default function LoginScreen({ navigation }: any) {
                                 <Ionicons
                                     name={showPw ? 'eye-off-outline' : 'eye-outline'}
                                     size={20}
-                                    color={Theme.colors.textSecondary}
+                                    color={theme.colors.textSecondary}
                                 />
                             </TouchableOpacity>
                         </View>
@@ -137,62 +194,3 @@ export default function LoginScreen({ navigation }: any) {
         </SafeAreaView>
     );
 }
-
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: Theme.colors.background },
-    inner: { flex: 1, justifyContent: 'center', padding: Theme.spacing.lg },
-    logoArea: { alignItems: 'center', marginBottom: Theme.spacing.xxl },
-    logoCircle: {
-        width: 80, height: 80, borderRadius: 40,
-        backgroundColor: Theme.colors.surface,
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
-        alignItems: 'center', justifyContent: 'center',
-        marginBottom: Theme.spacing.md,
-    },
-    appName: { fontSize: 18, fontWeight: '900', color: Theme.colors.text, letterSpacing: 3 },
-    title: { fontSize: 28, fontWeight: '800', color: Theme.colors.text, marginBottom: Theme.spacing.xl },
-    demoBox: {
-        flexDirection: 'row', alignItems: 'center', gap: 6,
-        backgroundColor: 'rgba(251,191,36,0.1)',
-        borderRadius: Theme.borderRadius.sm,
-        borderWidth: 1, borderColor: 'rgba(251,191,36,0.3)',
-        padding: Theme.spacing.sm,
-        marginBottom: Theme.spacing.md,
-    },
-    demoText: { flex: 1, color: Theme.colors.accent, fontSize: 13, lineHeight: 18 },
-    input: {
-        backgroundColor: Theme.colors.surface,
-        color: Theme.colors.text,
-        padding: Theme.spacing.md,
-        borderRadius: Theme.borderRadius.md,
-        marginBottom: Theme.spacing.md,
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
-        fontSize: 16, minHeight: 52,
-    },
-    pwWrapper: {
-        flexDirection: 'row', alignItems: 'center',
-        backgroundColor: Theme.colors.surface,
-        borderRadius: Theme.borderRadius.md,
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
-        marginBottom: Theme.spacing.sm,
-        minHeight: 52,
-    },
-    pwInput: {
-        flex: 1, color: Theme.colors.text, padding: Theme.spacing.md,
-        fontSize: 16,
-    },
-    eyeBtn: { padding: Theme.spacing.md },
-    forgotLink: { alignSelf: 'flex-end', marginBottom: Theme.spacing.md, minHeight: 36, justifyContent: 'center' },
-    forgotText: { color: Theme.colors.primary, fontSize: 13, fontWeight: '600' },
-    errorText: { color: Theme.colors.error, marginBottom: Theme.spacing.md, fontSize: 14, fontWeight: '500' },
-    button: {
-        backgroundColor: Theme.colors.primary,
-        borderRadius: Theme.borderRadius.md,
-        alignItems: 'center', justifyContent: 'center',
-        minHeight: 52, marginTop: Theme.spacing.sm,
-    },
-    buttonDisabled: { opacity: 0.6 },
-    buttonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-    link: { marginTop: Theme.spacing.xl, alignItems: 'center', minHeight: 44, justifyContent: 'center' },
-    linkText: { color: Theme.colors.primary, fontSize: 15, fontWeight: '600' },
-});

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -15,23 +15,25 @@ import { MotiView } from 'moti';
 import Svg, { G, Path, Text as SvgText } from 'react-native-svg';
 import { PickEngine } from '../../core/PickEngine';
 import { LocalStorage } from '../../storage/local';
-import { Theme } from '../../core/Theme';
+import { useTheme } from '../../store/ThemeContext';
+import { AppTheme } from '../../core/Theme';
 import { GlassCard } from '../../components/GlassCard';
 import { ModernButton } from '../../components/ModernButton';
 
-const COLORS = [
-    Theme.colors.primary,
-    Theme.colors.secondary,
-    Theme.colors.accent,
-    Theme.colors.error,
-    Theme.colors.success,
-    '#F59E0B',
-    '#EC4899',
-    '#14B8A6',
-];
-
 export default function WheelOfFortuneScreen({ navigation, route }: any) {
     const { t } = useTranslation();
+    const { theme } = useTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
+    const COLORS = useMemo(() => [
+        theme.colors.primary,
+        theme.colors.secondary,
+        theme.colors.accent,
+        theme.colors.error,
+        theme.colors.success,
+        '#F59E0B',
+        '#EC4899',
+        '#14B8A6',
+    ], [theme]);
     const [options, setOptions] = useState<{ id: string; label: string }[]>([]);
     const [newOption, setNewOption] = useState('');
     const [isSpinning, setIsSpinning] = useState(false);
@@ -140,7 +142,7 @@ export default function WheelOfFortuneScreen({ navigation, route }: any) {
 
                                 return (
                                     <G key={option.id}>
-                                        <Path d={path} fill={COLORS[i % COLORS.length]} stroke={Theme.colors.background} strokeWidth="2" />
+                                        <Path d={path} fill={COLORS[i % COLORS.length]} stroke={theme.colors.background} strokeWidth="2" />
                                         <SvgText
                                             x={tx} y={ty}
                                             fill="#fff"
@@ -191,7 +193,7 @@ export default function WheelOfFortuneScreen({ navigation, route }: any) {
                         accessibilityLabel="Geri"
                         accessibilityRole="button"
                     >
-                        <Ionicons name="chevron-back" size={26} color={Theme.colors.text} />
+                        <Ionicons name="chevron-back" size={26} color={theme.colors.text} />
                     </TouchableOpacity>
                     <Text style={styles.title}>{t('tools.wheel.title')}</Text>
                     <View style={{ width: 44 }} />
@@ -200,7 +202,7 @@ export default function WheelOfFortuneScreen({ navigation, route }: any) {
                 <View style={styles.wheelArea}>
                     {options.length > 1 ? renderWheel() : (
                         <View style={styles.emptyContainer}>
-                            <Ionicons name="aperture-outline" size={80} color={Theme.colors.surfaceBorder} />
+                            <Ionicons name="aperture-outline" size={80} color={theme.colors.surfaceBorder} />
                             <Text style={styles.emptyTitle}>{t('tools.wheel.empty')}</Text>
                             <Text style={styles.emptyHint}>
                                 {options.length === 1
@@ -217,14 +219,14 @@ export default function WheelOfFortuneScreen({ navigation, route }: any) {
                         onPress={() => navigation.navigate('SavedLists', { pickMode: true, returnScreen: 'WheelOfFortune' })}
                         accessibilityRole="button"
                     >
-                        <Ionicons name="bookmark-outline" size={16} color={Theme.colors.primary} />
+                        <Ionicons name="bookmark-outline" size={16} color={theme.colors.primary} />
                         <Text style={styles.loadListText}>{t('lists.load', 'Kayıtlı listeden yükle')}</Text>
                     </TouchableOpacity>
                     <View style={styles.inputRow}>
                         <TextInput
                             style={styles.input}
                             placeholder={t('tools.wheel.placeholder')}
-                            placeholderTextColor={Theme.colors.textSecondary}
+                            placeholderTextColor={theme.colors.textSecondary}
                             value={newOption}
                             onChangeText={setNewOption}
                             onSubmitEditing={addOption}
@@ -254,7 +256,7 @@ export default function WheelOfFortuneScreen({ navigation, route }: any) {
                                     accessibilityRole="button"
                                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                                 >
-                                    <Ionicons name="trash-outline" size={20} color={Theme.colors.error} />
+                                    <Ionicons name="trash-outline" size={20} color={theme.colors.error} />
                                 </TouchableOpacity>
                             </GlassCard>
                         )}
@@ -273,22 +275,23 @@ export default function WheelOfFortuneScreen({ navigation, route }: any) {
     );
 }
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: Theme.colors.background },
+function createStyles(theme: AppTheme) {
+    return StyleSheet.create({
+    container: { flex: 1, backgroundColor: theme.colors.background },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: Theme.spacing.md,
-        paddingVertical: Theme.spacing.md,
+        paddingHorizontal: theme.spacing.md,
+        paddingVertical: theme.spacing.md,
     },
     backBtn: {
         width: 44, height: 44, borderRadius: 22,
-        backgroundColor: Theme.colors.surface,
+        backgroundColor: theme.colors.surface,
         alignItems: 'center', justifyContent: 'center',
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
+        borderWidth: 1, borderColor: theme.colors.surfaceBorder,
     },
-    title: { fontSize: 22, fontWeight: '800', color: Theme.colors.text, letterSpacing: 0.5 },
+    title: { fontSize: 22, fontWeight: '800', color: theme.colors.text, letterSpacing: 0.5 },
     wheelArea: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     wheelContainer: { alignItems: 'center', justifyContent: 'center' },
     pointer: {
@@ -297,7 +300,7 @@ const styles = StyleSheet.create({
         width: 0, height: 0,
         borderLeftWidth: 14, borderLeftColor: 'transparent',
         borderRightWidth: 14, borderRightColor: 'transparent',
-        borderTopWidth: 28, borderTopColor: Theme.colors.text,
+        borderTopWidth: 28, borderTopColor: theme.colors.text,
         zIndex: 10,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
@@ -308,18 +311,18 @@ const styles = StyleSheet.create({
     centerDot: {
         position: 'absolute',
         width: 18, height: 18, borderRadius: 9,
-        backgroundColor: Theme.colors.background,
-        borderWidth: 3, borderColor: Theme.colors.text,
+        backgroundColor: theme.colors.background,
+        borderWidth: 3, borderColor: theme.colors.text,
         zIndex: 11,
     },
     winnerOverlay: {
         position: 'absolute',
         backgroundColor: 'rgba(15,15,30,0.92)',
-        borderRadius: Theme.borderRadius.lg,
+        borderRadius: theme.borderRadius.lg,
         borderWidth: 1,
-        borderColor: Theme.colors.primary,
-        paddingVertical: Theme.spacing.md,
-        paddingHorizontal: Theme.spacing.lg,
+        borderColor: theme.colors.primary,
+        paddingVertical: theme.spacing.md,
+        paddingHorizontal: theme.spacing.lg,
         alignItems: 'center',
         maxWidth: 200,
     },
@@ -327,68 +330,69 @@ const styles = StyleSheet.create({
     winnerLabel: {
         fontSize: 20,
         fontWeight: '900',
-        color: Theme.colors.text,
+        color: theme.colors.text,
         textAlign: 'center',
         letterSpacing: 0.5,
     },
-    emptyContainer: { alignItems: 'center', padding: Theme.spacing.xl },
+    emptyContainer: { alignItems: 'center', padding: theme.spacing.xl },
     emptyTitle: {
-        color: Theme.colors.text,
-        marginTop: Theme.spacing.md,
+        color: theme.colors.text,
+        marginTop: theme.spacing.md,
         fontSize: 17,
         fontWeight: '700',
     },
     emptyHint: {
-        color: Theme.colors.textSecondary,
-        marginTop: Theme.spacing.sm,
+        color: theme.colors.textSecondary,
+        marginTop: theme.spacing.sm,
         fontSize: 14,
         textAlign: 'center',
     },
     controls: {
-        padding: Theme.spacing.md,
+        padding: theme.spacing.md,
         backgroundColor: 'rgba(255,255,255,0.02)',
-        borderTopLeftRadius: Theme.borderRadius.xl,
-        borderTopRightRadius: Theme.borderRadius.xl,
+        borderTopLeftRadius: theme.borderRadius.xl,
+        borderTopRightRadius: theme.borderRadius.xl,
         borderTopWidth: 1,
-        borderTopColor: Theme.colors.surfaceBorder,
+        borderTopColor: theme.colors.surfaceBorder,
     },
-    inputRow: { flexDirection: 'row', marginBottom: Theme.spacing.md, gap: Theme.spacing.sm },
+    inputRow: { flexDirection: 'row', marginBottom: theme.spacing.md, gap: theme.spacing.sm },
     input: {
         flex: 1,
-        backgroundColor: Theme.colors.surface,
-        color: Theme.colors.text,
-        padding: Theme.spacing.md,
-        borderRadius: Theme.borderRadius.md,
+        backgroundColor: theme.colors.surface,
+        color: theme.colors.text,
+        padding: theme.spacing.md,
+        borderRadius: theme.borderRadius.md,
         borderWidth: 1,
-        borderColor: Theme.colors.surfaceBorder,
+        borderColor: theme.colors.surfaceBorder,
         fontSize: 16,
         minHeight: 52,
     },
     addBtn: {
-        backgroundColor: Theme.colors.primary,
+        backgroundColor: theme.colors.primary,
         width: 52, height: 52,
-        borderRadius: Theme.borderRadius.md,
+        borderRadius: theme.borderRadius.md,
         justifyContent: 'center',
         alignItems: 'center',
     },
-    list: { maxHeight: 130, marginBottom: Theme.spacing.md },
-    listContent: { paddingBottom: Theme.spacing.sm },
+    list: { maxHeight: 130, marginBottom: theme.spacing.md },
+    listContent: { paddingBottom: theme.spacing.sm },
     listItem: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: Theme.spacing.md,
-        marginBottom: Theme.spacing.sm,
-        borderRadius: Theme.borderRadius.md,
+        padding: theme.spacing.md,
+        marginBottom: theme.spacing.sm,
+        borderRadius: theme.borderRadius.md,
     },
-    listText: { fontSize: 15, color: Theme.colors.text, fontWeight: '600', flex: 1, marginRight: Theme.spacing.sm },
-    spinBtn: { marginBottom: Platform.OS === 'ios' ? 0 : Theme.spacing.sm },
+    listText: { fontSize: 15, color: theme.colors.text, fontWeight: '600', flex: 1, marginRight: theme.spacing.sm },
+    spinBtn: { marginBottom: Platform.OS === 'ios' ? 0 : theme.spacing.sm },
     loadListBtn: {
         flexDirection: 'row', alignItems: 'center', gap: 8,
-        padding: Theme.spacing.sm, paddingHorizontal: Theme.spacing.md,
-        borderRadius: Theme.borderRadius.md, backgroundColor: 'rgba(99,102,241,0.12)',
+        padding: theme.spacing.sm, paddingHorizontal: theme.spacing.md,
+        borderRadius: theme.borderRadius.md, backgroundColor: 'rgba(99,102,241,0.12)',
         borderWidth: 1, borderColor: 'rgba(99,102,241,0.3)',
-        marginBottom: Theme.spacing.sm,
+        marginBottom: theme.spacing.sm,
     },
-    loadListText: { color: Theme.colors.primary, fontWeight: '700', fontSize: 13 },
-});
+    loadListText: { color: theme.colors.primary, fontWeight: '700', fontSize: 13 },
+    });
+}

@@ -1,37 +1,47 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet, ViewStyle, Pressable, Animated } from 'react-native';
-import { Theme } from '../core/Theme';
+import { useTheme } from '../store/ThemeContext';
+import { AppTheme } from '../core/Theme';
 
 interface GlassCardProps {
     children: React.ReactNode;
-    style?: ViewStyle;
+    style?: ViewStyle | ViewStyle[];
     onPress?: () => void;
     gradient?: boolean;
 }
 
-export const GlassCard: React.FC<GlassCardProps> = ({ children, style, onPress, gradient }) => {
+function createStyles(theme: AppTheme) {
+    return StyleSheet.create({
+        pressable: {
+            flex: 1,
+            margin: theme.spacing.sm,
+        },
+        card: {
+            backgroundColor: theme.colors.surface,
+            borderRadius: theme.borderRadius.lg,
+            borderWidth: theme.colors.statusBar === 'light' ? 1 : 0.5,
+            borderColor: theme.colors.surfaceBorder,
+            padding: theme.spacing.md,
+            overflow: 'hidden',
+            ...theme.colors.cardShadow,
+        },
+    });
+}
+
+export const GlassCard: React.FC<GlassCardProps> = ({ children, style, onPress }) => {
+    const { theme } = useTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const scaleAnim = React.useRef(new Animated.Value(1)).current;
 
     const handlePressIn = () => {
-        Animated.spring(scaleAnim, {
-            toValue: 0.96,
-            useNativeDriver: true,
-        }).start();
+        Animated.spring(scaleAnim, { toValue: 0.96, useNativeDriver: true }).start();
     };
-
     const handlePressOut = () => {
-        Animated.spring(scaleAnim, {
-            toValue: 1,
-            useNativeDriver: true,
-        }).start();
+        Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }).start();
     };
 
     const CardContent = (
-        <Animated.View style={[
-            styles.card,
-            { transform: [{ scale: scaleAnim }] },
-            style
-        ]}>
+        <Animated.View style={[styles.card, { transform: [{ scale: scaleAnim }] }, style]}>
             {children}
         </Animated.View>
     );
@@ -51,23 +61,3 @@ export const GlassCard: React.FC<GlassCardProps> = ({ children, style, onPress, 
 
     return CardContent;
 };
-
-const styles = StyleSheet.create({
-    pressable: {
-        flex: 1,
-        margin: Theme.spacing.sm,
-    },
-    card: {
-        backgroundColor: Theme.colors.surface,
-        borderRadius: Theme.borderRadius.lg,
-        borderWidth: 1,
-        borderColor: Theme.colors.surfaceBorder,
-        padding: Theme.spacing.md,
-        overflow: 'hidden',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.2,
-        shadowRadius: 12,
-        elevation: 5,
-    },
-});

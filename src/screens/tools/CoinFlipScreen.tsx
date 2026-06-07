@@ -1,15 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PickEngine } from '../../core/PickEngine';
-import { Theme } from '../../core/Theme';
+import { useTheme } from '../../store/ThemeContext';
+import { AppTheme } from '../../core/Theme';
 import { ModernButton } from '../../components/ModernButton';
 
 export default function CoinFlipScreen({ navigation }: any) {
     const { t, i18n } = useTranslation();
+    const { theme } = useTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const [isFlipping, setIsFlipping] = useState(false);
     const [flipCount, setFlipCount] = useState(0);
     const [targetCount, setTargetCount] = useState(8);
@@ -104,7 +107,7 @@ export default function CoinFlipScreen({ navigation }: any) {
                     accessibilityLabel="Geri"
                     accessibilityRole="button"
                 >
-                    <Ionicons name="chevron-back" size={26} color={Theme.colors.text} />
+                    <Ionicons name="chevron-back" size={26} color={theme.colors.text} />
                 </TouchableOpacity>
                 <Text style={styles.title}>{t('tools.coin.title')}</Text>
                 <View style={{ width: 44 }} />
@@ -159,11 +162,12 @@ export default function CoinFlipScreen({ navigation }: any) {
     );
 }
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: Theme.colors.background },
-    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Theme.spacing.md, paddingVertical: Theme.spacing.lg },
-    backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: Theme.colors.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Theme.colors.surfaceBorder },
-    title: { fontSize: 24, fontWeight: '800', color: Theme.colors.text, letterSpacing: 1 },
+function createStyles(theme: AppTheme) {
+    return StyleSheet.create({
+    container: { flex: 1, backgroundColor: theme.colors.background },
+    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: theme.spacing.md, paddingVertical: theme.spacing.lg },
+    backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: theme.colors.surfaceBorder },
+    title: { fontSize: 24, fontWeight: '800', color: theme.colors.text, letterSpacing: 1 },
     content: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     coinWrapper: { width: 200, height: 200, alignItems: 'center', justifyContent: 'center' },
     coinContainer: { width: 180, height: 180, position: 'relative' },
@@ -193,8 +197,9 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     coinLabel: { fontSize: 20, fontWeight: '900', color: '#DAA520', marginBottom: 5 },
-    hintText: { marginTop: 60, fontSize: 18, color: Theme.colors.textSecondary, fontWeight: '600' },
-    footer: { padding: Theme.spacing.md, paddingBottom: Platform.OS === 'ios' ? Theme.spacing.md : Theme.spacing.xl },
+    hintText: { marginTop: 60, fontSize: 18, color: theme.colors.textSecondary, fontWeight: '600' },
+    footer: { padding: theme.spacing.md, paddingBottom: Platform.OS === 'ios' ? theme.spacing.md : theme.spacing.xl },
     flipBtn: { width: '100%' }
-});
+    });
+}
 

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -7,10 +7,13 @@ import * as Haptics from 'expo-haptics';
 import { MotiView } from 'moti';
 import { PickEngine } from '../../core/PickEngine';
 import DiceFace from '../../components/DiceFace';
-import { Theme } from '../../core/Theme';
+import { useTheme } from '../../store/ThemeContext';
+import { AppTheme } from '../../core/Theme';
 
 export default function DiceScreen({ navigation }: any) {
     const { t } = useTranslation();
+    const { theme } = useTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const [diceCount, setDiceCount] = useState<1 | 2>(2);
     const [results, setResults] = useState<number[]>([]);
     const [isRolling, setIsRolling] = useState(false);
@@ -56,7 +59,7 @@ export default function DiceScreen({ navigation }: any) {
                     accessibilityLabel="Geri"
                     accessibilityRole="button"
                 >
-                    <Ionicons name="chevron-back" size={26} color={Theme.colors.text} />
+                    <Ionicons name="chevron-back" size={26} color={theme.colors.text} />
                 </TouchableOpacity>
                 <Text style={styles.title}>{t('tools.dice.title')}</Text>
                 <View style={{ width: 44 }} />
@@ -125,31 +128,32 @@ export default function DiceScreen({ navigation }: any) {
     );
 }
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: Theme.colors.background },
+function createStyles(theme: AppTheme) {
+    return StyleSheet.create({
+    container: { flex: 1, backgroundColor: theme.colors.background },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: Theme.spacing.md,
-        paddingVertical: Theme.spacing.md,
+        paddingHorizontal: theme.spacing.md,
+        paddingVertical: theme.spacing.md,
     },
     backBtn: {
         width: 44, height: 44, borderRadius: 22,
-        backgroundColor: Theme.colors.surface,
+        backgroundColor: theme.colors.surface,
         alignItems: 'center', justifyContent: 'center',
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
+        borderWidth: 1, borderColor: theme.colors.surfaceBorder,
     },
-    title: { fontSize: 22, fontWeight: '800', color: Theme.colors.text, letterSpacing: 0.5 },
-    topInfo: { alignItems: 'center', paddingTop: Theme.spacing.md },
+    title: { fontSize: 22, fontWeight: '800', color: theme.colors.text, letterSpacing: 0.5 },
+    topInfo: { alignItems: 'center', paddingTop: theme.spacing.md },
     instruction: {
-        color: Theme.colors.textSecondary,
+        color: theme.colors.textSecondary,
         fontSize: 15,
         fontWeight: '600',
-        marginBottom: Theme.spacing.sm,
+        marginBottom: theme.spacing.sm,
     },
     sumText: {
-        color: Theme.colors.text,
+        color: theme.colors.text,
         fontSize: 72,
         fontWeight: '900',
         lineHeight: 80,
@@ -159,43 +163,44 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        gap: Theme.spacing.lg,
+        gap: theme.spacing.lg,
     },
     footer: {
         alignItems: 'center',
-        paddingBottom: Theme.spacing.xxl,
-        gap: Theme.spacing.lg,
+        paddingBottom: theme.spacing.xxl,
+        gap: theme.spacing.lg,
     },
     countSelector: {
         flexDirection: 'row',
-        backgroundColor: Theme.colors.surface,
+        backgroundColor: theme.colors.surface,
         borderRadius: 24,
         padding: 4,
         borderWidth: 1,
-        borderColor: Theme.colors.surfaceBorder,
+        borderColor: theme.colors.surfaceBorder,
     },
     countBtn: {
         paddingVertical: 10,
-        paddingHorizontal: Theme.spacing.lg,
+        paddingHorizontal: theme.spacing.lg,
         borderRadius: 20,
         minWidth: 90,
         alignItems: 'center',
     },
-    countBtnActive: { backgroundColor: Theme.colors.primary },
-    countBtnText: { color: Theme.colors.textSecondary, fontWeight: '700', fontSize: 14 },
+    countBtnActive: { backgroundColor: theme.colors.primary },
+    countBtnText: { color: theme.colors.textSecondary, fontWeight: '700', fontSize: 14 },
     countBtnTextActive: { color: '#fff' },
     rollBtn: {
         width: 96,
         height: 96,
         borderRadius: 48,
-        backgroundColor: Theme.colors.success,
+        backgroundColor: theme.colors.success,
         justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: Theme.colors.success,
+        shadowColor: theme.colors.success,
         shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.4,
         shadowRadius: 12,
         elevation: 10,
     },
     rollBtnDisabled: { opacity: 0.5 },
-});
+    });
+}

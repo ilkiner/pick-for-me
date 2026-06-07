@@ -1,17 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { PickEngine } from '../../core/PickEngine';
 import { LocalStorage } from '../../storage/local';
-import { Theme } from '../../core/Theme';
+import { useTheme } from '../../store/ThemeContext';
+import { AppTheme } from '../../core/Theme';
 import { GlassCard } from '../../components/GlassCard';
 import { ModernButton } from '../../components/ModernButton';
 import MOVIES_DATA from '../../content/movies.json';
 
 export default function MoviePickerScreen({ navigation }: any) {
     const { t } = useTranslation();
+    const { theme } = useTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const [movies, setMovies] = useState<string[]>([]);
     const [newMovie, setNewMovie] = useState('');
 
@@ -56,7 +59,7 @@ export default function MoviePickerScreen({ navigation }: any) {
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-                        <Ionicons name="chevron-back" size={28} color={Theme.colors.text} />
+                        <Ionicons name="chevron-back" size={28} color={theme.colors.text} />
                     </TouchableOpacity>
                     <Text style={styles.title}>{t('tools.movie.title')}</Text>
                     <View style={{ width: 44 }} />
@@ -84,7 +87,7 @@ export default function MoviePickerScreen({ navigation }: any) {
                         <TextInput
                             style={styles.input}
                             placeholder={t('tools.movie.placeholder')}
-                            placeholderTextColor={Theme.colors.textSecondary}
+                            placeholderTextColor={theme.colors.textSecondary}
                             value={newMovie}
                             onChangeText={setNewMovie}
                             onSubmitEditing={addOption}
@@ -104,13 +107,13 @@ export default function MoviePickerScreen({ navigation }: any) {
                         <GlassCard style={styles.listItem}>
                             <Text style={styles.listText}>{item}</Text>
                             <TouchableOpacity onPress={() => removeOption(index)} accessibilityLabel={t('tools.wheel.delete')} accessibilityRole="button" hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                                <Ionicons name="trash-outline" size={20} color={Theme.colors.error} />
+                                <Ionicons name="trash-outline" size={20} color={theme.colors.error} />
                             </TouchableOpacity>
                         </GlassCard>
                     )}
                     ListEmptyComponent={
                         <View style={styles.emptyContainer}>
-                            <Ionicons name="videocam-outline" size={60} color={Theme.colors.surfaceBorder} />
+                            <Ionicons name="videocam-outline" size={60} color={theme.colors.surfaceBorder} />
                             <Text style={styles.emptyText}>{t('tools.movie.empty')}</Text>
                         </View>
                     }
@@ -130,27 +133,29 @@ export default function MoviePickerScreen({ navigation }: any) {
     );
 }
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: Theme.colors.background },
-    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Theme.spacing.md, paddingVertical: Theme.spacing.lg },
-    backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: Theme.colors.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Theme.colors.surfaceBorder },
-    title: { fontSize: 24, fontWeight: '800', color: Theme.colors.text, letterSpacing: 1 },
-    quickAddScroll: { marginBottom: Theme.spacing.md },
-    quickAddContainer: { flexDirection: 'row', paddingHorizontal: Theme.spacing.md, gap: 8 },
-    quickAddBtn: { backgroundColor: Theme.colors.surface, paddingVertical: 10, paddingHorizontal: 14, borderRadius: Theme.borderRadius.md, alignItems: 'center', borderWidth: 1, borderColor: Theme.colors.surfaceBorder },
+function createStyles(theme: AppTheme) {
+    return StyleSheet.create({
+    container: { flex: 1, backgroundColor: theme.colors.background },
+    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: theme.spacing.md, paddingVertical: theme.spacing.lg },
+    backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: theme.colors.surfaceBorder },
+    title: { fontSize: 24, fontWeight: '800', color: theme.colors.text, letterSpacing: 1 },
+    quickAddScroll: { marginBottom: theme.spacing.md },
+    quickAddContainer: { flexDirection: 'row', paddingHorizontal: theme.spacing.md, gap: 8 },
+    quickAddBtn: { backgroundColor: theme.colors.surface, paddingVertical: 10, paddingHorizontal: 14, borderRadius: theme.borderRadius.md, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.surfaceBorder },
     clearBtn: { borderColor: 'rgba(239, 68, 68, 0.3)' },
-    quickAddText: { color: Theme.colors.text, fontSize: 12, fontWeight: '700' },
-    inputSection: { paddingHorizontal: Theme.spacing.md, marginBottom: Theme.spacing.md },
+    quickAddText: { color: theme.colors.text, fontSize: 12, fontWeight: '700' },
+    inputSection: { paddingHorizontal: theme.spacing.md, marginBottom: theme.spacing.md },
     inputContainer: { flexDirection: 'row', gap: 10 },
-    input: { flex: 1, backgroundColor: Theme.colors.surface, color: Theme.colors.text, padding: Theme.spacing.md, borderRadius: Theme.borderRadius.md, borderWidth: 1, borderColor: Theme.colors.surfaceBorder, fontSize: 16 },
-    addBtn: { backgroundColor: Theme.colors.success, width: 56, height: 56, borderRadius: Theme.borderRadius.md, justifyContent: 'center', alignItems: 'center' },
+    input: { flex: 1, backgroundColor: theme.colors.surface, color: theme.colors.text, padding: theme.spacing.md, borderRadius: theme.borderRadius.md, borderWidth: 1, borderColor: theme.colors.surfaceBorder, fontSize: 16 },
+    addBtn: { backgroundColor: theme.colors.success, width: 56, height: 56, borderRadius: theme.borderRadius.md, justifyContent: 'center', alignItems: 'center' },
     list: { flex: 1 },
-    listContent: { paddingHorizontal: Theme.spacing.md, paddingBottom: Theme.spacing.lg },
-    listItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: Theme.spacing.md, marginBottom: Theme.spacing.sm, borderRadius: Theme.borderRadius.md },
-    listText: { fontSize: 16, color: Theme.colors.text, fontWeight: '600', flex: 1, marginRight: Theme.spacing.md },
+    listContent: { paddingHorizontal: theme.spacing.md, paddingBottom: theme.spacing.lg },
+    listItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: theme.spacing.md, marginBottom: theme.spacing.sm, borderRadius: theme.borderRadius.md },
+    listText: { fontSize: 16, color: theme.colors.text, fontWeight: '600', flex: 1, marginRight: theme.spacing.md },
     emptyContainer: { alignItems: 'center', marginTop: 40 },
-    emptyText: { color: Theme.colors.textSecondary, marginTop: Theme.spacing.md, fontWeight: '500' },
-    footer: { padding: Theme.spacing.md, paddingBottom: Platform.OS === 'ios' ? Theme.spacing.md : Theme.spacing.xl },
+    emptyText: { color: theme.colors.textSecondary, marginTop: theme.spacing.md, fontWeight: '500' },
+    footer: { padding: theme.spacing.md, paddingBottom: Platform.OS === 'ios' ? theme.spacing.md : theme.spacing.xl },
     pickBtn: { width: '100%' }
-});
+    });
+}
 

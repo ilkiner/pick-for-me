@@ -3,52 +3,86 @@ import { View, Text, StyleSheet, FlatList, Dimensions, TouchableOpacity } from '
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { FontAwesome5, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
-import { Theme } from '../../core/Theme';
 import { GlassCard } from '../../components/GlassCard';
 import { BannerAdView } from '../../components/BannerAdView';
 import { AdManager } from '../../core/AdManager';
 import { usePro } from '../../store/ProContext';
+import { useTheme } from '../../store/ThemeContext';
+import { AppTheme } from '../../core/Theme';
 
 const { width } = Dimensions.get('window');
 
-type ToolItem = { id: string; key: string; iconLib: any; iconName: string; route: string; color: string; desc: string };
+type ToolItem = { id: string; key: string; iconLib: any; iconName: string; route: string; color: (t: AppTheme) => string; desc: string };
 
-const TOOLS: ToolItem[] = [
-    { id: '1', key: 'wheel', iconLib: MaterialCommunityIcons, iconName: 'steering', route: 'WheelOfFortune', color: Theme.colors.secondary, desc: 'spin' },
-    { id: '2', key: 'dice', iconLib: FontAwesome5, iconName: 'dice', route: 'Dice', color: Theme.colors.error, desc: 'roll' },
-    { id: '3', key: 'coin', iconLib: FontAwesome5, iconName: 'coins', route: 'CoinFlip', color: Theme.colors.accent, desc: 'flip' },
-    { id: '4', key: 'color', iconLib: Ionicons, iconName: 'color-palette', route: 'ColorPicker', color: '#AF52DE', desc: 'color' },
-    { id: '5', key: 'idea', iconLib: FontAwesome5, iconName: 'lightbulb', route: 'IdeaGenerator', color: '#FFD60A', desc: 'idea' },
-    { id: '6', key: 'challenge', iconLib: Ionicons, iconName: 'flash', route: 'QuickChallenge', color: '#FF9500', desc: 'challenge' },
-    { id: '7', key: 'movie', iconLib: MaterialCommunityIcons, iconName: 'movie-open', route: 'MoviePicker', color: Theme.colors.success, desc: 'movie' },
-    { id: '8', key: 'tournament', iconLib: Ionicons, iconName: 'trophy', route: 'Tournament', color: '#FFD60A', desc: 'tournament' },
-    { id: '9', key: 'orderteam', iconLib: Ionicons, iconName: 'people', route: 'OrderTeam', color: Theme.colors.accent, desc: 'orderteam' },
-    { id: '10', key: 'lists', iconLib: Ionicons, iconName: 'bookmark', route: 'SavedLists', color: Theme.colors.primary, desc: 'lists' },
+const TOOL_DEFS: ToolItem[] = [
+    { id: '1',  key: 'wheel',      iconLib: MaterialCommunityIcons, iconName: 'steering',    route: 'WheelOfFortune', color: t => t.colors.secondary, desc: 'spin' },
+    { id: '2',  key: 'dice',       iconLib: FontAwesome5,            iconName: 'dice',        route: 'Dice',           color: t => t.colors.error,     desc: 'roll' },
+    { id: '3',  key: 'coin',       iconLib: FontAwesome5,            iconName: 'coins',       route: 'CoinFlip',       color: t => t.colors.accent,    desc: 'flip' },
+    { id: '4',  key: 'color',      iconLib: Ionicons,                iconName: 'color-palette', route: 'ColorPicker',  color: () => '#AF52DE',         desc: 'color' },
+    { id: '5',  key: 'idea',       iconLib: FontAwesome5,            iconName: 'lightbulb',   route: 'IdeaGenerator',  color: () => '#FFD60A',         desc: 'idea' },
+    { id: '6',  key: 'challenge',  iconLib: Ionicons,                iconName: 'flash',       route: 'QuickChallenge', color: () => '#FF9500',         desc: 'challenge' },
+    { id: '7',  key: 'movie',      iconLib: MaterialCommunityIcons, iconName: 'movie-open',  route: 'MoviePicker',    color: t => t.colors.success,   desc: 'movie' },
+    { id: '8',  key: 'tournament', iconLib: Ionicons,                iconName: 'trophy',      route: 'Tournament',     color: () => '#FFD60A',         desc: 'tournament' },
+    { id: '9',  key: 'orderteam',  iconLib: Ionicons,                iconName: 'people',      route: 'OrderTeam',      color: t => t.colors.accent,    desc: 'orderteam' },
+    { id: '10', key: 'lists',      iconLib: Ionicons,                iconName: 'bookmark',    route: 'SavedLists',     color: t => t.colors.primary,   desc: 'lists' },
 ];
+
+function createStyles(theme: AppTheme) {
+    return StyleSheet.create({
+        container: { flex: 1, backgroundColor: theme.colors.background },
+        listContent: { paddingHorizontal: theme.spacing.md, paddingBottom: theme.spacing.xl },
+        headerContainer: { paddingVertical: theme.spacing.lg },
+        titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: theme.spacing.xs },
+        titleSection: { alignItems: 'flex-start', flex: 1 },
+        proBadge: {
+            flexDirection: 'row', alignItems: 'center', gap: 5,
+            backgroundColor: 'rgba(255,215,0,0.12)',
+            borderWidth: 1, borderColor: 'rgba(255,215,0,0.3)',
+            borderRadius: 20, paddingHorizontal: 10, paddingVertical: 6,
+        },
+        proBadgeText: { color: '#FFD700', fontSize: 12, fontWeight: '800' },
+        banner: { marginTop: theme.spacing.md, marginBottom: theme.spacing.sm },
+        title: { fontSize: 32, fontWeight: '900', color: theme.colors.text, letterSpacing: 2 },
+        subtitle: { fontSize: 16, color: theme.colors.textSecondary, marginTop: 4, fontWeight: '500' },
+        columnWrapper: { justifyContent: 'space-between' },
+        card: {
+            width: (width - (theme.spacing.md * 3)) / 2,
+            aspectRatio: 0.9,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: theme.spacing.md,
+        },
+        iconContainer: {
+            width: 70, height: 70, borderRadius: 35,
+            alignItems: 'center', justifyContent: 'center',
+            marginBottom: theme.spacing.md,
+        },
+        cardTitle: { fontSize: 18, fontWeight: '700', color: theme.colors.text, textAlign: 'center', marginBottom: 4 },
+        cardDesc: { fontSize: 12, color: theme.colors.textSecondary, textAlign: 'center', fontWeight: '500' },
+    });
+}
 
 export default function HomeScreen({ navigation }: any) {
     const { t } = useTranslation();
     const { isPro, openPaywall } = usePro();
+    const { theme } = useTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
 
-    useEffect(() => {
-        AdManager.init();
-    }, []);
+    useEffect(() => { AdManager.init(); }, []);
 
     const renderItem = useCallback(({ item }: { item: ToolItem }) => {
         const IconComponent = item.iconLib;
+        const color = item.color(theme);
         return (
-            <GlassCard
-                style={styles.card}
-                onPress={() => navigation.navigate(item.route)}
-            >
-                <View style={[styles.iconContainer, { backgroundColor: `${item.color}20` }]}>
-                    <IconComponent name={item.iconName} size={40} color={item.color} />
+            <GlassCard style={styles.card} onPress={() => navigation.navigate(item.route)}>
+                <View style={[styles.iconContainer, { backgroundColor: `${color}20` }]}>
+                    <IconComponent name={item.iconName} size={40} color={color} />
                 </View>
                 <Text style={styles.cardTitle}>{t(`home.tools.${item.key}`)}</Text>
                 <Text style={styles.cardDesc}>{t(`home.tools.${item.desc}_desc`, t(`home.tools.${item.key}`))}</Text>
             </GlassCard>
         );
-    }, [t, navigation]);
+    }, [t, navigation, theme, styles]);
 
     const header = useMemo(() => (
         <View style={styles.headerContainer}>
@@ -65,12 +99,12 @@ export default function HomeScreen({ navigation }: any) {
                 )}
             </View>
         </View>
-    ), [t, isPro, openPaywall]);
+    ), [t, isPro, openPaywall, styles]);
 
     return (
         <SafeAreaView style={styles.container}>
             <FlatList
-                data={TOOLS}
+                data={TOOL_DEFS}
                 keyExtractor={(item) => item.id}
                 numColumns={2}
                 ListHeaderComponent={header}
@@ -82,77 +116,3 @@ export default function HomeScreen({ navigation }: any) {
         </SafeAreaView>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: Theme.colors.background
-    },
-    listContent: {
-        paddingHorizontal: Theme.spacing.md,
-        paddingBottom: Theme.spacing.xl,
-    },
-    headerContainer: {
-        paddingVertical: Theme.spacing.lg,
-    },
-    titleRow: {
-        flexDirection: 'row', alignItems: 'center',
-        justifyContent: 'space-between', paddingLeft: Theme.spacing.xs,
-    },
-    titleSection: {
-        alignItems: 'flex-start',
-        flex: 1,
-    },
-    proBadge: {
-        flexDirection: 'row', alignItems: 'center', gap: 5,
-        backgroundColor: 'rgba(255,215,0,0.12)',
-        borderWidth: 1, borderColor: 'rgba(255,215,0,0.3)',
-        borderRadius: 20, paddingHorizontal: 10, paddingVertical: 6,
-    },
-    proBadgeText: { color: '#FFD700', fontSize: 12, fontWeight: '800' },
-    banner: { marginTop: Theme.spacing.md, marginBottom: Theme.spacing.sm },
-    title: {
-        fontSize: 32,
-        fontWeight: '900',
-        color: Theme.colors.text,
-        letterSpacing: 2,
-    },
-    subtitle: {
-        fontSize: 16,
-        color: Theme.colors.textSecondary,
-        marginTop: 4,
-        fontWeight: '500',
-    },
-    columnWrapper: {
-        justifyContent: 'space-between',
-    },
-    card: {
-        width: (width - (Theme.spacing.md * 3)) / 2,
-        aspectRatio: 0.9,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: Theme.spacing.md,
-    },
-    iconContainer: {
-        width: 70,
-        height: 70,
-        borderRadius: 35,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: Theme.spacing.md,
-    },
-    cardTitle: {
-        fontSize: 18,
-        fontWeight: '700',
-        color: Theme.colors.text,
-        textAlign: 'center',
-        marginBottom: 4,
-    },
-    cardDesc: {
-        fontSize: 12,
-        color: Theme.colors.textSecondary,
-        textAlign: 'center',
-        fontWeight: '500',
-    }
-});
-

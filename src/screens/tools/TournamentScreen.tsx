@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     View, Text, StyleSheet, TouchableOpacity, TextInput,
     ScrollView, Alert,
@@ -9,7 +9,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { MotiView } from 'moti';
 import { PickEngine, BracketMatch } from '../../core/PickEngine';
-import { Theme } from '../../core/Theme';
+import { useTheme } from '../../store/ThemeContext';
+import { AppTheme } from '../../core/Theme';
 import { GlassCard } from '../../components/GlassCard';
 import { SavedList } from '../../storage/savedLists';
 
@@ -17,6 +18,8 @@ type Phase = 'setup' | 'playing' | 'champion';
 
 export default function TournamentScreen({ navigation, route }: any) {
     const { t } = useTranslation();
+    const { theme } = useTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
 
     const [phase, setPhase] = useState<Phase>('setup');
     const [items, setItems] = useState<string[]>([]);
@@ -109,7 +112,7 @@ export default function TournamentScreen({ navigation, route }: any) {
                     accessibilityRole="button"
                     accessibilityLabel={phase === 'playing' ? t('tournament.reset', 'Sıfırla') : t('common.back', 'Geri')}
                 >
-                    <Ionicons name={phase === 'playing' ? 'refresh' : 'chevron-back'} size={22} color={Theme.colors.text} />
+                    <Ionicons name={phase === 'playing' ? 'refresh' : 'chevron-back'} size={22} color={theme.colors.text} />
                 </TouchableOpacity>
                 <View style={styles.headerCenter}>
                     <Text style={styles.title}>{t('tools.tournament.title', 'Turnuva')}</Text>
@@ -125,7 +128,7 @@ export default function TournamentScreen({ navigation, route }: any) {
                     <Text style={styles.sectionLabel}>{t('tournament.participants', 'Katılımcılar')}</Text>
 
                     <TouchableOpacity style={styles.loadListBtn} onPress={loadFromSavedLists}>
-                        <Ionicons name="bookmark-outline" size={18} color={Theme.colors.primary} />
+                        <Ionicons name="bookmark-outline" size={18} color={theme.colors.primary} />
                         <Text style={styles.loadListText}>{t('lists.load', 'Kayıtlı listeden yükle')}</Text>
                     </TouchableOpacity>
 
@@ -136,7 +139,7 @@ export default function TournamentScreen({ navigation, route }: any) {
                             onChangeText={setNewItem}
                             onSubmitEditing={addItem}
                             placeholder={t('tournament.add_participant', 'Katılımcı ekle...')}
-                            placeholderTextColor={Theme.colors.textSecondary}
+                            placeholderTextColor={theme.colors.textSecondary}
                         />
                         <TouchableOpacity style={styles.addBtn} onPress={addItem} accessibilityRole="button">
                             <Ionicons name="add" size={28} color="#FFF" />
@@ -148,7 +151,7 @@ export default function TournamentScreen({ navigation, route }: any) {
                             <View style={styles.seedBadge}><Text style={styles.seedText}>{idx + 1}</Text></View>
                             <Text style={styles.itemText} numberOfLines={1}>{item}</Text>
                             <TouchableOpacity onPress={() => removeItem(idx)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                                <Ionicons name="close-circle" size={20} color={Theme.colors.error} />
+                                <Ionicons name="close-circle" size={20} color={theme.colors.error} />
                             </TouchableOpacity>
                         </GlassCard>
                     ))}
@@ -224,97 +227,99 @@ export default function TournamentScreen({ navigation, route }: any) {
     );
 }
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: Theme.colors.background },
+function createStyles(theme: AppTheme) {
+    return StyleSheet.create({
+    container: { flex: 1, backgroundColor: theme.colors.background },
     header: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingHorizontal: Theme.spacing.md, paddingVertical: Theme.spacing.md,
+        paddingHorizontal: theme.spacing.md, paddingVertical: theme.spacing.md,
     },
     backBtn: {
         width: 44, height: 44, borderRadius: 22,
-        backgroundColor: Theme.colors.surface,
+        backgroundColor: theme.colors.surface,
         alignItems: 'center', justifyContent: 'center',
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
+        borderWidth: 1, borderColor: theme.colors.surfaceBorder,
     },
     headerCenter: { alignItems: 'center', flex: 1 },
-    title: { fontSize: 22, fontWeight: '900', color: Theme.colors.text },
+    title: { fontSize: 22, fontWeight: '900', color: theme.colors.text },
     roundBadge: {
-        backgroundColor: Theme.colors.primary, borderRadius: 12,
+        backgroundColor: theme.colors.primary, borderRadius: 12,
         paddingHorizontal: 10, paddingVertical: 2, marginTop: 4,
         fontSize: 11, color: '#FFF', fontWeight: '800',
     },
-    setupContent: { padding: Theme.spacing.md, paddingBottom: 60 },
-    sectionLabel: { color: Theme.colors.textSecondary, fontWeight: '700', fontSize: 13, marginBottom: Theme.spacing.md },
+    setupContent: { padding: theme.spacing.md, paddingBottom: 60 },
+    sectionLabel: { color: theme.colors.textSecondary, fontWeight: '700', fontSize: 13, marginBottom: theme.spacing.md },
     loadListBtn: {
         flexDirection: 'row', alignItems: 'center', gap: 8,
-        padding: Theme.spacing.md, borderRadius: Theme.borderRadius.md,
+        padding: theme.spacing.md, borderRadius: theme.borderRadius.md,
         backgroundColor: 'rgba(99,102,241,0.12)',
         borderWidth: 1, borderColor: 'rgba(99,102,241,0.3)',
-        marginBottom: Theme.spacing.md,
+        marginBottom: theme.spacing.md,
     },
-    loadListText: { color: Theme.colors.primary, fontWeight: '700', fontSize: 14 },
-    inputRow: { flexDirection: 'row', gap: Theme.spacing.sm, marginBottom: Theme.spacing.md },
+    loadListText: { color: theme.colors.primary, fontWeight: '700', fontSize: 14 },
+    inputRow: { flexDirection: 'row', gap: theme.spacing.sm, marginBottom: theme.spacing.md },
     input: {
-        flex: 1, backgroundColor: Theme.colors.surface, color: Theme.colors.text,
-        borderRadius: Theme.borderRadius.md, padding: Theme.spacing.md,
-        borderWidth: 1, borderColor: Theme.colors.surfaceBorder, fontSize: 15, minHeight: 52,
+        flex: 1, backgroundColor: theme.colors.surface, color: theme.colors.text,
+        borderRadius: theme.borderRadius.md, padding: theme.spacing.md,
+        borderWidth: 1, borderColor: theme.colors.surfaceBorder, fontSize: 15, minHeight: 52,
     },
     addBtn: {
-        width: 52, height: 52, borderRadius: Theme.borderRadius.md,
-        backgroundColor: Theme.colors.primary, alignItems: 'center', justifyContent: 'center',
+        width: 52, height: 52, borderRadius: theme.borderRadius.md,
+        backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center',
     },
     itemCard: {
-        flexDirection: 'row', alignItems: 'center', padding: Theme.spacing.md,
-        marginBottom: Theme.spacing.sm, borderRadius: Theme.borderRadius.md, gap: Theme.spacing.sm,
+        flexDirection: 'row', alignItems: 'center', padding: theme.spacing.md,
+        marginBottom: theme.spacing.sm, borderRadius: theme.borderRadius.md, gap: theme.spacing.sm,
     },
     seedBadge: {
         width: 28, height: 28, borderRadius: 14,
         backgroundColor: 'rgba(99,102,241,0.2)', alignItems: 'center', justifyContent: 'center',
     },
-    seedText: { color: Theme.colors.primary, fontWeight: '800', fontSize: 12 },
-    itemText: { flex: 1, color: Theme.colors.text, fontSize: 15, fontWeight: '600' },
+    seedText: { color: theme.colors.primary, fontWeight: '800', fontSize: 12 },
+    itemText: { flex: 1, color: theme.colors.text, fontSize: 15, fontWeight: '600' },
     startBtn: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-        backgroundColor: Theme.colors.primary, borderRadius: Theme.borderRadius.lg,
-        padding: Theme.spacing.md, marginTop: Theme.spacing.xl,
+        backgroundColor: theme.colors.primary, borderRadius: theme.borderRadius.lg,
+        padding: theme.spacing.md, marginTop: theme.spacing.xl,
     },
     startBtnText: { color: '#FFF', fontSize: 18, fontWeight: '800' },
-    playArea: { flex: 1, padding: Theme.spacing.md, alignItems: 'center' },
+    playArea: { flex: 1, padding: theme.spacing.md, alignItems: 'center' },
     progressBarTrack: {
-        width: '100%', height: 4, backgroundColor: Theme.colors.surface,
-        borderRadius: 2, marginBottom: Theme.spacing.sm, overflow: 'hidden',
+        width: '100%', height: 4, backgroundColor: theme.colors.surface,
+        borderRadius: 2, marginBottom: theme.spacing.sm, overflow: 'hidden',
     },
-    progressBarFill: { height: '100%', backgroundColor: Theme.colors.primary, borderRadius: 2 },
-    matchCounter: { color: Theme.colors.textSecondary, fontSize: 13, marginBottom: Theme.spacing.lg },
+    progressBarFill: { height: '100%', backgroundColor: theme.colors.primary, borderRadius: 2 },
+    matchCounter: { color: theme.colors.textSecondary, fontSize: 13, marginBottom: theme.spacing.lg },
     vsLabel: {
-        fontSize: 13, color: Theme.colors.textSecondary, fontWeight: '700',
-        letterSpacing: 2, marginBottom: Theme.spacing.lg,
+        fontSize: 13, color: theme.colors.textSecondary, fontWeight: '700',
+        letterSpacing: 2, marginBottom: theme.spacing.lg,
     },
-    matchContainer: { width: '100%', gap: Theme.spacing.md },
+    matchContainer: { width: '100%', gap: theme.spacing.md },
     matchCard: {
-        borderRadius: Theme.borderRadius.xl, padding: Theme.spacing.xl,
+        borderRadius: theme.borderRadius.xl, padding: theme.spacing.xl,
         alignItems: 'center', minHeight: 120, justifyContent: 'center',
         borderWidth: 2,
     },
-    matchCardA: { backgroundColor: 'rgba(99,102,241,0.15)', borderColor: Theme.colors.primary },
-    matchCardB: { backgroundColor: 'rgba(168,85,247,0.15)', borderColor: Theme.colors.secondary },
-    matchCardBye: { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: Theme.colors.surfaceBorder },
-    matchCardText: { fontSize: 22, fontWeight: '900', color: Theme.colors.text, textAlign: 'center', marginBottom: 8 },
+    matchCardA: { backgroundColor: 'rgba(99,102,241,0.15)', borderColor: theme.colors.primary },
+    matchCardB: { backgroundColor: 'rgba(168,85,247,0.15)', borderColor: theme.colors.secondary },
+    matchCardBye: { backgroundColor: 'rgba(255,255,255,0.04)', borderColor: theme.colors.surfaceBorder },
+    matchCardText: { fontSize: 22, fontWeight: '900', color: theme.colors.text, textAlign: 'center', marginBottom: 8 },
     matchCardTap: {
         backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 20,
         paddingHorizontal: 16, paddingVertical: 4,
     },
-    matchCardTapText: { color: Theme.colors.textSecondary, fontSize: 12, fontWeight: '600' },
-    byeText: { fontSize: 28, fontWeight: '900', color: Theme.colors.textSecondary },
-    byeHint: { fontSize: 12, color: Theme.colors.textSecondary, marginTop: 4 },
+    matchCardTapText: { color: theme.colors.textSecondary, fontSize: 12, fontWeight: '600' },
+    byeText: { fontSize: 28, fontWeight: '900', color: theme.colors.textSecondary },
+    byeHint: { fontSize: 12, color: theme.colors.textSecondary, marginTop: 4 },
     vsCircle: {
         alignSelf: 'center', width: 44, height: 44, borderRadius: 22,
-        backgroundColor: Theme.colors.surface, borderWidth: 1, borderColor: Theme.colors.surfaceBorder,
+        backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.surfaceBorder,
         alignItems: 'center', justifyContent: 'center',
     },
-    vsText: { color: Theme.colors.text, fontWeight: '900', fontSize: 12 },
+    vsText: { color: theme.colors.text, fontWeight: '900', fontSize: 12 },
     winnersSoFar: {
-        marginTop: Theme.spacing.xl, color: Theme.colors.textSecondary,
-        fontSize: 12, textAlign: 'center', paddingHorizontal: Theme.spacing.md,
+        marginTop: theme.spacing.xl, color: theme.colors.textSecondary,
+        fontSize: 12, textAlign: 'center', paddingHorizontal: theme.spacing.md,
     },
-});
+    });
+}
