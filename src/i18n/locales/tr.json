@@ -387,6 +387,8 @@
         "pro_active_desc": "Tüm özellikler açık",
         "restore": "Satın Alımları Geri Yükle",
         "restore_desc": "Önceki aboneliğini aktive et",
+        "sound": "Ses efektleri",
+        "sound_desc": "Çark, zar, tura sesleri",
         "logout": "Çıkış Yap",
         "logout_desc": "Oturumu sonlandır",
         "logout_demo": "Demo modunda zaten giriş yapılmamış durumdasın."

@@ -16,6 +16,7 @@ import { usePro } from '../../store/ProContext';
 import { AdManager } from '../../core/AdManager';
 import { useTheme } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
+import SoundManager from '../../core/SoundManager';
 
 interface HistoryItem {
     id: string;
@@ -136,7 +137,8 @@ export default function ResultScreen({ route, navigation }: any) {
     useEffect(() => {
         if (isSingleResult) {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            
+            SoundManager.play('winner');
+
             // Auto-save to history
             saveToHistory(type, result);
 

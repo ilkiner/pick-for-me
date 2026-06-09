@@ -9,6 +9,7 @@ import { PickEngine } from '../../core/PickEngine';
 import DiceFace from '../../components/DiceFace';
 import { useTheme } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
+import SoundManager from '../../core/SoundManager';
 
 export default function DiceScreen({ navigation }: any) {
     const { t } = useTranslation();
@@ -28,6 +29,7 @@ export default function DiceScreen({ navigation }: any) {
         if (isRolling) return;
         setIsRolling(true);
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+        SoundManager.play('dice-roll');
 
         Animated.parallel([
             Animated.sequence([

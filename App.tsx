@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { RootNavigator, navigationRef, linking } from './src/navigation';
 import { ProProvider } from './src/store/ProContext';
 import { ThemeProvider, useTheme } from './src/store/ThemeContext';
+import { SoundProvider } from './src/store/SoundContext';
 import { SavedListsStorage } from './src/storage/savedLists';
 import './src/i18n';
 import { isSupabaseConfigured, supabase } from './src/storage/supabase';
@@ -88,7 +89,9 @@ function AppInner() {
 export default function App() {
     return (
         <ThemeProvider>
-            <AppInner />
+            <SoundProvider>
+                <AppInner />
+            </SoundProvider>
         </ThemeProvider>
     );
 }

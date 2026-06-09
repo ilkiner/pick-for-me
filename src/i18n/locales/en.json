@@ -91,6 +91,8 @@
         "pro_active_desc": "All features unlocked",
         "restore": "Restore Purchases",
         "restore_desc": "Activate a previous subscription",
+        "sound": "Sound effects",
+        "sound_desc": "Wheel, dice, coin sounds",
         "logout": "Log Out",
         "logout_desc": "End session",
         "logout_demo": "You're already signed out in demo mode."

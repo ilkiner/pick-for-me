@@ -8,6 +8,7 @@ import { PickEngine } from '../../core/PickEngine';
 import { useTheme } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
 import { ModernButton } from '../../components/ModernButton';
+import SoundManager from '../../core/SoundManager';
 
 export default function CoinFlipScreen({ navigation }: any) {
     const { t, i18n } = useTranslation();
@@ -45,6 +46,7 @@ export default function CoinFlipScreen({ navigation }: any) {
     const handleFlip = async () => {
         if (isFlipping) return;
         setIsFlipping(true);
+        SoundManager.play('coin-flip');
 
         const newCount = flipCount + 1;
         let isEdge = false;

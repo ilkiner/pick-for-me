@@ -19,6 +19,7 @@ import { useTheme } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
 import { GlassCard } from '../../components/GlassCard';
 import { ModernButton } from '../../components/ModernButton';
+import SoundManager from '../../core/SoundManager';
 
 export default function WheelOfFortuneScreen({ navigation, route }: any) {
     const { t } = useTranslation();
@@ -79,6 +80,8 @@ export default function WheelOfFortuneScreen({ navigation, route }: any) {
     };
 
     const onSpinDone = (result: { id: string; label: string }) => {
+        SoundManager.stopLoop();
+        SoundManager.play('wheel-stop');
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         setIsSpinning(false);
         setWinner(result);
@@ -95,6 +98,8 @@ export default function WheelOfFortuneScreen({ navigation, route }: any) {
         setIsSpinning(true);
         setWinner(null);
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        SoundManager.play('tap');
+        SoundManager.playLoop('wheel-spin');
 
         const selectedIndex = Math.floor(Math.random() * options.length);
         const result = options[selectedIndex];

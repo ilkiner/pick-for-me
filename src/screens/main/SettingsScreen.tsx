@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,6 +8,7 @@ import { isSupabaseConfigured, supabase } from '../../storage/supabase';
 import { usePro } from '../../store/ProContext';
 import { useTheme, ThemeMode } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
+import { useSound } from '../../store/SoundContext';
 
 function createStyles(theme: AppTheme) {
     return StyleSheet.create({
@@ -63,6 +64,7 @@ export default function SettingsScreen({ navigation }: any) {
     const { t, i18n } = useTranslation();
     const { isPro, openPaywall, restorePurchases } = usePro();
     const { theme, mode, setMode } = useTheme();
+    const { soundEnabled, setSoundEnabled } = useSound();
     const styles = useMemo(() => createStyles(theme), [theme]);
 
     const toggleLanguage = () => {
@@ -169,6 +171,25 @@ export default function SettingsScreen({ navigation }: any) {
                         <TouchableOpacity style={styles.toggleBtn} onPress={toggleLanguage}>
                             <Text style={styles.toggleText}>{i18n.language === 'tr' ? 'EN' : 'TR'}</Text>
                         </TouchableOpacity>
+                    </View>
+                </GlassCard>
+
+                {/* Sound effects */}
+                <GlassCard style={styles.section}>
+                    <View style={styles.row}>
+                        <View style={styles.iconWrapper}>
+                            <Ionicons name="musical-notes-outline" size={22} color={theme.colors.primary} />
+                        </View>
+                        <View style={styles.rowContent}>
+                            <Text style={styles.rowTitle}>{t('settings.sound', 'Ses efektleri')}</Text>
+                            <Text style={styles.rowSubtitle}>{t('settings.sound_desc', 'Çark, zar, tura sesleri')}</Text>
+                        </View>
+                        <Switch
+                            value={soundEnabled}
+                            onValueChange={setSoundEnabled}
+                            trackColor={{ false: theme.colors.surface, true: theme.colors.primary }}
+                            thumbColor="#fff"
+                        />
                     </View>
                 </GlassCard>
 
