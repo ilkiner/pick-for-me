@@ -88,20 +88,20 @@ export async function pushHistoryItemToCloud(item: HistoryItem): Promise<void> {
     if (error) console.warn('[Sync] pushHistory error:', error.message);
 }
 
-export async function pullHistoryFromCloud(): Promise<HistoryItem[] | null> {
+export async function pullHistoryFromCloud(retentionMs: number = 48 * 60 * 60 * 1000): Promise<HistoryItem[] | null> {
     if (!isSupabaseConfigured()) return null;
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return null;
 
-    // Only pull last 48 h worth of history
-    const since = Date.now() - 48 * 60 * 60 * 1000;
+    // Pull window matches the caller's retention (48 h free / 10 days pro)
+    const since = Date.now() - retentionMs;
 
     const { data, error } = await supabase
         .from('activity_history')
         .select('*')
         .gte('timestamp', since)
         .order('timestamp', { ascending: false })
-        .limit(200);
+        .limit(500);
 
     if (error) {
         console.warn('[Sync] pullHistory error:', error.message);

@@ -48,7 +48,7 @@
     },
     "home": {
         "title": "ANA SAYFA",
-        "subtitle": "Hızlı karar veriniz",
+        "subtitle": "Kararsız mısın? Bırak biz karar verelim.",
         "tools": {
             "wheel": "Çarkıfelek",
             "roll": "Zar At",
@@ -270,6 +270,7 @@
         },
         "results": {
             "title": "SON 48 SAAT",
+            "title_pro": "SON 10 GÜN",
             "empty": "Henüz aktivite kaydedilmedi!",
             "heads": "Yazı",
             "tails": "Tura",
@@ -360,10 +361,13 @@
         "feature_unlimited_lists": "Sınırsız liste ve çark kaydet",
         "feature_no_ads": "Hiç reklam görmeden kullan",
         "feature_themes": "Premium temalar ve özelleştirme",
-        "feature_cloud_sync": "Bulut senkronu (Faz 4)",
+        "feature_cloud_sync": "Cihazlar arası bulut senkronu",
         "feature_no_watermark": "Paylaşımlarda filigran yok",
         "feature_all_content": "Tüm içerik paketleri",
-        "feature_extended_history": "Genişletilmiş geçmiş"
+        "feature_extended_history": "Genişletilmiş geçmiş",
+        "secure_payment": "App Store / Google Play ile güvenli ödeme",
+        "cancel_anytime": "Tek dokunuşla istediğin zaman iptal et",
+        "trust_users": "Binlerce mutlu kullanıcıya katıl"
     },
     "pro": {
         "upgrade": "Pro'ya Geç",

@@ -10,6 +10,7 @@ import { useTheme } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
 import { ModernButton } from '../../components/ModernButton';
 import { GlassCard } from '../../components/GlassCard';
+import { HISTORY_MAX_ITEMS } from '../../store/ProContext';
 
 type ColorMode = 'random' | 'organic' | 'vivid' | 'digital' | 'soft';
 
@@ -79,7 +80,7 @@ export default function ColorPickerScreen({ navigation }: any) {
     const saveToHistory = async (val: GeneratedColor) => {
         try {
             const stored = await AsyncStorage.getItem('@app_history');
-            const parsed = stored ? JSON.parse(stored) : [];
+            let parsed = stored ? JSON.parse(stored) : [];
             const newItem = {
                 id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
                 type: 'color',
@@ -87,6 +88,10 @@ export default function ColorPickerScreen({ navigation }: any) {
                 timestamp: Date.now()
             };
             parsed.push(newItem);
+            // Safety cap: keep newest items only
+            if (parsed.length > HISTORY_MAX_ITEMS) {
+                parsed = parsed.slice(parsed.length - HISTORY_MAX_ITEMS);
+            }
             await AsyncStorage.setItem('@app_history', JSON.stringify(parsed));
         } catch (e) {
             console.error("Failed to save history", e);

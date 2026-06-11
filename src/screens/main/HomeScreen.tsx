@@ -31,19 +31,24 @@ function createStyles(theme: AppTheme) {
     return StyleSheet.create({
         container: { flex: 1, backgroundColor: theme.colors.background },
         listContent: { paddingHorizontal: theme.spacing.md, paddingBottom: theme.spacing.xl },
-        headerContainer: { paddingVertical: theme.spacing.lg },
-        titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: theme.spacing.xs },
+        headerContainer: { paddingTop: theme.spacing.sm, paddingBottom: theme.spacing.md },
+        titleRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', paddingLeft: theme.spacing.xs },
         titleSection: { alignItems: 'flex-start', flex: 1 },
         proBadge: {
-            flexDirection: 'row', alignItems: 'center', gap: 5,
-            backgroundColor: 'rgba(255,215,0,0.12)',
-            borderWidth: 1, borderColor: 'rgba(255,215,0,0.3)',
-            borderRadius: 20, paddingHorizontal: 10, paddingVertical: 6,
+            flexDirection: 'row', alignItems: 'center', gap: 4,
+            backgroundColor: theme.colors.primary,
+            borderRadius: 14, paddingHorizontal: 12, paddingVertical: 7,
+            marginTop: 4,
+            shadowColor: theme.colors.primary,
+            shadowOpacity: 0.35,
+            shadowRadius: 8,
+            shadowOffset: { width: 0, height: 3 },
+            elevation: 4,
         },
-        proBadgeText: { color: '#FFD700', fontSize: 12, fontWeight: '800' },
+        proBadgeText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700', letterSpacing: 0.3 },
         banner: { marginTop: theme.spacing.md, marginBottom: theme.spacing.sm },
-        title: { fontSize: 32, fontWeight: '900', color: theme.colors.text, letterSpacing: 2 },
-        subtitle: { fontSize: 16, color: theme.colors.textSecondary, marginTop: 4, fontWeight: '500' },
+        title: { fontSize: 30, fontWeight: '800', color: theme.colors.text, letterSpacing: -0.8 },
+        subtitle: { fontSize: 13, color: theme.colors.textSecondary, marginTop: 5, fontWeight: '400', letterSpacing: 0 },
         columnWrapper: { justifyContent: 'space-between' },
         card: {
             width: (width - (theme.spacing.md * 3)) / 2,
@@ -88,12 +93,12 @@ export default function HomeScreen({ navigation }: any) {
         <View style={styles.headerContainer}>
             <View style={styles.titleRow}>
                 <View style={styles.titleSection}>
-                    <Text style={styles.title}>PICK FOR ME</Text>
-                    <Text style={styles.subtitle}>{t('home.subtitle', 'Hızlı karar veriniz')}</Text>
+                    <Text style={styles.title}>Pick For Me</Text>
+                    <Text style={styles.subtitle}>{t('home.subtitle', 'Kararsız mısın? Bırak biz karar verelim.')}</Text>
                 </View>
                 {!isPro && (
-                    <TouchableOpacity style={styles.proBadge} onPress={openPaywall} activeOpacity={0.8}>
-                        <Ionicons name="diamond" size={13} color="#FFD700" />
+                    <TouchableOpacity style={styles.proBadge} onPress={openPaywall} activeOpacity={0.85}>
+                        <Ionicons name="flash" size={12} color="#FFFFFF" />
                         <Text style={styles.proBadgeText}>{t('pro.upgrade_short')}</Text>
                     </TouchableOpacity>
                 )}

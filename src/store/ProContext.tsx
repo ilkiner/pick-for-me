@@ -21,6 +21,11 @@ export const ENTITLEMENT_PRO = 'pro';
 export const FREE_LIST_LIMIT = 3;
 export const FREE_ITEM_LIMIT = 20;
 
+// ─── Activity history retention ───────────────────────────────────────────────
+export const HISTORY_RETENTION_FREE_MS = 48 * 60 * 60 * 1000;       // 48 hours
+export const HISTORY_RETENTION_PRO_MS = 10 * 24 * 60 * 60 * 1000;   // 10 days
+export const HISTORY_MAX_ITEMS = 500;                                // safety cap
+
 // Cache stored in SecureStore — tamper-resistant on rooted/jailbroken devices.
 // Structure: JSON { value: boolean, ts: number } — expires after 24 h
 const CACHE_KEY = 'pro_status_v2';
@@ -54,6 +59,10 @@ interface ProContextValue {
     purchaseYearly: () => Promise<boolean>;
     restorePurchases: () => Promise<boolean>;
     openPaywall: () => void;
+    /** Dev-only: forced Pro state for testing. null = real RevenueCat state */
+    devProOverride: boolean | null;
+    /** Dev-only: cycle free → pro → real state. No-op in production builds. */
+    devTogglePro: () => void;
 }
 
 const ProContext = createContext<ProContextValue>({
@@ -64,6 +73,8 @@ const ProContext = createContext<ProContextValue>({
     purchaseYearly: async () => false,
     restorePurchases: async () => false,
     openPaywall: () => {},
+    devProOverride: null,
+    devTogglePro: () => {},
 });
 
 interface Props {
@@ -75,6 +86,13 @@ export function ProProvider({ children, navigationRef }: Props) {
     const [isPro, setIsPro] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [offerings, setOfferings] = useState<any>(null);
+    const [devProOverride, setDevProOverride] = useState<boolean | null>(null);
+
+    // Dev-only: cycle Free → Pro → real state for testing both tiers
+    const devTogglePro = useCallback(() => {
+        if (!__DEV__) return;
+        setDevProOverride(prev => (prev === null ? true : prev === true ? false : null));
+    }, []);
 
     useEffect(() => {
         (async () => {
@@ -153,10 +171,13 @@ export function ProProvider({ children, navigationRef }: Props) {
         }
     }, [navigationRef]);
 
+    const effectiveIsPro = __DEV__ && devProOverride !== null ? devProOverride : isPro;
+
     return (
         <ProContext.Provider value={{
-            isPro, isLoading, offerings,
+            isPro: effectiveIsPro, isLoading, offerings,
             purchaseMonthly, purchaseYearly, restorePurchases, openPaywall,
+            devProOverride, devTogglePro,
         }}>
             {children}
         </ProContext.Provider>

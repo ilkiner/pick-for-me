@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Switch } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Switch, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,7 +15,7 @@ function createStyles(theme: AppTheme) {
         container: { flex: 1, backgroundColor: theme.colors.background },
         header: { padding: theme.spacing.lg, paddingBottom: theme.spacing.md },
         title: { fontSize: 32, fontWeight: '800', color: theme.colors.text, letterSpacing: 0.5 },
-        content: { flex: 1, padding: theme.spacing.md },
+        content: { flexGrow: 1, padding: theme.spacing.md },
         section: { marginBottom: theme.spacing.md, padding: theme.spacing.md, borderRadius: theme.borderRadius.lg },
         proSection: { borderColor: 'rgba(255,215,0,0.3)', borderWidth: 1 },
         row: { flexDirection: 'row', alignItems: 'center' },
@@ -51,6 +51,10 @@ function createStyles(theme: AppTheme) {
         },
         segBtnText: { fontSize: 13, fontWeight: '700', color: theme.colors.textSecondary },
         segBtnTextActive: { color: '#FFFFFF' },
+        segFlag: { fontSize: 16, marginBottom: 2 },
+        devSection: { borderColor: 'rgba(245,158,11,0.35)', borderWidth: 1 },
+        devBadge: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
+        devBadgeText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
     });
 }
 
@@ -60,17 +64,18 @@ const THEME_OPTIONS: { mode: ThemeMode; labelKey: string; icon: string }[] = [
     { mode: 'system', labelKey: 'settings.theme_system', icon: 'phone-portrait' },
 ];
 
+const LANGUAGE_OPTIONS: { code: string; label: string; flag: string }[] = [
+    { code: 'tr', label: 'Türkçe',  flag: '🇹🇷' },
+    { code: 'en', label: 'English', flag: '🇬🇧' },
+    { code: 'pl', label: 'Polski',  flag: '🇵🇱' },
+];
+
 export default function SettingsScreen({ navigation }: any) {
     const { t, i18n } = useTranslation();
-    const { isPro, openPaywall, restorePurchases } = usePro();
+    const { isPro, openPaywall, restorePurchases, devProOverride, devTogglePro } = usePro();
     const { theme, mode, setMode } = useTheme();
     const { soundEnabled, setSoundEnabled } = useSound();
     const styles = useMemo(() => createStyles(theme), [theme]);
-
-    const toggleLanguage = () => {
-        const nextLang = i18n.language === 'tr' ? 'en' : 'tr';
-        i18n.changeLanguage(nextLang);
-    };
 
     const handleLogout = async () => {
         if (!isSupabaseConfigured()) {
@@ -103,7 +108,7 @@ export default function SettingsScreen({ navigation }: any) {
                 <Text style={styles.title}>{t('settings.title', 'Ayarlar')}</Text>
             </View>
 
-            <View style={styles.content}>
+            <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
                 {/* Subscription status */}
                 <GlassCard style={[styles.section, isPro && styles.proSection] as any}>
                     <TouchableOpacity
@@ -166,11 +171,22 @@ export default function SettingsScreen({ navigation }: any) {
                         </View>
                         <View style={styles.rowContent}>
                             <Text style={styles.rowTitle}>{t('settings.language', 'Dil')}</Text>
-                            <Text style={styles.rowSubtitle}>{i18n.language === 'tr' ? 'Türkçe' : 'English'}</Text>
                         </View>
-                        <TouchableOpacity style={styles.toggleBtn} onPress={toggleLanguage}>
-                            <Text style={styles.toggleText}>{i18n.language === 'tr' ? 'EN' : 'TR'}</Text>
-                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.segmentRow}>
+                        {LANGUAGE_OPTIONS.map(lang => (
+                            <TouchableOpacity
+                                key={lang.code}
+                                style={[styles.segBtn, i18n.language === lang.code && styles.segBtnActive]}
+                                onPress={() => i18n.changeLanguage(lang.code)}
+                                activeOpacity={0.8}
+                            >
+                                <Text style={styles.segFlag}>{lang.flag}</Text>
+                                <Text style={[styles.segBtnText, i18n.language === lang.code && styles.segBtnTextActive]}>
+                                    {lang.label}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
                     </View>
                 </GlassCard>
 
@@ -221,10 +237,32 @@ export default function SettingsScreen({ navigation }: any) {
                     </TouchableOpacity>
                 </GlassCard>
 
+                {/* DEV ONLY — Pro/Free test switch (stripped from production builds) */}
+                {__DEV__ && (
+                    <GlassCard style={[styles.section, styles.devSection] as any}>
+                        <TouchableOpacity style={styles.row} onPress={devTogglePro}>
+                            <View style={[styles.iconWrapper, { backgroundColor: 'rgba(245,158,11,0.12)' }]}>
+                                <Ionicons name="construct" size={22} color="#F59E0B" />
+                            </View>
+                            <View style={styles.rowContent}>
+                                <Text style={[styles.rowTitle, { color: '#F59E0B' }]}>
+                                    DEV: {devProOverride === null ? 'Gerçek durum' : devProOverride ? 'PRO (zorlandı)' : 'ÜCRETSİZ (zorlandı)'}
+                                </Text>
+                                <Text style={styles.rowSubtitle}>Dokun: Pro → Ücretsiz → Gerçek</Text>
+                            </View>
+                            <View style={[styles.devBadge, { backgroundColor: devProOverride === true ? 'rgba(16,185,129,0.15)' : devProOverride === false ? 'rgba(239,68,68,0.15)' : theme.colors.surface }]}>
+                                <Text style={[styles.devBadgeText, { color: devProOverride === true ? theme.colors.success : devProOverride === false ? theme.colors.error : theme.colors.textSecondary }]}>
+                                    {devProOverride === true ? 'PRO' : devProOverride === false ? 'FREE' : 'AUTO'}
+                                </Text>
+                            </View>
+                        </TouchableOpacity>
+                    </GlassCard>
+                )}
+
                 <View style={styles.versionContainer}>
                     <Text style={styles.versionText}>Pick For Me v1.0.0</Text>
                 </View>
-            </View>
+            </ScrollView>
         </SafeAreaView>
     );
 }

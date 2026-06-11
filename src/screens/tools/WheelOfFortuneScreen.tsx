@@ -101,12 +101,16 @@ export default function WheelOfFortuneScreen({ navigation, route }: any) {
         SoundManager.play('tap');
         SoundManager.playLoop('wheel-spin');
 
-        const selectedIndex = Math.floor(Math.random() * options.length);
-        const result = options[selectedIndex];
         const N = options.length;
-        const extraFraction = 1 - (selectedIndex + 0.5) / N;
-        const totalTurns = 5 + extraFraction;
-        const endRad = spinRad.value + totalTurns * 2 * Math.PI;
+        const selectedIndex = Math.floor(Math.random() * N);
+        const result = options[selectedIndex];
+
+        const TWO_PI = 2 * Math.PI;
+        const targetAngle = (1 - (selectedIndex + 0.5) / N) * TWO_PI;
+        const currentAngle = ((spinRad.value % TWO_PI) + TWO_PI) % TWO_PI;
+        let delta = targetAngle - currentAngle;
+        if (delta < 0) delta += TWO_PI;
+        const endRad = spinRad.value + 5 * TWO_PI + delta;
 
         spinRad.value = withTiming(endRad, {
             duration: 4200,

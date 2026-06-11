@@ -12,7 +12,7 @@ import * as Sharing from 'expo-sharing';
 import QRCode from 'react-native-qrcode-svg';
 import { ModernButton } from '../../components/ModernButton';
 import { GlassCard } from '../../components/GlassCard';
-import { usePro } from '../../store/ProContext';
+import { usePro, HISTORY_RETENTION_FREE_MS, HISTORY_RETENTION_PRO_MS, HISTORY_MAX_ITEMS } from '../../store/ProContext';
 import { AdManager } from '../../core/AdManager';
 import { useTheme } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
@@ -107,18 +107,21 @@ export default function ResultScreen({ route, navigation }: any) {
             const stored = await AsyncStorage.getItem('@app_history');
             if (stored) {
                 const parsed: HistoryItem[] = JSON.parse(stored);
-                // Filter for last 48 hours
-                const fortyEightHoursAgo = Date.now() - (48 * 60 * 60 * 1000);
-                const recent = parsed.filter(item => item.timestamp > fortyEightHoursAgo);
-                
-                // Sort descending (newest first)
-                recent.sort((a, b) => b.timestamp - a.timestamp);
-                
-                setHistory(recent);
-                
+
+                // Storage always keeps the PRO window (10 days) so an upgrade
+                // unlocks older history retroactively and a lapse loses nothing.
+                const storageCutoff = Date.now() - HISTORY_RETENTION_PRO_MS;
+                let kept = parsed.filter(item => item.timestamp > storageCutoff);
+                kept.sort((a, b) => b.timestamp - a.timestamp);
+                kept = kept.slice(0, HISTORY_MAX_ITEMS);
+
+                // Display window depends on tier: 10 days pro, 48 h free
+                const displayCutoff = Date.now() - (isPro ? HISTORY_RETENTION_PRO_MS : HISTORY_RETENTION_FREE_MS);
+                setHistory(kept.filter(item => item.timestamp > displayCutoff));
+
                 // Cleanup old items from storage if needed
-                if (recent.length !== parsed.length) {
-                     await AsyncStorage.setItem('@app_history', JSON.stringify(recent));
+                if (kept.length !== parsed.length) {
+                     await AsyncStorage.setItem('@app_history', JSON.stringify(kept));
                 }
             }
         } catch (e) {
@@ -185,7 +188,7 @@ export default function ResultScreen({ route, navigation }: any) {
     const saveToHistory = async (saveType: string, val: any) => {
         try {
             const stored = await AsyncStorage.getItem('@app_history');
-            const parsed = stored ? JSON.parse(stored) : [];
+            let parsed = stored ? JSON.parse(stored) : [];
             const newItem: HistoryItem = {
                 id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
                 type: saveType || 'unknown',
@@ -193,6 +196,10 @@ export default function ResultScreen({ route, navigation }: any) {
                 timestamp: Date.now()
             };
             parsed.push(newItem);
+            // Safety cap: keep newest items only
+            if (parsed.length > HISTORY_MAX_ITEMS) {
+                parsed = parsed.slice(parsed.length - HISTORY_MAX_ITEMS);
+            }
             await AsyncStorage.setItem('@app_history', JSON.stringify(parsed));
             pushHistoryItemToCloud(newItem).catch(() => {});
         } catch (e) {
@@ -292,7 +299,7 @@ export default function ResultScreen({ route, navigation }: any) {
         return (
             <SafeAreaView style={styles.container}>
                 <View style={styles.historyHeader}>
-                    <Text style={styles.headerTitle}>{t('tools.results.title')}</Text>
+                    <Text style={styles.headerTitle}>{isPro ? t('tools.results.title_pro') : t('tools.results.title')}</Text>
                     {history.length > 0 && (
                         <TouchableOpacity
                             onPress={clearHistory}
