@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { MotiView } from 'moti';
 import * as Haptics from 'expo-haptics';
 import { AppTheme } from '../../core/Theme';
+import { track } from '../../core/Analytics';
 import { useTheme } from '../../store/ThemeContext';
 import { usePro } from '../../store/ProContext';
 
@@ -138,6 +139,8 @@ export default function PaywallScreen({ navigation }: any) {
     const [purchasing, setPurchasing] = useState(false);
     const [restoring, setRestoring] = useState(false);
 
+    React.useEffect(() => { track('paywall_viewed'); }, []);
+
     if (isPro) {
         return (
             <SafeAreaView style={styles.container}>
@@ -163,6 +166,7 @@ export default function PaywallScreen({ navigation }: any) {
                 ? await purchaseYearly()
                 : await purchaseMonthly();
             if (success) {
+                track('subscription_started', { plan: selectedPlan });
                 navigation.goBack();
             }
         } finally {

@@ -12,6 +12,7 @@ import { usePro } from '../../store/ProContext';
 import { useTheme } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
 import { trackToolVisit, getRecentToolIds, toggleFavoriteTool, getFavoriteToolIds } from '../../core/toolPreferences';
+import { track } from '../../core/Analytics';
 
 const { width } = Dimensions.get('window');
 
@@ -109,6 +110,7 @@ export default function HomeScreen({ navigation }: any) {
 
     const handleToolPress = useCallback((item: ToolItem) => {
         trackToolVisit(item.id);
+        track('tool_opened', { tool: item.key });
         setRecentIds(prev => [item.id, ...prev.filter(id => id !== item.id)].slice(0, 4));
         navigation.navigate(item.route);
     }, [navigation]);

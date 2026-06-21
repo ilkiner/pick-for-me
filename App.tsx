@@ -4,6 +4,7 @@ import { View, ActivityIndicator } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
+import * as Sentry from '@sentry/react-native';
 import { RootNavigator, navigationRef, linking } from './src/navigation';
 import { ProProvider } from './src/store/ProContext';
 import { ThemeProvider, useTheme } from './src/store/ThemeContext';
@@ -15,6 +16,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import * as Localization from 'expo-localization';
 import OnboardingScreen, { ONBOARDING_KEY } from './src/screens/main/OnboardingScreen';
+import { ErrorBoundary } from './src/components/ErrorBoundary';
+import { initAnalytics, track } from './src/core/Analytics';
+
+const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
+const sentryEnabled = Boolean(SENTRY_DSN);
+
+if (sentryEnabled) {
+    Sentry.init({
+        dsn: SENTRY_DSN!,
+        environment: __DEV__ ? 'development' : 'production',
+        tracesSampleRate: __DEV__ ? 0 : 0.2,
+    });
+}
 
 function AppInner() {
     const [isReady, setIsReady] = useState(false);
@@ -41,6 +55,9 @@ function AppInner() {
                 const seen = await AsyncStorage.getItem(ONBOARDING_KEY);
                 if (seen) setOnboardingDone(true);
             } catch {}
+
+            initAnalytics();
+            track('app_opened');
 
             if (!isSupabaseConfigured()) {
                 console.warn('Supabase not configured. Running in demo mode.');
@@ -102,12 +119,16 @@ function AppInner() {
     );
 }
 
-export default function App() {
+function App() {
     return (
         <ThemeProvider>
             <SoundProvider>
-                <AppInner />
+                <ErrorBoundary>
+                    <AppInner />
+                </ErrorBoundary>
             </SoundProvider>
         </ThemeProvider>
     );
 }
+
+export default sentryEnabled ? Sentry.wrap(App) : App;

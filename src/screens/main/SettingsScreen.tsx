@@ -9,6 +9,7 @@ import { usePro } from '../../store/ProContext';
 import { useTheme, ThemeMode } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
 import { useSound } from '../../store/SoundContext';
+import { track } from '../../core/Analytics';
 
 function createStyles(theme: AppTheme) {
     return StyleSheet.create({
@@ -147,7 +148,7 @@ export default function SettingsScreen({ navigation }: any) {
                             <TouchableOpacity
                                 key={opt.mode}
                                 style={[styles.segBtn, mode === opt.mode && styles.segBtnActive]}
-                                onPress={() => setMode(opt.mode)}
+                                onPress={() => { setMode(opt.mode); track('theme_changed', { theme: opt.mode }); }}
                                 activeOpacity={0.8}
                             >
                                 <Ionicons
