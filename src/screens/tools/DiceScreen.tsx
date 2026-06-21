@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, Easing } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,25 +29,41 @@ export default function DiceScreen({ navigation }: any) {
         if (isRolling) return;
         setIsRolling(true);
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+
+        const newResults = PickEngine.rollDice(diceCount, 6);
+
+        const spinLoop = Animated.loop(
+            Animated.timing(rotateAnim, {
+                toValue: 1,
+                duration: 900,
+                easing: Easing.linear,
+                useNativeDriver: true,
+            })
+        );
+        const shakeLoop = Animated.loop(
+            Animated.sequence([
+                Animated.timing(translateX, { toValue: -7, duration: 90, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+                Animated.timing(translateX, { toValue: 7, duration: 90, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+                Animated.timing(translateX, { toValue: -4, duration: 90, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+                Animated.timing(translateX, { toValue: 4, duration: 90, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+                Animated.timing(translateX, { toValue: 0, duration: 90, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+            ])
+        );
+        spinLoop.start();
+        shakeLoop.start();
+
         SoundManager.play('dice-roll');
 
-        Animated.parallel([
-            Animated.sequence([
-                Animated.timing(translateX, { toValue: -14, duration: 45, useNativeDriver: true }),
-                Animated.timing(translateX, { toValue: 14, duration: 45, useNativeDriver: true }),
-                Animated.timing(translateX, { toValue: -10, duration: 45, useNativeDriver: true }),
-                Animated.timing(translateX, { toValue: 10, duration: 45, useNativeDriver: true }),
-                Animated.timing(translateX, { toValue: 0, duration: 45, useNativeDriver: true }),
-            ]),
-            Animated.timing(rotateAnim, { toValue: 1, duration: 240, useNativeDriver: true }),
-        ]).start(() => {
+        setTimeout(() => {
+            spinLoop.stop();
+            shakeLoop.stop();
             rotateAnim.setValue(0);
-            const newResults = PickEngine.rollDice(diceCount, 6);
+            translateX.setValue(0);
             setResults(newResults);
             setRollKey(k => k + 1);
             setIsRolling(false);
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        });
+        }, 3800);
     };
 
     const rotation = rotateAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });

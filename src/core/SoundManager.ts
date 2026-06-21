@@ -3,12 +3,12 @@ import { Audio } from 'expo-av';
 export type SoundName = 'wheel-spin' | 'wheel-stop' | 'dice-roll' | 'coin-flip' | 'winner' | 'tap';
 
 const SOUND_FILES: Record<SoundName, any> = {
-    'wheel-spin': require('../../assets/sounds/wheel-spin.mp3'),
+    'wheel-spin': require('../../assets/sounds/mixkit-bike-wheel-spinning-1613.wav'),
     'wheel-stop': require('../../assets/sounds/wheel-stop.mp3'),
-    'dice-roll':  require('../../assets/sounds/dice-roll.mp3'),
-    'coin-flip':  require('../../assets/sounds/coin-flip.mp3'),
-    'winner':     require('../../assets/sounds/winner.mp3'),
-    'tap':        require('../../assets/sounds/tap.mp3'),
+    'dice-roll':  require('../../assets/sounds/mixkit-drum-roll-566.wav'),
+    'coin-flip':  require('../../assets/sounds/677853__el_boss__coin-flip-ping.mp3'),
+    'winner':     require('../../assets/sounds/mixkit-ethereal-fairy-win-sound-2019.wav'),
+    'tap':        require('../../assets/sounds/mixkit-arcade-game-jump-coin-216.wav'),
 };
 
 class SoundManager {
@@ -21,7 +21,7 @@ class SoundManager {
         if (this._initialized) return;
         try {
             await Audio.setAudioModeAsync({
-                playsInSilentModeIOS: false,
+                playsInSilentModeIOS: true,
                 staysActiveInBackground: false,
             });
             this._initialized = true;
@@ -46,6 +46,74 @@ class SoundManager {
         if (!enabled) {
             this._stopLoop();
         }
+    }
+
+    async getDuration(name: SoundName): Promise<number> {
+        const sound = this.sounds[name];
+        if (!sound) return 0;
+        try {
+            const status = await sound.getStatusAsync();
+            if (status.isLoaded) return status.durationMillis ?? 0;
+        } catch {}
+        return 0;
+    }
+
+    // Plays a sound and fires callbacks based on real playback position.
+    // onNearEnd fires when msBeforeEnd ms remain; onEnd fires when sound finishes.
+    async playTracked(
+        name: SoundName,
+        onNearEnd: () => void,
+        onEnd: () => void,
+        msBeforeEnd = 800
+    ): Promise<void> {
+        if (!this._enabled) { onNearEnd(); onEnd(); return; }
+        const sound = this.sounds[name];
+        if (!sound) { onNearEnd(); onEnd(); return; }
+
+        let nearFired = false;
+
+        sound.setOnPlaybackStatusUpdate((status) => {
+            if (!status.isLoaded) return;
+            if (!nearFired && status.durationMillis) {
+                const remaining = status.durationMillis - (status.positionMillis ?? 0);
+                if (remaining <= msBeforeEnd) {
+                    nearFired = true;
+                    onNearEnd();
+                }
+            }
+            if (status.didJustFinish) {
+                sound.setOnPlaybackStatusUpdate(null);
+                if (!nearFired) { nearFired = true; onNearEnd(); }
+                onEnd();
+            }
+        });
+
+        try {
+            await sound.setStatusAsync({ progressUpdateIntervalMillis: 100 });
+            await sound.setPositionAsync(0);
+            await sound.playAsync();
+        } catch {
+            onNearEnd();
+            onEnd();
+        }
+    }
+
+    async playAndWait(name: SoundName): Promise<void> {
+        if (!this._enabled) return;
+        const sound = this.sounds[name];
+        if (!sound) return;
+        return new Promise((resolve) => {
+            const cleanup = () => {
+                try { sound.setOnPlaybackStatusUpdate(null); } catch {}
+                resolve();
+            };
+            sound.setOnPlaybackStatusUpdate((status) => {
+                if (!status.isLoaded || status.didJustFinish) cleanup();
+            });
+            sound.setPositionAsync(0)
+                .then(() => sound.playAsync())
+                .catch(() => cleanup());
+        });
     }
 
     async play(name: SoundName): Promise<void> {

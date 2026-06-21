@@ -79,17 +79,16 @@ export default function WheelOfFortuneScreen({ navigation, route }: any) {
         saveOptions(options.filter(o => o.id !== id));
     };
 
-    const onSpinDone = (result: { id: string; label: string }) => {
+    const onSpinDone = async (result: { id: string; label: string }) => {
         SoundManager.stopLoop();
-        SoundManager.play('wheel-stop');
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         setIsSpinning(false);
         setWinner(result);
-        // Auto-navigate after brief winner display
-        setTimeout(() => {
-            setWinner(null);
-            navigation.navigate('Result', { result, type: 'wheel', sourceRoute: 'WheelOfFortune' });
-        }, 1400);
+
+        await SoundManager.playAndWait('wheel-stop');
+
+        setWinner(null);
+        navigation.navigate('Result', { result, type: 'wheel', sourceRoute: 'WheelOfFortune' });
     };
 
     const handleSpin = () => {

@@ -65,27 +65,31 @@ export default function CoinFlipScreen({ navigation }: any) {
 
         const result = PickEngine.flipCoin(isEdge);
 
-        // Sequence: Lift up + multiple rotations
-        const numSpins = isEdge ? 6.25 : (result === 'heads' ? 6 : 7); // edge stops at 90deg offset roughly or we handle visually
-        
-        Animated.parallel([
-            Animated.sequence([
-                Animated.timing(liftAnim, { toValue: -150, duration: 400, useNativeDriver: true }),
-                Animated.timing(liftAnim, { toValue: 0, duration: 400, useNativeDriver: true }),
-            ]),
-            Animated.timing(flipAnim, {
-                toValue: numSpins,
-                duration: 800,
-                useNativeDriver: true,
-            })
-        ]).start(() => {
-            setIsFlipping(false);
-            navigation.navigate('Result', { result, type: 'coin', sourceRoute: 'CoinFlip' });
-            // Reset to normalized state after navigation
-            setTimeout(() => {
-                flipAnim.setValue(result === 'heads' ? 0 : (result === 'edge' ? 0.25 : 1));
-            }, 500);
+        const numSpins = isEdge ? 6.25 : (result === 'heads' ? 6 : 7);
+
+        const soundDone = SoundManager.playAndWait('coin-flip');
+
+        const animDone = new Promise<void>((resolve) => {
+            Animated.parallel([
+                Animated.sequence([
+                    Animated.timing(liftAnim, { toValue: -150, duration: 400, useNativeDriver: true }),
+                    Animated.timing(liftAnim, { toValue: 0, duration: 400, useNativeDriver: true }),
+                ]),
+                Animated.timing(flipAnim, {
+                    toValue: numSpins,
+                    duration: 800,
+                    useNativeDriver: true,
+                })
+            ]).start(() => resolve());
         });
+
+        await Promise.all([soundDone, animDone]);
+
+        setIsFlipping(false);
+        navigation.navigate('Result', { result, type: 'coin', sourceRoute: 'CoinFlip' });
+        setTimeout(() => {
+            flipAnim.setValue(result === 'heads' ? 0 : (result === 'edge' ? 0.25 : 1));
+        }, 500);
     };
 
     const frontRotation = flipAnim.interpolate({
