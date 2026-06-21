@@ -1,40 +1,94 @@
-{
-  "tr": {
-    "easy": [
-      "Bir bardak su iç", "30 saniye esne", "3 derin nefes al",
-      "Duruşunu düzelt", "Masandaki 3 eşyayı düzelt", "Aynada gülümse",
-      "Birinin adını söyle ve teşekkür et", "5 dakika telefonu bırak",
-      "Bir sevdiğine mesaj at", "Pencereden dışarı bak"
-    ],
-    "medium": [
-      "5 şınav çek", "10 squat yap", "1 dakika plank yap",
-      "10 dakika yürü", "Bir bardak su iç ve 5 dakika egzersiz yap",
-      "Odayı bir kez temizle", "Bulaşıkları yıka", "Bir şeyi öğren: Wikipedia'da rastgele bir makale oku",
-      "5 dakika meditasyon yap", "Kısa bir nap (20 dakika) al"
-    ],
-    "social": [
-      "Bir arkadaşını ara", "Uzun süredir görmediğin birine mesaj at",
-      "Aileye iyi geceler yaz", "Bir meslektaşına teşekkür et",
-      "Sosyal medyada pozitif bir yorum yap", "Birini bir kahveye davet et"
-    ]
-  },
-  "en": {
-    "easy": [
-      "Drink a glass of water", "Stretch for 30 seconds", "Take 3 deep breaths",
-      "Fix your posture", "Tidy 3 items on your desk", "Smile at yourself in the mirror",
-      "Say someone's name and thank them", "Put your phone down for 5 minutes",
-      "Text someone you appreciate", "Look outside the window for a moment"
-    ],
-    "medium": [
-      "Do 5 push-ups", "Do 10 squats", "Hold a 1-minute plank",
-      "Walk for 10 minutes", "Drink water and do 5 minutes of exercise",
-      "Clean one area of your room", "Do the dishes", "Learn something: read a random Wikipedia article",
-      "Meditate for 5 minutes", "Take a short nap (20 minutes)"
-    ],
-    "social": [
-      "Call a friend", "Message someone you haven't talked to in a while",
-      "Wish family goodnight", "Thank a coworker",
-      "Leave a positive comment on social media", "Invite someone for coffee"
-    ]
-  }
-}
+[
+  { "tr": "Masandaki 3 eşyayı düzelt", "en": "Tidy 3 items on your desk", "category": "home", "difficulty": "easy", "duration": 0 },
+  { "tr": "Çöpleri boşalt", "en": "Empty the trash", "category": "home", "difficulty": "easy", "duration": 0 },
+  { "tr": "Bulaşıkları yıka", "en": "Do the dishes", "category": "home", "difficulty": "easy", "duration": 0 },
+  { "tr": "Yatağını yap", "en": "Make your bed", "category": "home", "difficulty": "easy", "duration": 0 },
+  { "tr": "Bir odayı süpür", "en": "Sweep one room", "category": "home", "difficulty": "easy", "duration": 0 },
+  { "tr": "Bir pencereyi sil", "en": "Wipe down a window", "category": "home", "difficulty": "easy", "duration": 0 },
+  { "tr": "Geri dönüşümü ayır", "en": "Sort the recycling", "category": "home", "difficulty": "easy", "duration": 0 },
+  { "tr": "Banyoyu hızlıca temizle", "en": "Quick-clean the bathroom", "category": "home", "difficulty": "easy", "duration": 0 },
+  { "tr": "Tüm odayı temizle", "en": "Clean an entire room", "category": "home", "difficulty": "medium", "duration": 0 },
+  { "tr": "Kıyafetleri düzenle", "en": "Organize your clothes", "category": "home", "difficulty": "medium", "duration": 0 },
+  { "tr": "Buzdolabını kontrol et ve düzenle", "en": "Check and organize the fridge", "category": "home", "difficulty": "medium", "duration": 0 },
+  { "tr": "Rafları organize et", "en": "Organize the shelves", "category": "home", "difficulty": "medium", "duration": 0 },
+  { "tr": "Çamaşır başlat", "en": "Start a load of laundry", "category": "home", "difficulty": "medium", "duration": 0 },
+  { "tr": "Balkon veya terası düzenle", "en": "Organize the balcony or terrace", "category": "home", "difficulty": "medium", "duration": 0 },
+  { "tr": "Tüm evi temizle", "en": "Deep-clean the whole home", "category": "home", "difficulty": "hard", "duration": 0 },
+  { "tr": "Dolabı yeniden düzenle", "en": "Reorganize your wardrobe", "category": "home", "difficulty": "hard", "duration": 0 },
+  { "tr": "Depolama alanını organize et", "en": "Organize a storage area", "category": "home", "difficulty": "hard", "duration": 0 },
+  { "tr": "Bir köşeyi tamamen yenile", "en": "Completely refresh a corner of your space", "category": "home", "difficulty": "hard", "duration": 0 },
+
+  { "tr": "10 squat yap", "en": "Do 10 squats", "category": "sport", "difficulty": "easy", "duration": 0 },
+  { "tr": "10 şınav yap", "en": "Do 10 push-ups", "category": "sport", "difficulty": "easy", "duration": 0 },
+  { "tr": "30 saniye plank yap", "en": "Hold a 30-second plank", "category": "sport", "difficulty": "easy", "duration": 30 },
+  { "tr": "5 dakika esneme yap", "en": "Stretch for 5 minutes", "category": "sport", "difficulty": "easy", "duration": 300 },
+  { "tr": "20 jumping jack yap", "en": "Do 20 jumping jacks", "category": "sport", "difficulty": "easy", "duration": 0 },
+  { "tr": "1 dakika yerinde yürü", "en": "March in place for 1 minute", "category": "sport", "difficulty": "easy", "duration": 60 },
+  { "tr": "10 bisiklet hareketi yap (sırt üstü)", "en": "Do 10 bicycle crunches", "category": "sport", "difficulty": "easy", "duration": 0 },
+  { "tr": "Boyun ve omuz esneme — 2 dakika", "en": "Neck and shoulder stretch — 2 minutes", "category": "sport", "difficulty": "easy", "duration": 120 },
+  { "tr": "15 dakika tempolu yürüyüş", "en": "Walk briskly for 15 minutes", "category": "sport", "difficulty": "medium", "duration": 0 },
+  { "tr": "20 burpee yap", "en": "Do 20 burpees", "category": "sport", "difficulty": "medium", "duration": 0 },
+  { "tr": "3×10 squat seti yap", "en": "Do 3 sets of 10 squats", "category": "sport", "difficulty": "medium", "duration": 0 },
+  { "tr": "1 dakika plank yap", "en": "Hold a 1-minute plank", "category": "sport", "difficulty": "medium", "duration": 60 },
+  { "tr": "10 dakika yoga yap", "en": "Do 10 minutes of yoga", "category": "sport", "difficulty": "medium", "duration": 600 },
+  { "tr": "20 dakika bisiklet sür veya koş", "en": "Ride or run for 20 minutes", "category": "sport", "difficulty": "medium", "duration": 0 },
+  { "tr": "5 km yürü veya koş", "en": "Walk or run 5 km", "category": "sport", "difficulty": "hard", "duration": 0 },
+  { "tr": "30 dakika yoğun antrenman", "en": "30-minute intense workout", "category": "sport", "difficulty": "hard", "duration": 1800 },
+  { "tr": "100 squat tamamla", "en": "Complete 100 squats", "category": "sport", "difficulty": "hard", "duration": 0 },
+  { "tr": "50 şınav tamamla", "en": "Complete 50 push-ups", "category": "sport", "difficulty": "hard", "duration": 0 },
+  { "tr": "20 dakika HIIT antrenmanı", "en": "20-minute HIIT session", "category": "sport", "difficulty": "hard", "duration": 1200 },
+
+  { "tr": "Birine iyi günler mesajı at", "en": "Text someone to wish them a good day", "category": "social", "difficulty": "easy", "duration": 0 },
+  { "tr": "Birinin fotoğrafına yorum yap", "en": "Comment on someone's photo", "category": "social", "difficulty": "easy", "duration": 0 },
+  { "tr": "Birine teşekkür mesajı yaz", "en": "Send someone a thank-you message", "category": "social", "difficulty": "easy", "duration": 0 },
+  { "tr": "Aileye iyi geceler yaz", "en": "Wish your family good night", "category": "social", "difficulty": "easy", "duration": 0 },
+  { "tr": "Birinin günü nasıl geçti diye sor", "en": "Ask someone how their day is going", "category": "social", "difficulty": "easy", "duration": 0 },
+  { "tr": "Yakınındaki birine iltifat et", "en": "Give someone nearby a genuine compliment", "category": "social", "difficulty": "easy", "duration": 0 },
+  { "tr": "Uzun süredir konuşmadığın birine mesaj at", "en": "Text someone you haven't talked to in a while", "category": "social", "difficulty": "easy", "duration": 0 },
+  { "tr": "Bir arkadaşını ara", "en": "Call a friend", "category": "social", "difficulty": "medium", "duration": 0 },
+  { "tr": "Birini kahveye veya yemеğe davet et", "en": "Invite someone for coffee or a meal", "category": "social", "difficulty": "medium", "duration": 0 },
+  { "tr": "Bir grup sohbeti başlat", "en": "Start a group chat with friends", "category": "social", "difficulty": "medium", "duration": 0 },
+  { "tr": "Birini ziyaret et", "en": "Visit someone in person", "category": "social", "difficulty": "medium", "duration": 0 },
+  { "tr": "Biriyle birlikte bir film izle", "en": "Watch a movie together with someone", "category": "social", "difficulty": "medium", "duration": 0 },
+  { "tr": "Yabancıyla küçük bir sohbet başlat", "en": "Strike up a small conversation with a stranger", "category": "social", "difficulty": "hard", "duration": 0 },
+  { "tr": "Toplantıya veya etkinliğe git", "en": "Attend a meetup or local event", "category": "social", "difficulty": "hard", "duration": 0 },
+  { "tr": "Gönüllülük aktivitesine katıl", "en": "Do a volunteering activity", "category": "social", "difficulty": "hard", "duration": 0 },
+  { "tr": "Bir buluşma veya etkinlik organize et", "en": "Organize a get-together or event", "category": "social", "difficulty": "hard", "duration": 0 },
+
+  { "tr": "Yarınki 3 önceliğini yaz", "en": "Write down your 3 priorities for tomorrow", "category": "productivity", "difficulty": "easy", "duration": 0 },
+  { "tr": "Masanı topla", "en": "Clear your desk", "category": "productivity", "difficulty": "easy", "duration": 0 },
+  { "tr": "Gereksiz dosya ve uygulamaları sil", "en": "Delete unnecessary files or apps", "category": "productivity", "difficulty": "easy", "duration": 0 },
+  { "tr": "Açık sekmeleri temizle", "en": "Close all unused browser tabs", "category": "productivity", "difficulty": "easy", "duration": 0 },
+  { "tr": "Tek bir e-posta yaz ve gönder", "en": "Write and send one email", "category": "productivity", "difficulty": "easy", "duration": 0 },
+  { "tr": "Yapılacaklar listeni güncelle", "en": "Update your to-do list", "category": "productivity", "difficulty": "easy", "duration": 0 },
+  { "tr": "Bir hızlı not al", "en": "Jot down a quick note or idea", "category": "productivity", "difficulty": "easy", "duration": 0 },
+  { "tr": "5 dakika planlama yap", "en": "Spend 5 minutes planning your day", "category": "productivity", "difficulty": "easy", "duration": 300 },
+  { "tr": "25 dakika Pomodoro oturumu — tek görev", "en": "25-minute Pomodoro — one task only", "category": "productivity", "difficulty": "medium", "duration": 1500 },
+  { "tr": "Haftalık hedef belirle", "en": "Set a goal for the week", "category": "productivity", "difficulty": "medium", "duration": 0 },
+  { "tr": "Merak ettiğin bir konuyu araştır", "en": "Research a topic you've been curious about", "category": "productivity", "difficulty": "medium", "duration": 0 },
+  { "tr": "Önemli bir görevi yarım bırakmadan tamamla", "en": "Finish one important task without stopping", "category": "productivity", "difficulty": "medium", "duration": 0 },
+  { "tr": "Okuma listeni gözden geçir", "en": "Review your reading or learning list", "category": "productivity", "difficulty": "medium", "duration": 0 },
+  { "tr": "Bir projeyi güncelle", "en": "Update or push a project forward", "category": "productivity", "difficulty": "medium", "duration": 0 },
+  { "tr": "2 saatlik derin çalışma oturumu", "en": "2-hour deep work session", "category": "productivity", "difficulty": "hard", "duration": 7200 },
+  { "tr": "Uzun vadeli plan yap", "en": "Create a long-term plan", "category": "productivity", "difficulty": "hard", "duration": 0 },
+  { "tr": "Büyük bir görevi sıfırdan bitir", "en": "Complete a big task from start to finish", "category": "productivity", "difficulty": "hard", "duration": 0 },
+  { "tr": "Bir ay planı oluştur", "en": "Map out a full month plan", "category": "productivity", "difficulty": "hard", "duration": 0 },
+
+  { "tr": "En sevdiğin şarkıyı dinle", "en": "Listen to your favorite song", "category": "fun", "difficulty": "easy", "duration": 0 },
+  { "tr": "Komik bir video izle", "en": "Watch a funny video", "category": "fun", "difficulty": "easy", "duration": 0 },
+  { "tr": "Eski fotoğraflara göz at", "en": "Browse through old photos", "category": "fun", "difficulty": "easy", "duration": 0 },
+  { "tr": "Favori podcast bölümünü dinle", "en": "Listen to a favorite podcast episode", "category": "fun", "difficulty": "easy", "duration": 0 },
+  { "tr": "Bir şiir oku", "en": "Read a poem", "category": "fun", "difficulty": "easy", "duration": 0 },
+  { "tr": "Kısa bir mobil oyun oyna", "en": "Play a short mobile game", "category": "fun", "difficulty": "easy", "duration": 0 },
+  { "tr": "Dışarıdan yemek söyle", "en": "Order food from your favorite place", "category": "fun", "difficulty": "easy", "duration": 0 },
+  { "tr": "Bir film izle", "en": "Watch a movie", "category": "fun", "difficulty": "medium", "duration": 0 },
+  { "tr": "Yeni bir dizi bölümü başlat", "en": "Start a new series episode", "category": "fun", "difficulty": "medium", "duration": 0 },
+  { "tr": "Arkadaşlarla masa oyunu oyna", "en": "Play a board game with friends", "category": "fun", "difficulty": "medium", "duration": 0 },
+  { "tr": "Dışarıda yemek ye", "en": "Eat out at a restaurant", "category": "fun", "difficulty": "medium", "duration": 0 },
+  { "tr": "Yeni müzik türü keşfet", "en": "Explore a new music genre", "category": "fun", "difficulty": "medium", "duration": 0 },
+  { "tr": "Konser veya canlı etkinliğe git", "en": "Go to a concert or live event", "category": "fun", "difficulty": "hard", "duration": 0 },
+  { "tr": "Yeni bir spor veya aktivite dene", "en": "Try a new sport or activity", "category": "fun", "difficulty": "hard", "duration": 0 },
+  { "tr": "Yeni bir şehir veya semt keşfet", "en": "Explore a new city or neighborhood", "category": "fun", "difficulty": "hard", "duration": 0 },
+  { "tr": "Grup aktivitesi organize et", "en": "Organize a group activity", "category": "fun", "difficulty": "hard", "duration": 0 },
+  { "tr": "Spontan bir gün gezisi yap", "en": "Take a spontaneous day trip", "category": "fun", "difficulty": "hard", "duration": 0 }
+]
