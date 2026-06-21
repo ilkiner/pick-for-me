@@ -76,7 +76,8 @@
             "orderteam_desc": "Karıştır veya takımlara böl",
             "lists_desc": "Listelerini kaydet ve yeniden kullan"
         },
-        "logout": "Çıkış"
+        "logout": "Çıkış",
+        "recent": "SON KULLANILANLAR"
     },
     "settings": {
         "title": "Ayarlar",
@@ -341,6 +342,23 @@
         "free_tier": "ücretsiz",
         "limit_title": "Ücretsiz Limit",
         "item_limit_msg": "Ücretsiz planda liste başına en fazla {{limit}} öğe eklenebilir."
+    },
+    "onboarding": {
+        "skip": "Atla",
+        "next": "Devam",
+        "start": "Başla",
+        "slide1": {
+            "title": "Karar vermekte\nzorlanıyor musun?",
+            "body": "Pick For Me sana çark, zar, yazı-tura ve daha fazlasıyla anında karar verdiriyor."
+        },
+        "slide2": {
+            "title": "10'dan fazla araç,\ntek uygulama",
+            "body": "Çark çevir, zar at, fikir üret, film seç — hepsi burada, hepsi çevrimdışı çalışır."
+        },
+        "slide3": {
+            "title": "Pro ile sınırsız\nkullan",
+            "body": "Reklamsız, sınırsız liste, premium temalar ve bulut senkronu — tek abonelikle."
+        }
     },
     "settings": {
         "title": "Ayarlar",

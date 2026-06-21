@@ -14,10 +14,12 @@ import { isSupabaseConfigured, supabase } from './src/storage/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import * as Localization from 'expo-localization';
+import OnboardingScreen, { ONBOARDING_KEY } from './src/screens/main/OnboardingScreen';
 
 function AppInner() {
     const [isReady, setIsReady] = useState(false);
     const [session, setSession] = useState<any>(null);
+    const [onboardingDone, setOnboardingDone] = useState(false);
     const { i18n } = useTranslation();
     const { theme, isDark } = useTheme();
 
@@ -34,6 +36,11 @@ function AppInner() {
             } catch (e) {
                 console.error('Error loading language', e);
             }
+
+            try {
+                const seen = await AsyncStorage.getItem(ONBOARDING_KEY);
+                if (seen) setOnboardingDone(true);
+            } catch {}
 
             if (!isSupabaseConfigured()) {
                 console.warn('Supabase not configured. Running in demo mode.');
@@ -71,6 +78,15 @@ function AppInner() {
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
                 <ActivityIndicator size="large" color={theme.colors.primary} />
             </View>
+        );
+    }
+
+    if (!onboardingDone) {
+        return (
+            <GestureHandlerRootView style={{ flex: 1 }}>
+                <StatusBar style={isDark ? 'light' : 'dark'} />
+                <OnboardingScreen onDone={() => setOnboardingDone(true)} />
+            </GestureHandlerRootView>
         );
     }
 

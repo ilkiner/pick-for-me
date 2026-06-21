@@ -76,7 +76,25 @@
             "orderteam_desc": "Shuffle or split into teams",
             "lists_desc": "Save and reuse your lists"
         },
-        "logout": "Logout"
+        "logout": "Logout",
+        "recent": "RECENTLY USED"
+    },
+    "onboarding": {
+        "skip": "Skip",
+        "next": "Next",
+        "start": "Get Started",
+        "slide1": {
+            "title": "Can't decide\nwhat to do?",
+            "body": "Pick For Me helps you decide instantly with a wheel, dice, coin flip, and more."
+        },
+        "slide2": {
+            "title": "10+ tools,\none app",
+            "body": "Spin the wheel, roll dice, get ideas, pick a movie — all here, all offline."
+        },
+        "slide3": {
+            "title": "Go unlimited\nwith Pro",
+            "body": "Ad-free, unlimited lists, premium themes, and cloud sync — one subscription."
+        }
     },
     "settings": {
         "title": "Settings",

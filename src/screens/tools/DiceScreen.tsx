@@ -10,6 +10,7 @@ import DiceFace from '../../components/DiceFace';
 import { useTheme } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
 import SoundManager from '../../core/SoundManager';
+import { trackResult, maybeRequestReview } from '../../core/ReviewManager';
 
 export default function DiceScreen({ navigation }: any) {
     const { t } = useTranslation();
@@ -63,6 +64,7 @@ export default function DiceScreen({ navigation }: any) {
             setRollKey(k => k + 1);
             setIsRolling(false);
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            trackResult().then(maybeRequestReview).catch(() => {});
         }, 3800);
     };
 

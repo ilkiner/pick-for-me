@@ -17,6 +17,7 @@ import { AdManager } from '../../core/AdManager';
 import { useTheme } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
 import SoundManager from '../../core/SoundManager';
+import { trackResult, maybeRequestReview } from '../../core/ReviewManager';
 
 interface HistoryItem {
     id: string;
@@ -144,6 +145,8 @@ export default function ResultScreen({ route, navigation }: any) {
 
             // Auto-save to history
             saveToHistory(type, result);
+
+            trackResult().then(maybeRequestReview).catch(() => {});
 
             Animated.parallel([
                 Animated.spring(scaleAnim, {
