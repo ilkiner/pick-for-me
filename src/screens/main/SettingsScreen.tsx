@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Switch, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { GlassCard } from '../../components/GlassCard';
 import { isSupabaseConfigured, supabase } from '../../storage/supabase';
+import { deleteAccount } from '../../storage/accountDeletion';
 import { usePro } from '../../store/ProContext';
 import { useTheme, ThemeMode } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
@@ -54,6 +55,7 @@ function createStyles(theme: AppTheme) {
         segBtnTextActive: { color: '#FFFFFF' },
         segFlag: { fontSize: 16, marginBottom: 2 },
         devSection: { borderColor: 'rgba(245,158,11,0.35)', borderWidth: 1 },
+        deleteSection: { borderColor: 'rgba(239,68,68,0.35)', borderWidth: 1 },
         devBadge: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
         devBadgeText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.5 },
     });
@@ -91,6 +93,64 @@ export default function SettingsScreen({ navigation }: any) {
         } catch (e) {
             console.error('Logout error:', e);
         }
+    };
+
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const runDeleteAccount = async () => {
+        if (isDeleting) return;
+        setIsDeleting(true);
+        try {
+            const result = await deleteAccount();
+            track('account_delete_result', { result });
+            if (result === 'deleted') {
+                Alert.alert(
+                    t('settings.delete_success_title'),
+                    t('settings.delete_success_msg')
+                );
+            } else if (result === 'requested') {
+                Alert.alert(
+                    t('settings.delete_requested_title'),
+                    t('settings.delete_requested_msg')
+                );
+            } else {
+                Alert.alert(
+                    t('settings.delete_error_title'),
+                    t('settings.delete_error_msg')
+                );
+            }
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    // Çift onay: geri alınamaz işlem için Play politikasına uygun net uyarı
+    const handleDeleteAccount = () => {
+        Alert.alert(
+            t('settings.delete_confirm_title'),
+            t('settings.delete_confirm_msg'),
+            [
+                { text: t('common.cancel', 'İptal'), style: 'cancel' },
+                {
+                    text: t('settings.delete_confirm_continue'),
+                    style: 'destructive',
+                    onPress: () => {
+                        Alert.alert(
+                            t('settings.delete_confirm2_title'),
+                            t('settings.delete_confirm2_msg'),
+                            [
+                                { text: t('common.cancel', 'İptal'), style: 'cancel' },
+                                {
+                                    text: t('settings.delete_confirm_yes'),
+                                    style: 'destructive',
+                                    onPress: runDeleteAccount,
+                                },
+                            ]
+                        );
+                    },
+                },
+            ]
+        );
     };
 
     const handleRestore = async () => {
@@ -255,6 +315,24 @@ export default function SettingsScreen({ navigation }: any) {
                                     {devProOverride === true ? 'PRO' : devProOverride === false ? 'FREE' : 'AUTO'}
                                 </Text>
                             </View>
+                        </TouchableOpacity>
+                    </GlassCard>
+                )}
+
+                {/* Hesabı Sil — Google Play zorunluluğu; demo modda gizli */}
+                {isSupabaseConfigured() && (
+                    <GlassCard style={[styles.section, styles.deleteSection] as any}>
+                        <TouchableOpacity style={styles.row} onPress={handleDeleteAccount} disabled={isDeleting}>
+                            <View style={[styles.iconWrapper, { backgroundColor: 'rgba(239, 68, 68, 0.1)' }]}>
+                                <Ionicons name="trash" size={22} color={theme.colors.error} />
+                            </View>
+                            <View style={styles.rowContent}>
+                                <Text style={[styles.rowTitle, { color: theme.colors.error }]}>
+                                    {isDeleting ? '…' : t('settings.delete_account')}
+                                </Text>
+                                <Text style={styles.rowSubtitle}>{t('settings.delete_account_desc')}</Text>
+                            </View>
+                            <Ionicons name="chevron-forward" size={20} color={theme.colors.surfaceBorder} />
                         </TouchableOpacity>
                     </GlassCard>
                 )}

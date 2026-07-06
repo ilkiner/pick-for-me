@@ -113,7 +113,21 @@
         "sound_desc": "Wheel, dice, coin sounds",
         "logout": "Log Out",
         "logout_desc": "End session",
-        "logout_demo": "You're already signed out in demo mode."
+        "logout_demo": "You're already signed out in demo mode.",
+        "delete_account": "Delete Account",
+        "delete_account_desc": "Permanently delete your account and all data",
+        "delete_confirm_title": "Delete Account?",
+        "delete_confirm_msg": "This action cannot be undone. All your data will be deleted.",
+        "delete_confirm_continue": "Continue",
+        "delete_confirm2_title": "Are you sure?",
+        "delete_confirm2_msg": "Your account, saved lists and history will be permanently deleted. This is the final confirmation.",
+        "delete_confirm_yes": "Yes, Delete My Account",
+        "delete_success_title": "Account Deleted",
+        "delete_success_msg": "Your account and all your data have been permanently deleted.",
+        "delete_requested_title": "Request Received",
+        "delete_requested_msg": "Your deletion request has been received. Your cloud data was deleted and you have been signed out; your account record will be fully removed shortly.",
+        "delete_error_title": "Deletion Failed",
+        "delete_error_msg": "Something went wrong while deleting your data. Please try again or email pickforme.app@gmail.com."
     },
     "tools": {
         "wheel": {
