@@ -68,7 +68,6 @@ const THEME_OPTIONS: { mode: ThemeMode; labelKey: string; icon: string }[] = [
 const LANGUAGE_OPTIONS: { code: string; label: string; flag: string }[] = [
     { code: 'tr', label: 'Türkçe',  flag: '🇹🇷' },
     { code: 'en', label: 'English', flag: '🇬🇧' },
-    { code: 'pl', label: 'Polski',  flag: '🇵🇱' },
 ];
 
 export default function SettingsScreen({ navigation }: any) {
