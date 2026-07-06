@@ -52,7 +52,8 @@
         "releaseStatus": "draft"
       },
       "ios": {
-        "appleId": "ilkinrahimlii@gmail.com",
+        // appleId boş bırakıldı — EAS secrets / eas submit sırasında girilecek
+        "appleId": "",
         "ascAppId": "",
         "appleTeamId": ""
       }
