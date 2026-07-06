@@ -10,7 +10,10 @@ import { celebrateWinner } from '../../core/celebrate';
 import { AppTheme } from '../../core/Theme';
 import { GlassCard } from '../../components/GlassCard';
 import { ContentCategory, getContextualWeights, weightedRandomCategory } from '../../core/context';
+import { MatchEngine, MatchItem } from '../../core/MatchEngine';
+import { MatchFlow } from '../../components/MatchFlow';
 import IDEAS_DATA from '../../content/ideas.json';
+import DINNERS_DATA from '../../content/dinners.json';
 
 type IdeaCategory = 'all' | ContentCategory;
 type TabMode = 'app' | 'favorites';
@@ -18,6 +21,7 @@ type TabMode = 'app' | 'favorites';
 interface IdeaItem { tr: string; en: string; }
 
 const IDEAS = IDEAS_DATA as Record<ContentCategory, IdeaItem[]>;
+const DINNERS = DINNERS_DATA as Record<'tr' | 'en', string[]>;
 
 const CATEGORY_META: Record<ContentCategory, { icon: string; color: string; labelKey: string }> = {
     food:     { icon: 'restaurant-outline', color: '#FF6B6B', labelKey: 'food' },
@@ -46,6 +50,17 @@ export default function IdeaGeneratorScreen({ navigation }: any) {
 
     // Repeat prevention: track seen indices per category key
     const seenRef = useRef<Map<string, Set<number>>>(new Map());
+
+    // "Ne Yesek — Birlikte" eşleştirme modu (yemek kategorisi, dinners.json)
+    const [foodMatchActive, setFoodMatchActive] = useState(false);
+    const [foodDeck, setFoodDeck] = useState<MatchItem[]>([]);
+    const [foodDeckVersion, setFoodDeckVersion] = useState(0);
+
+    const startFoodMatch = () => {
+        setFoodDeck(MatchEngine.buildDeck(DINNERS[lang]));
+        setFoodDeckVersion(v => v + 1);
+        setFoodMatchActive(true);
+    };
 
     const translateY = useRef(new Animated.Value(0)).current;
     const opacity = useRef(new Animated.Value(1)).current;
@@ -150,6 +165,30 @@ export default function IdeaGeneratorScreen({ navigation }: any) {
         { key: 'gift',     label: t('tools.idea.cat_gift'),     icon: CATEGORY_META.gift.icon,     color: CATEGORY_META.gift.color },
     ];
 
+    // Eşleştirme modu aktifken tam ekran MatchFlow göster
+    if (foodMatchActive) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <View style={[styles.header, styles.matchHeader]}>
+                    <TouchableOpacity onPress={() => setFoodMatchActive(false)} style={styles.backBtn} accessibilityRole="button">
+                        <Ionicons name="chevron-back" size={26} color={theme.colors.text} />
+                    </TouchableOpacity>
+                    <View style={styles.headerCenter}>
+                        <Text style={styles.title}>{t('tools.match.food_together', 'Ne Yesek — Birlikte')}</Text>
+                    </View>
+                    <View style={{ width: 44 }} />
+                </View>
+                <MatchFlow
+                    key={foodDeckVersion}
+                    deck={foodDeck}
+                    resultI18nKey="tools.match.result_food"
+                    onRetry={startFoodMatch}
+                    onChangeSource={() => setFoodMatchActive(false)}
+                />
+            </SafeAreaView>
+        );
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
@@ -212,6 +251,14 @@ export default function IdeaGeneratorScreen({ navigation }: any) {
                                 );
                             })}
                         </ScrollView>
+
+                        {/* Ne Yesek — Birlikte (yalnızca yemek kategorisinde) */}
+                        {category === 'food' && (
+                            <TouchableOpacity style={styles.togetherBtn} onPress={startFoodMatch} activeOpacity={0.85} accessibilityRole="button">
+                                <Ionicons name="people-outline" size={18} color="#fff" />
+                                <Text style={styles.togetherBtnText}>🍽️ {t('tools.match.food_together', 'Ne Yesek — Birlikte')}</Text>
+                            </TouchableOpacity>
+                        )}
 
                         {/* Result card */}
                         <GlassCard style={styles.resultCard}>
@@ -289,6 +336,9 @@ function createStyles(theme: AppTheme) {
     scroll: { padding: theme.spacing.lg, paddingBottom: theme.spacing.xxl },
 
     header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
+    matchHeader: { paddingHorizontal: theme.spacing.lg, paddingTop: theme.spacing.md, marginBottom: 8 },
+    togetherBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: theme.colors.secondary ?? '#A855F7', paddingVertical: 13, borderRadius: 14, marginBottom: 16, minHeight: 44 },
+    togetherBtnText: { color: '#fff', fontSize: 15, fontWeight: '800' },
     backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: theme.colors.surfaceBorder },
     headerCenter: { alignItems: 'center', flex: 1 },
     title: { fontSize: 22, fontWeight: '900', color: theme.colors.text },
