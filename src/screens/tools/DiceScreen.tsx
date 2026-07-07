@@ -8,6 +8,7 @@ import { MotiView } from 'moti';
 import { PickEngine } from '../../core/PickEngine';
 import DiceFace from '../../components/DiceFace';
 import { useTheme } from '../../store/ThemeContext';
+import { celebrateWinner } from '../../core/celebrate';
 import { AppTheme } from '../../core/Theme';
 import SoundManager from '../../core/SoundManager';
 import { trackResult, maybeRequestReview } from '../../core/ReviewManager';
@@ -63,7 +64,7 @@ export default function DiceScreen({ navigation }: any) {
             setResults(newResults);
             setRollKey(k => k + 1);
             setIsRolling(false);
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            celebrateWinner();
             trackResult().then(maybeRequestReview).catch(() => {});
         }, 3800);
     };

@@ -306,10 +306,15 @@ export default function SavedListsScreen({ navigation, route }: Props) {
                 <View style={styles.emptyContainer}>
                     <Ionicons name="bookmark-outline" size={72} color={theme.colors.surfaceBorder} />
                     <Text style={styles.emptyTitle}>{t('lists.empty_title', 'Henüz liste yok')}</Text>
-                    <Text style={styles.emptySubtitle}>{t('lists.empty_hint', '"+" ile yeni liste oluştur')}</Text>
-                    <TouchableOpacity style={styles.createBtn} onPress={openCreateModal}>
+                    <Text style={styles.emptySubtitle}>{t('lists.empty_hint', 'Sık kullandığın seçenekleri kaydet; çark, film ve takım araçlarında tek dokunuşla kullan.')}</Text>
+                    <TouchableOpacity
+                        style={styles.createBtn}
+                        onPress={openCreateModal}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('lists.empty_cta', 'İlk Listeni Oluştur')}
+                    >
                         <Ionicons name="add" size={20} color="#FFF" />
-                        <Text style={styles.createBtnText}>{t('lists.create', 'Liste Oluştur')}</Text>
+                        <Text style={styles.createBtnText}>{t('lists.empty_cta', 'İlk Listeni Oluştur')}</Text>
                     </TouchableOpacity>
                 </View>
             ) : (
@@ -363,6 +368,9 @@ export default function SavedListsScreen({ navigation, route }: Props) {
                                     key={tp}
                                     style={[styles.typeChip, formType === tp && { backgroundColor: LIST_TYPE_COLORS[tp] }]}
                                     onPress={() => setFormType(tp)}
+                                    accessibilityRole="radio"
+                                    accessibilityState={{ checked: formType === tp }}
+                                    accessibilityLabel={t(`lists.types.${tp}`, tp)}
                                 >
                                     <Ionicons
                                         name={LIST_TYPE_ICONS[tp] as any}
@@ -392,10 +400,17 @@ export default function SavedListsScreen({ navigation, route }: Props) {
                             <TouchableOpacity
                                 style={styles.modalCancelBtn}
                                 onPress={() => setModalVisible(false)}
+                                accessibilityRole="button"
+                                accessibilityLabel={t('common.cancel')}
                             >
                                 <Text style={styles.modalCancelText}>{t('common.cancel')}</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.modalSaveBtn} onPress={handleSave}>
+                            <TouchableOpacity
+                                style={styles.modalSaveBtn}
+                                onPress={handleSave}
+                                accessibilityRole="button"
+                                accessibilityLabel={t('lists.save', 'Kaydet')}
+                            >
                                 <Text style={styles.modalSaveText}>{t('lists.save', 'Kaydet')}</Text>
                             </TouchableOpacity>
                         </View>

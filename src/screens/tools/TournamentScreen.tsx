@@ -75,7 +75,7 @@ export default function TournamentScreen({ navigation, route }: any) {
             if (champ) {
                 setChampion(champ);
                 setPhase('champion');
-                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                // Kutlama (ses + haptik + animasyon) ResultScreen'de tek noktadan verilir
                 navigation.navigate('Result', { result: champ, type: 'tournament' });
             } else {
                 setMatches(nextMatches);
@@ -127,7 +127,12 @@ export default function TournamentScreen({ navigation, route }: any) {
                 <ScrollView contentContainerStyle={styles.setupContent} keyboardShouldPersistTaps="handled">
                     <Text style={styles.sectionLabel}>{t('tournament.participants', 'Katılımcılar')}</Text>
 
-                    <TouchableOpacity style={styles.loadListBtn} onPress={loadFromSavedLists}>
+                    <TouchableOpacity
+                        style={styles.loadListBtn}
+                        onPress={loadFromSavedLists}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('lists.load', 'Kayıtlı listeden yükle')}
+                    >
                         <Ionicons name="bookmark-outline" size={18} color={theme.colors.primary} />
                         <Text style={styles.loadListText}>{t('lists.load', 'Kayıtlı listeden yükle')}</Text>
                     </TouchableOpacity>
@@ -141,7 +146,12 @@ export default function TournamentScreen({ navigation, route }: any) {
                             placeholder={t('tournament.add_participant', 'Katılımcı ekle...')}
                             placeholderTextColor={theme.colors.textSecondary}
                         />
-                        <TouchableOpacity style={styles.addBtn} onPress={addItem} accessibilityRole="button">
+                        <TouchableOpacity
+                            style={styles.addBtn}
+                            onPress={addItem}
+                            accessibilityRole="button"
+                            accessibilityLabel={t('common.add', 'Ekle')}
+                        >
                             <Ionicons name="add" size={28} color="#FFF" />
                         </TouchableOpacity>
                     </View>
@@ -150,14 +160,33 @@ export default function TournamentScreen({ navigation, route }: any) {
                         <GlassCard key={idx} style={styles.itemCard}>
                             <View style={styles.seedBadge}><Text style={styles.seedText}>{idx + 1}</Text></View>
                             <Text style={styles.itemText} numberOfLines={1}>{item}</Text>
-                            <TouchableOpacity onPress={() => removeItem(idx)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                            <TouchableOpacity
+                                onPress={() => removeItem(idx)}
+                                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                                accessibilityRole="button"
+                                accessibilityLabel={`${t('tools.wheel.delete', 'Sil')}: ${item}`}
+                            >
                                 <Ionicons name="close-circle" size={20} color={theme.colors.error} />
                             </TouchableOpacity>
                         </GlassCard>
                     ))}
 
+                    {items.length < 2 && (
+                        <View style={styles.needMoreCard}>
+                            <Ionicons name="information-circle-outline" size={20} color={theme.colors.textSecondary} />
+                            <Text style={styles.needMoreText}>
+                                {t('tools.tournament.need_more_hint', 'Turnuva ikili eşleşmelerle oynanır — başlamak için en az 2 katılımcı ekle.')}
+                            </Text>
+                        </View>
+                    )}
+
                     {items.length >= 2 && (
-                        <TouchableOpacity style={styles.startBtn} onPress={startTournament}>
+                        <TouchableOpacity
+                            style={styles.startBtn}
+                            onPress={startTournament}
+                            accessibilityRole="button"
+                            accessibilityLabel={t('tournament.start', 'Turnuvayı Başlat')}
+                        >
                             <Ionicons name="trophy-outline" size={22} color="#FFF" />
                             <Text style={styles.startBtnText}>{t('tournament.start', 'Turnuvayı Başlat')}</Text>
                         </TouchableOpacity>
@@ -186,6 +215,8 @@ export default function TournamentScreen({ navigation, route }: any) {
                         <TouchableOpacity
                             style={[styles.matchCard, styles.matchCardA]}
                             onPress={() => pickWinner(currentMatch.a)}
+                            accessibilityRole="button"
+                            accessibilityLabel={`${t('tournament.tap_win', 'Seç')}: ${currentMatch.a}`}
                         >
                             <Text style={styles.matchCardText} numberOfLines={3}>{currentMatch.a}</Text>
                             <View style={styles.matchCardTap}>
@@ -201,6 +232,8 @@ export default function TournamentScreen({ navigation, route }: any) {
                             <TouchableOpacity
                                 style={[styles.matchCard, styles.matchCardB]}
                                 onPress={() => pickWinner(currentMatch.b!)}
+                                accessibilityRole="button"
+                                accessibilityLabel={`${t('tournament.tap_win', 'Seç')}: ${currentMatch.b}`}
                             >
                                 <Text style={styles.matchCardText} numberOfLines={3}>{currentMatch.b}</Text>
                                 <View style={styles.matchCardTap}>
@@ -211,6 +244,8 @@ export default function TournamentScreen({ navigation, route }: any) {
                             <TouchableOpacity
                                 style={[styles.matchCard, styles.matchCardBye]}
                                 onPress={() => pickWinner(currentMatch.a)}
+                                accessibilityRole="button"
+                                accessibilityLabel={t('tournament.bye_hint', 'Otomatik geç')}
                             >
                                 <Text style={styles.byeText}>{t('tournament.bye', 'BYE')}</Text>
                                 <Text style={styles.byeHint}>{t('tournament.bye_hint', 'Otomatik geç')}</Text>
@@ -277,6 +312,14 @@ function createStyles(theme: AppTheme) {
     },
     seedText: { color: theme.colors.primary, fontWeight: '800', fontSize: 12 },
     itemText: { flex: 1, color: theme.colors.text, fontSize: 15, fontWeight: '600' },
+    needMoreCard: {
+        flexDirection: 'row', alignItems: 'center', gap: 10,
+        padding: theme.spacing.md, borderRadius: theme.borderRadius.md,
+        backgroundColor: theme.colors.surface,
+        borderWidth: 1, borderColor: theme.colors.surfaceBorder,
+        marginTop: theme.spacing.md,
+    },
+    needMoreText: { flex: 1, color: theme.colors.textSecondary, fontSize: 13, lineHeight: 18 },
     startBtn: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
         backgroundColor: theme.colors.primary, borderRadius: theme.borderRadius.lg,

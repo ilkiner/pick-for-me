@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, ScrollVie
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
-import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { pushHistoryItemToCloud } from '../../storage/syncService';
@@ -16,7 +15,7 @@ import { usePro, HISTORY_RETENTION_FREE_MS, HISTORY_RETENTION_PRO_MS, HISTORY_MA
 import { AdManager } from '../../core/AdManager';
 import { useTheme } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
-import SoundManager from '../../core/SoundManager';
+import { celebrateWinner } from '../../core/celebrate';
 import { trackResult, maybeRequestReview } from '../../core/ReviewManager';
 import { track } from '../../core/Analytics';
 
@@ -65,7 +64,8 @@ function createStyles(theme: AppTheme) {
         },
         qrBtnActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
         qrContainer: { marginTop: theme.spacing.lg, padding: theme.spacing.md, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: theme.borderRadius.md },
-        emptyText: { color: theme.colors.textSecondary, textAlign: 'center', marginTop: 50, fontSize: 16 },
+        emptyTitle: { color: theme.colors.text, textAlign: 'center', fontSize: 19, fontWeight: '800' },
+        emptyText: { color: theme.colors.textSecondary, textAlign: 'center', fontSize: 15, lineHeight: 22, paddingHorizontal: theme.spacing.lg },
         historyCard: { padding: 20, marginBottom: 15, borderRadius: 15 },
         hHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
         hType: { color: theme.colors.primary, fontWeight: '800', fontSize: 12, letterSpacing: 1 },
@@ -81,7 +81,12 @@ function createStyles(theme: AppTheme) {
         edgeJoke: { marginTop: 30, fontSize: 20, fontWeight: 'bold', color: theme.colors.primary, textAlign: 'center', paddingHorizontal: 20 },
         hCoinRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
         hCoinIcon: { width: 12, height: 12, borderRadius: 6 },
-        watermark: { marginTop: 8, color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: '700', letterSpacing: 1 },
+        // Paylaşım filigranı: köşede, küçük ve düşük opaklıklı — tema uyumlu
+        watermark: {
+            alignSelf: 'flex-end', marginTop: 6, marginRight: 4,
+            color: theme.colors.textSecondary, opacity: 0.35,
+            fontSize: 9, fontWeight: '600', letterSpacing: 0.8,
+        },
     });
 }
 
@@ -141,8 +146,7 @@ export default function ResultScreen({ route, navigation }: any) {
 
     useEffect(() => {
         if (isSingleResult) {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            SoundManager.play('winner');
+            celebrateWinner();
 
             // Auto-save to history
             saveToHistory(type, result);
@@ -321,7 +325,8 @@ export default function ResultScreen({ route, navigation }: any) {
                     {history.length === 0 ? (
                         <View style={styles.emptyContainer}>
                             <Ionicons name="time-outline" size={64} color={theme.colors.surfaceBorder} />
-                            <Text style={styles.emptyText}>{t('tools.results.empty')}</Text>
+                            <Text style={styles.emptyTitle}>{t('tools.results.empty_title', 'Henüz bir şey yok')}</Text>
+                            <Text style={styles.emptyText}>{t('tools.results.empty_sub', 'Bir araç çalıştır — sonuçların burada birikecek. 🎲')}</Text>
                         </View>
                     ) : (
                         history.map(renderHistoryItem)

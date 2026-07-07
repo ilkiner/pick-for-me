@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../store/ThemeContext';
+import { celebrateWinner } from '../../core/celebrate';
 import { AppTheme } from '../../core/Theme';
 import { GlassCard } from '../../components/GlassCard';
 import ALL_CHALLENGES from '../../content/challenges.json';
@@ -151,7 +152,7 @@ export default function QuickChallengeScreen({ navigation }: any) {
                 setDisplayedText(final[lang]);
                 setDisplayedCategory(final.category);
                 setIsShuffling(false);
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                celebrateWinner();
             }
         }, 65);
     };
@@ -176,7 +177,7 @@ export default function QuickChallengeScreen({ navigation }: any) {
 
     const handleDone = async () => {
         await incrementStreak();
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        // Kutlama ResultScreen'de tek noktadan verilir
         navigation.navigate('Result', { result: challenge?.[lang], type: 'challenge' });
     };
 

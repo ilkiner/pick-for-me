@@ -3,7 +3,8 @@
         "cancel": "İptal",
         "ok": "Tamam",
         "back": "Geri",
-        "clear": "Temizle"
+        "clear": "Temizle",
+        "add": "Ekle"
     },
     "login": {
         "title": "Giriş Yap",
@@ -237,6 +238,8 @@
             "title": "SON 48 SAAT",
             "title_pro": "SON 10 GÜN",
             "empty": "Henüz aktivite kaydedilmedi!",
+            "empty_title": "Henüz bir şey yok",
+            "empty_sub": "Bir araç çalıştır — sonuçların burada birikecek. 🎲",
             "heads": "Yazı",
             "tails": "Tura",
             "edge": "Dik",
@@ -259,7 +262,8 @@
             "passed": "Geçenler",
             "reset": "Sıfırla",
             "need_items_title": "Yetersiz",
-            "need_items_msg": "En az 2 katılımcı gerekli."
+            "need_items_msg": "En az 2 katılımcı gerekli.",
+            "need_more_hint": "Turnuva ikili eşleşmelerle oynanır — başlamak için en az 2 katılımcı ekle."
         },
         "orderteam": {
             "title": "Sıra & Takım",
@@ -272,7 +276,8 @@
             "split": "Takımlara Böl",
             "order_result": "SIRALAMA",
             "teams_result": "TAKIMLAR",
-            "team_label": "Takım"
+            "team_label": "Takım",
+            "need_more_hint": "Karıştırmak veya takım kurmak için en az 2 kişi/öğe ekle."
         }
     },
     "lists": {
@@ -284,7 +289,8 @@
         "load": "Kayıtlı listeden yükle",
         "items": "öğe",
         "empty_title": "Henüz liste yok",
-        "empty_hint": "\"+\" ile yeni liste oluştur",
+        "empty_hint": "Sık kullandığın seçenekleri kaydet; çark, film ve takım araçlarında tek dokunuşla kullan.",
+        "empty_cta": "İlk Listeni Oluştur",
         "delete_title": "Listeyi Sil",
         "delete_msg": "{{name}} silinecek.",
         "delete_confirm": "Sil",
@@ -347,6 +353,8 @@
         "skip": "Atla",
         "next": "Devam",
         "start": "Başla",
+        "theme_title": "Koyu mu,\naçık mı?",
+        "theme_body": "Şimdi seç ya da geç — istediğin zaman Ayarlar'dan değiştirebilirsin.",
         "slide1": {
             "title": "Karar vermekte\nzorlanıyor musun?",
             "body": "Pick For Me sana çark, zar, yazı-tura ve daha fazlasıyla anında karar verdiriyor."

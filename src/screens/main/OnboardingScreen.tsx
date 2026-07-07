@@ -19,15 +19,26 @@ const SLIDES: Slide[] = [
     { icon: 'flash',       color: '#FFD60A', titleKey: 'onboarding.slide3.title', bodyKey: 'onboarding.slide3.body' },
 ];
 
+// Adım dizisi: slayt 1 → tema seçimi (atlanabilir) → kalan slaytlar
+type Step = { kind: 'slide'; slide: Slide } | { kind: 'theme' };
+
+const STEPS: Step[] = [
+    { kind: 'slide', slide: SLIDES[0] },
+    { kind: 'theme' },
+    { kind: 'slide', slide: SLIDES[1] },
+    { kind: 'slide', slide: SLIDES[2] },
+];
+
 interface Props { onDone: () => void }
 
 export default function OnboardingScreen({ onDone }: Props) {
     const { t } = useTranslation();
-    const { theme } = useTheme();
+    const { theme, mode, setMode } = useTheme();
     const styles = useMemo(() => createStyles(theme), [theme]);
     const [index, setIndex] = useState(0);
-    const slide = SLIDES[index];
-    const isLast = index === SLIDES.length - 1;
+    const step = STEPS[index];
+    const slide = step.kind === 'slide' ? step.slide : SLIDES[0];
+    const isLast = index === STEPS.length - 1;
 
     const handleDone = async () => {
         await AsyncStorage.setItem(ONBOARDING_KEY, 'true').catch(() => {});
@@ -45,17 +56,49 @@ export default function OnboardingScreen({ onDone }: Props) {
                 <Text style={styles.skipText}>{t('onboarding.skip')}</Text>
             </TouchableOpacity>
 
-            <View style={styles.slideArea}>
-                <View style={[styles.iconCircle, { backgroundColor: `${slide.color}22` }]}>
-                    <Ionicons name={slide.icon} size={72} color={slide.color} />
+            {step.kind === 'slide' ? (
+                <View style={styles.slideArea}>
+                    <View style={[styles.iconCircle, { backgroundColor: `${slide.color}22` }]}>
+                        <Ionicons name={slide.icon} size={72} color={slide.color} />
+                    </View>
+                    <Text style={styles.title}>{t(slide.titleKey)}</Text>
+                    <Text style={styles.body}>{t(slide.bodyKey)}</Text>
                 </View>
-                <Text style={styles.title}>{t(slide.titleKey)}</Text>
-                <Text style={styles.body}>{t(slide.bodyKey)}</Text>
-            </View>
+            ) : (
+                /* Tema seçimi — dokununca anında uygulanır, seçmeden de geçilebilir */
+                <View style={styles.slideArea}>
+                    <Text style={styles.title}>{t('onboarding.theme_title', 'Koyu mu,\naçık mı?')}</Text>
+                    <Text style={styles.body}>{t('onboarding.theme_body', 'Şimdi seç ya da geç — istediğin zaman Ayarlar\'dan değiştirebilirsin.')}</Text>
+                    <View style={styles.themeRow}>
+                        <TouchableOpacity
+                            style={[styles.themeCard, styles.themeCardDark, mode === 'dark' && styles.themeCardSelected]}
+                            onPress={() => setMode('dark')}
+                            activeOpacity={0.85}
+                            accessibilityRole="radio"
+                            accessibilityState={{ checked: mode === 'dark' }}
+                            accessibilityLabel={t('settings.theme_dark', 'Koyu')}
+                        >
+                            <Ionicons name="moon" size={36} color="#A5B4FC" />
+                            <Text style={styles.themeCardTextDark}>{t('settings.theme_dark', 'Koyu')}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.themeCard, styles.themeCardLight, mode === 'light' && styles.themeCardSelected]}
+                            onPress={() => setMode('light')}
+                            activeOpacity={0.85}
+                            accessibilityRole="radio"
+                            accessibilityState={{ checked: mode === 'light' }}
+                            accessibilityLabel={t('settings.theme_light', 'Açık')}
+                        >
+                            <Ionicons name="sunny" size={36} color="#F59E0B" />
+                            <Text style={styles.themeCardTextLight}>{t('settings.theme_light', 'Açık')}</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
 
             <View style={styles.footer}>
                 <View style={styles.dots}>
-                    {SLIDES.map((_, i) => (
+                    {STEPS.map((_, i) => (
                         <View key={i} style={[styles.dot, i === index && { width: 24, backgroundColor: theme.colors.primary }]} />
                     ))}
                 </View>
@@ -141,5 +184,17 @@ function createStyles(theme: AppTheme) {
             elevation: 6,
         },
         nextBtnText: { color: '#fff', fontSize: 17, fontWeight: '900' },
+
+        themeRow: { flexDirection: 'row', gap: theme.spacing.md, marginTop: theme.spacing.xl },
+        themeCard: {
+            flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10,
+            paddingVertical: theme.spacing.xl, borderRadius: theme.borderRadius.lg,
+            borderWidth: 2, borderColor: 'transparent', minHeight: 120,
+        },
+        themeCardDark: { backgroundColor: '#1A1A2E', borderColor: 'rgba(255,255,255,0.12)' },
+        themeCardLight: { backgroundColor: '#F5F3FF', borderColor: 'rgba(99,102,241,0.2)' },
+        themeCardSelected: { borderColor: theme.colors.primary, borderWidth: 2.5 },
+        themeCardTextDark: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
+        themeCardTextLight: { color: '#12082E', fontSize: 16, fontWeight: '800' },
     });
 }

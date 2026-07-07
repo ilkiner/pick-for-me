@@ -3,7 +3,8 @@
         "cancel": "Cancel",
         "ok": "OK",
         "back": "Back",
-        "clear": "Clear"
+        "clear": "Clear",
+        "add": "Add"
     },
     "login": {
         "title": "Login",
@@ -83,6 +84,8 @@
         "skip": "Skip",
         "next": "Next",
         "start": "Get Started",
+        "theme_title": "Dark or\nlight?",
+        "theme_body": "Pick now or skip — you can change it anytime in Settings.",
         "slide1": {
             "title": "Can't decide\nwhat to do?",
             "body": "Pick For Me helps you decide instantly with a wheel, dice, coin flip, and more."
@@ -284,7 +287,8 @@
             "passed": "Advanced",
             "reset": "Reset",
             "need_items_title": "Not enough",
-            "need_items_msg": "At least 2 participants required."
+            "need_items_msg": "At least 2 participants required.",
+            "need_more_hint": "The tournament is played in head-to-head matches — add at least 2 participants to start."
         },
         "orderteam": {
             "title": "Order & Teams",
@@ -297,7 +301,8 @@
             "split": "Split into Teams",
             "order_result": "ORDER",
             "teams_result": "TEAMS",
-            "team_label": "Team"
+            "team_label": "Team",
+            "need_more_hint": "Add at least 2 people/items to shuffle or build teams."
         }
     },
     "lists": {
@@ -309,7 +314,8 @@
         "load": "Load from saved lists",
         "items": "items",
         "empty_title": "No lists yet",
-        "empty_hint": "Create your first list with \"+\"",
+        "empty_hint": "Save your go-to options and reuse them in the wheel, movie and team tools with one tap.",
+        "empty_cta": "Create Your First List",
         "delete_title": "Delete List",
         "delete_msg": "{{name}} will be deleted.",
         "delete_confirm": "Delete",

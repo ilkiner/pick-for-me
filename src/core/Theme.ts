@@ -55,7 +55,8 @@ const lightColors = {
     secondary: '#9333EA',
     accent: '#0891B2',
     text: '#12082E',
-    textSecondary: '#5B5A72',
+    // Açık zeminde WCAG AA (4.5:1) kontrastını garantilemek için koyulaştırıldı
+    textSecondary: '#4F4E68',
     error: '#DC2626',
     success: '#059669',
     proBadgeBg: '#EDE9FE',

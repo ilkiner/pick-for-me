@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../store/ThemeContext';
+import { celebrateWinner } from '../../core/celebrate';
 import { AppTheme } from '../../core/Theme';
 import { GlassCard } from '../../components/GlassCard';
 import { ContentCategory, getContextualWeights, weightedRandomCategory } from '../../core/context';
@@ -125,7 +126,7 @@ export default function IdeaGeneratorScreen({ navigation }: any) {
                 setDisplayedText(final[lang]);
                 setIsFav(favorites.some(f => f.tr === final.tr));
                 setIsShuffling(false);
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                celebrateWinner();
             }
         }, SLOT_TICK_MS);
     };
@@ -171,6 +172,9 @@ export default function IdeaGeneratorScreen({ navigation }: any) {
                             key={m}
                             style={[styles.tabBtn, tab === m && styles.tabBtnActive]}
                             onPress={() => setTab(m)}
+                            accessibilityRole="tab"
+                            accessibilityState={{ selected: tab === m }}
+                            accessibilityLabel={m === 'app' ? t('tools.idea.tab_app') : t('tools.idea.tab_favorites')}
                         >
                             <Ionicons
                                 name={m === 'app' ? 'bulb-outline' : 'heart-outline'}
@@ -196,6 +200,9 @@ export default function IdeaGeneratorScreen({ navigation }: any) {
                                         key={c.key}
                                         style={[styles.chip, isActive && { backgroundColor: color, borderColor: color }]}
                                         onPress={() => { setCategory(c.key); setCurrentIdea(null); setDisplayedText(t('tools.idea.placeholder')); }}
+                                        accessibilityRole="radio"
+                                        accessibilityState={{ checked: isActive }}
+                                        accessibilityLabel={c.label}
                                     >
                                         {c.icon && <Ionicons name={c.icon as any} size={13} color={isActive ? '#fff' : color} />}
                                         <Text style={[styles.chipText, isActive && styles.chipTextActive, !isActive && c.color ? { color } : {}]}>
@@ -216,7 +223,14 @@ export default function IdeaGeneratorScreen({ navigation }: any) {
                         </GlassCard>
 
                         {/* Generate button */}
-                        <TouchableOpacity style={[styles.generateBtn, isShuffling && { opacity: 0.6 }]} onPress={generateIdea} disabled={isShuffling} activeOpacity={0.85}>
+                        <TouchableOpacity
+                            style={[styles.generateBtn, isShuffling && { opacity: 0.6 }]}
+                            onPress={generateIdea}
+                            disabled={isShuffling}
+                            activeOpacity={0.85}
+                            accessibilityRole="button"
+                            accessibilityLabel={t('tools.idea.generate')}
+                        >
                             <Ionicons name="shuffle-outline" size={20} color="#fff" />
                             <Text style={styles.generateBtnText}>{t('tools.idea.generate')}</Text>
                         </TouchableOpacity>

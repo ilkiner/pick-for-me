@@ -9,6 +9,7 @@ import * as Haptics from 'expo-haptics';
 import { MotiView } from 'moti';
 import { PickEngine } from '../../core/PickEngine';
 import { useTheme } from '../../store/ThemeContext';
+import { celebrateWinner } from '../../core/celebrate';
 import { AppTheme } from '../../core/Theme';
 import { GlassCard } from '../../components/GlassCard';
 import { SavedList } from '../../storage/savedLists';
@@ -54,7 +55,6 @@ export default function OrderTeamScreen({ navigation, route }: any) {
 
     const go = () => {
         if (items.length === 0) return;
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         if (mode === 'order') {
             setResult(PickEngine.shuffleOrder(items));
         } else {
@@ -62,6 +62,7 @@ export default function OrderTeamScreen({ navigation, route }: any) {
             setResult(PickEngine.splitTeams(items, n));
         }
         setHasResult(true);
+        celebrateWinner();
     };
 
     const loadFromSavedLists = () => {
@@ -95,6 +96,9 @@ export default function OrderTeamScreen({ navigation, route }: any) {
                     <TouchableOpacity
                         style={[styles.modeBtn, mode === 'order' && styles.modeBtnActive]}
                         onPress={() => { setMode('order'); setHasResult(false); }}
+                        accessibilityRole="radio"
+                        accessibilityState={{ checked: mode === 'order' }}
+                        accessibilityLabel={t('tools.orderteam.mode_order', 'Sırala')}
                     >
                         <Ionicons name="list-outline" size={18} color={mode === 'order' ? '#FFF' : theme.colors.textSecondary} />
                         <Text style={[styles.modeBtnText, mode === 'order' && styles.modeBtnTextActive]}>
@@ -104,6 +108,9 @@ export default function OrderTeamScreen({ navigation, route }: any) {
                     <TouchableOpacity
                         style={[styles.modeBtn, mode === 'teams' && styles.modeBtnActive]}
                         onPress={() => { setMode('teams'); setHasResult(false); }}
+                        accessibilityRole="radio"
+                        accessibilityState={{ checked: mode === 'teams' }}
+                        accessibilityLabel={t('tools.orderteam.mode_teams', 'Takımlar')}
                     >
                         <Ionicons name="people-outline" size={18} color={mode === 'teams' ? '#FFF' : theme.colors.textSecondary} />
                         <Text style={[styles.modeBtnText, mode === 'teams' && styles.modeBtnTextActive]}>
@@ -121,6 +128,9 @@ export default function OrderTeamScreen({ navigation, route }: any) {
                                 key={n}
                                 style={[styles.countChip, teamCount === n && styles.countChipActive]}
                                 onPress={() => { setTeamCount(n); setHasResult(false); }}
+                                accessibilityRole="radio"
+                                accessibilityState={{ checked: teamCount === n }}
+                                accessibilityLabel={`${t('tools.orderteam.team_count', 'Takım sayısı:')} ${n}`}
                             >
                                 <Text style={[styles.countChipText, teamCount === n && styles.countChipTextActive]}>{n}</Text>
                             </TouchableOpacity>
@@ -129,7 +139,12 @@ export default function OrderTeamScreen({ navigation, route }: any) {
                 )}
 
                 {/* Load + Input */}
-                <TouchableOpacity style={styles.loadListBtn} onPress={loadFromSavedLists}>
+                <TouchableOpacity
+                    style={styles.loadListBtn}
+                    onPress={loadFromSavedLists}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('lists.load', 'Kayıtlı listeden yükle')}
+                >
                     <Ionicons name="bookmark-outline" size={16} color={theme.colors.primary} />
                     <Text style={styles.loadListText}>{t('lists.load', 'Kayıtlı listeden yükle')}</Text>
                 </TouchableOpacity>
@@ -143,7 +158,12 @@ export default function OrderTeamScreen({ navigation, route }: any) {
                         placeholder={t('tools.orderteam.add_person', 'Kişi/öğe ekle...')}
                         placeholderTextColor={theme.colors.textSecondary}
                     />
-                    <TouchableOpacity style={styles.addBtn} onPress={addItem} accessibilityRole="button">
+                    <TouchableOpacity
+                        style={styles.addBtn}
+                        onPress={addItem}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('common.add', 'Ekle')}
+                    >
                         <Ionicons name="add" size={26} color="#FFF" />
                     </TouchableOpacity>
                 </View>
@@ -152,15 +172,36 @@ export default function OrderTeamScreen({ navigation, route }: any) {
                     {items.map((item, idx) => (
                         <View key={idx} style={styles.chip}>
                             <Text style={styles.chipText} numberOfLines={1}>{item}</Text>
-                            <TouchableOpacity onPress={() => removeItem(idx)} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                            <TouchableOpacity
+                                onPress={() => removeItem(idx)}
+                                hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
+                                accessibilityRole="button"
+                                accessibilityLabel={`${t('tools.wheel.delete', 'Sil')}: ${item}`}
+                            >
                                 <Ionicons name="close" size={14} color={theme.colors.textSecondary} />
                             </TouchableOpacity>
                         </View>
                     ))}
                 </View>
 
+                {items.length < 2 && (
+                    <View style={styles.needMoreCard}>
+                        <Ionicons name="information-circle-outline" size={20} color={theme.colors.textSecondary} />
+                        <Text style={styles.needMoreText}>
+                            {t('tools.orderteam.need_more_hint', 'Karıştırmak veya takım kurmak için en az 2 kişi/öğe ekle.')}
+                        </Text>
+                    </View>
+                )}
+
                 {items.length >= 2 && (
-                    <TouchableOpacity style={styles.goBtn} onPress={go}>
+                    <TouchableOpacity
+                        style={styles.goBtn}
+                        onPress={go}
+                        accessibilityRole="button"
+                        accessibilityLabel={mode === 'order'
+                            ? t('tools.orderteam.shuffle', 'Karıştır')
+                            : t('tools.orderteam.split', 'Takımlara Böl')}
+                    >
                         <Ionicons name={mode === 'order' ? 'shuffle-outline' : 'people'} size={22} color="#FFF" />
                         <Text style={styles.goBtnText}>
                             {mode === 'order'
@@ -248,7 +289,7 @@ function createStyles(theme: AppTheme) {
     },
     teamCountLabel: { color: theme.colors.textSecondary, fontSize: 13, fontWeight: '600', marginRight: 4 },
     countChip: {
-        width: 40, height: 40, borderRadius: 20,
+        width: 44, height: 44, borderRadius: 22,
         backgroundColor: theme.colors.surface, alignItems: 'center', justifyContent: 'center',
         borderWidth: 1, borderColor: theme.colors.surfaceBorder,
     },
@@ -279,6 +320,14 @@ function createStyles(theme: AppTheme) {
         borderWidth: 1, borderColor: theme.colors.surfaceBorder,
     },
     chipText: { color: theme.colors.text, fontSize: 14, maxWidth: 120 },
+    needMoreCard: {
+        flexDirection: 'row', alignItems: 'center', gap: 10,
+        padding: theme.spacing.md, borderRadius: theme.borderRadius.md,
+        backgroundColor: theme.colors.surface,
+        borderWidth: 1, borderColor: theme.colors.surfaceBorder,
+        marginBottom: theme.spacing.md,
+    },
+    needMoreText: { flex: 1, color: theme.colors.textSecondary, fontSize: 13, lineHeight: 18 },
     goBtn: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
         backgroundColor: theme.colors.primary, borderRadius: theme.borderRadius.lg,

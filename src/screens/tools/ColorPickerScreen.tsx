@@ -7,6 +7,7 @@ import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PickEngine } from '../../core/PickEngine';
 import { useTheme } from '../../store/ThemeContext';
+import { celebrateWinner } from '../../core/celebrate';
 import { AppTheme } from '../../core/Theme';
 import { ModernButton } from '../../components/ModernButton';
 import { GlassCard } from '../../components/GlassCard';
@@ -72,8 +73,8 @@ export default function ColorPickerScreen({ navigation }: any) {
                 duration: 400,
                 useNativeDriver: true
             }).start();
-            
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+            celebrateWinner();
         }, 1000);
     }, [mode, isShuffling, memory, fadeAnim, shuffleAnim]);
 
