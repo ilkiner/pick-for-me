@@ -66,11 +66,11 @@ export default function MoviePickerScreen({ navigation }: any) {
                 </View>
 
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickAddScroll} contentContainerStyle={styles.quickAddContainer}>
-                    <TouchableOpacity style={styles.quickAddBtn} onPress={() => addPredefinedList(moviesData.imdb_top)}>
-                        <Text style={styles.quickAddText}>{t('tools.movie.imdb_top')}</Text>
+                    <TouchableOpacity style={styles.quickAddBtn} onPress={() => addPredefinedList(moviesData.classics)}>
+                        <Text style={styles.quickAddText}>{t('tools.movie.classics')}</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.quickAddBtn} onPress={() => addPredefinedList(moviesData.netflix)}>
-                        <Text style={styles.quickAddText}>{t('tools.movie.netflix')}</Text>
+                    <TouchableOpacity style={styles.quickAddBtn} onPress={() => addPredefinedList(moviesData.trending)}>
+                        <Text style={styles.quickAddText}>{t('tools.movie.trending')}</Text>
                     </TouchableOpacity>
                     {(['action', 'comedy', 'horror', 'scifi', 'romance', 'animation'] as const).map(genre => (
                         <TouchableOpacity key={genre} style={styles.quickAddBtn} onPress={() => addPredefinedList(moviesData[genre])}>

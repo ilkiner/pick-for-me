@@ -36,7 +36,7 @@ A small, instant action to break your routine. Do it now, skip it later.
 
 **🎬 Movie Picker**
 Can't agree on what to watch? Add movies, pick from curated genre lists, or
-let the app decide. IMDB Top & Netflix categories included.
+let the app decide. All-Time Classics & Trending Picks categories included.
 
 **🏆 Tournament Bracket**
 Enter your contenders, pick winners round by round, crown a champion. Works

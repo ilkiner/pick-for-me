@@ -39,12 +39,12 @@
     "No Country for Old Men", "Nightcrawler", "Whiplash", "The Silence of the Lambs",
     "Oldboy", "Memento", "Black Swan"
   ],
-  "netflix": [
+  "trending": [
     "Squid Game", "Stranger Things", "Money Heist", "Dark", "Narcos",
     "Mindhunter", "Lupin", "The Witcher", "Bridgerton", "Ozark",
     "Breaking Bad", "Better Call Saul"
   ],
-  "imdb_top": [
+  "classics": [
     "The Shawshank Redemption", "The Godfather", "The Dark Knight", "12 Angry Men",
     "Schindler's List", "Pulp Fiction", "Forrest Gump", "Inception", "The Matrix",
     "Goodfellas", "The Lord of the Rings: The Return of the King", "Fight Club",
