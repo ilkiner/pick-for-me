@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { useTranslation } from 'react-i18next';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
@@ -25,6 +26,7 @@ interface SwipeDeckProps {
 const SWIPE_OUT_DURATION = 260;
 
 export function SwipeDeck({ items, onComplete }: SwipeDeckProps) {
+    const { t } = useTranslation();
     const { theme } = useTheme();
     const { width } = useWindowDimensions();
     const styles = useMemo(() => createStyles(theme), [theme]);
@@ -154,7 +156,7 @@ export function SwipeDeck({ items, onComplete }: SwipeDeckProps) {
                     style={[styles.circleBtn, styles.nopeBtn]}
                     onPress={() => swipeByButton(false)}
                     accessibilityRole="button"
-                    accessibilityLabel="✕"
+                    accessibilityLabel={t('tools.match.btn_pass', 'Geç')}
                 >
                     <Ionicons name="close" size={34} color={theme.colors.error} />
                 </TouchableOpacity>
@@ -162,7 +164,7 @@ export function SwipeDeck({ items, onComplete }: SwipeDeckProps) {
                     style={[styles.circleBtn, styles.likeBtn]}
                     onPress={() => swipeByButton(true)}
                     accessibilityRole="button"
-                    accessibilityLabel="❤"
+                    accessibilityLabel={t('tools.match.btn_like', 'Beğen')}
                 >
                     <Ionicons name="heart" size={32} color={theme.colors.success} />
                 </TouchableOpacity>

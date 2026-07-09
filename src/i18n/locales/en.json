@@ -220,6 +220,8 @@
             "player1": "Player 1",
             "player2": "Player 2",
             "swipe_hint": "Swipe right = like · Swipe left = pass",
+            "btn_like": "Like",
+            "btn_pass": "Pass",
             "handoff_title": "Hand the phone to your friend",
             "handoff_sub": "Player 2's turn — they swipe the same deck.",
             "handoff_continue": "Ready, Continue",

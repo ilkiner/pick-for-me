@@ -193,6 +193,8 @@
             "player1": "1. Oyuncu",
             "player2": "2. Oyuncu",
             "swipe_hint": "Sağa kaydır = beğen · Sola kaydır = geç",
+            "btn_like": "Beğen",
+            "btn_pass": "Geç",
             "handoff_title": "Telefonu arkadaşına uzat",
             "handoff_sub": "Sıra 2. oyuncuda — aynı desteyi o da kaydıracak.",
             "handoff_continue": "Hazırım, Devam",
