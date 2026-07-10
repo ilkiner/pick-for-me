@@ -4,5 +4,6 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true
   },
-  "extends": "expo/tsconfig.base"
+  "extends": "expo/tsconfig.base",
+  "exclude": ["node_modules", "supabase/functions"]
 }

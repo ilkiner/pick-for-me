@@ -80,17 +80,6 @@
         "logout": "Çıkış",
         "recent": "SON KULLANILANLAR"
     },
-    "settings": {
-        "title": "Ayarlar",
-        "language": "Dil",
-        "theme": "Tema",
-        "theme_dark": "Koyu",
-        "theme_light": "Açık",
-        "theme_system": "Sistem",
-        "logout": "Çıkış Yap",
-        "logout_desc": "Oturumu sonlandır",
-        "logout_demo": "Demo modunda zaten giriş yapılmamış durumdasın."
-    },
     "tools": {
         "wheel": {
             "title": "Çarkıfelek",
@@ -412,6 +401,20 @@
         "sound_desc": "Çark, zar, tura sesleri",
         "logout": "Çıkış Yap",
         "logout_desc": "Oturumu sonlandır",
-        "logout_demo": "Demo modunda zaten giriş yapılmamış durumdasın."
+        "logout_demo": "Demo modunda zaten giriş yapılmamış durumdasın.",
+        "delete_account": "Hesabı Sil",
+        "delete_account_desc": "Hesabını ve tüm verilerini kalıcı olarak sil",
+        "delete_confirm_title": "Hesabı Sil?",
+        "delete_confirm_msg": "Bu işlem geri alınamaz, tüm verilerin silinir.",
+        "delete_confirm_continue": "Devam",
+        "delete_confirm2_title": "Emin misin?",
+        "delete_confirm2_msg": "Hesabın, kayıtlı listelerin ve geçmişin kalıcı olarak silinecek. Bu son onay.",
+        "delete_confirm_yes": "Evet, Hesabımı Sil",
+        "delete_success_title": "Hesap Silindi",
+        "delete_success_msg": "Hesabın ve tüm verilerin kalıcı olarak silindi.",
+        "delete_requested_title": "Talep Alındı",
+        "delete_requested_msg": "Hesap silme talebin alındı. Bulut verilerin silindi ve oturumun kapatıldı; hesap kaydın en kısa sürede tamamen kaldırılacak.",
+        "delete_error_title": "Silme Başarısız",
+        "delete_error_msg": "Verilerin silinirken bir sorun oluştu. Lütfen tekrar dene veya pickforme.app@gmail.com adresine yaz."
     }
 }

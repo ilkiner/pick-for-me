@@ -51,6 +51,28 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 
 Restart the dev server after changing `.env`.
 
+### Account deletion (Edge Function)
+
+Google Play requires an in-app account deletion flow. Deleting the auth user
+needs the service-role key, so it runs in a Supabase Edge Function
+(`supabase/functions/delete-account/index.ts`). Deploy it once per project:
+
+```bash
+npm i -g supabase              # Supabase CLI (or: npx supabase ...)
+supabase login
+supabase link --project-ref <your-project-ref>   # ref from the dashboard URL
+supabase functions deploy delete-account
+```
+
+No extra secrets needed — `SUPABASE_URL`, `SUPABASE_ANON_KEY` and
+`SUPABASE_SERVICE_ROLE_KEY` are provided automatically in the Edge runtime.
+
+If the function is unreachable, the app falls back to deleting the user's
+cloud rows (`saved_lists`, `activity_history`), signing out, and showing a
+"deletion request received" message. The web request page for Play Console is
+`store/account-deletion.html` (host it and enter its URL under
+**Play Console → App content → Data safety → Account deletion**).
+
 ## Project Structure
 
 ```
