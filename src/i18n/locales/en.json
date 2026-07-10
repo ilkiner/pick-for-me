@@ -305,6 +305,8 @@
             "title": "LAST 48 HOURS",
             "title_pro": "LAST 10 DAYS",
             "empty": "No activities logged yet!",
+            "empty_title": "Nothing here yet",
+            "empty_sub": "Run a tool — your results will pile up here. 🎲",
             "heads": "Heads",
             "tails": "Tails",
             "edge": "Edge",

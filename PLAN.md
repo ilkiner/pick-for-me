@@ -162,6 +162,7 @@ git clone --single-branch --depth 1 https://github.com/garrytan/gstack.git ~/.cl
 - **AI ile liste doldurma** — Pro'nun arkasına kilitli (API maliyetini ödeyen kullanıcılar finanse eder); küçük ücretsiz kota + cache. Trend: AI'lı uygulamalar ücretsizden ödemeye %52 daha iyi çeviriyor ama churn %30 daha yüksek.
 - **Fiyat optimizasyonu**: yıllık $7.99 bütçe segmenti (medyan ~$38). Veriyle daha çok gelir hedeflenirse yıllık $9.99–11.99'a çekilebilir (dönüşüm kaybı minimal). A/B test.
 - **Ağırlıklı seçim**, **Sallayarak seç** (ek modlar).
+- Uzaktan Birlikte Seç: farklı cihazlardan oda kodu/QR ile eşleştirme (Supabase Realtime) — Pro özelliği adayı.
 - Gamification (seri/başarımlar), tema mağazası.
 
 ---
