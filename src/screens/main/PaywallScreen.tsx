@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import {
     View, Text, StyleSheet, TouchableOpacity, ScrollView,
-    ActivityIndicator, Alert,
+    ActivityIndicator, Alert, Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -15,14 +15,69 @@ import { usePro } from '../../store/ProContext';
 
 type Plan = 'monthly' | 'yearly';
 
+// Yayın öncesi gerçek URL'lerle değiştir (bkz. README)
+const PRIVACY_URL = 'https://pickforme.app/privacy';
+const TERMS_URL = 'https://pickforme.app/terms';
+
+// ─── Fiyatlandırma ────────────────────────────────────────────────────────────
+// Fiyatlar koda gömülmez: RevenueCat offerings'ten okunur (kullanıcının mağaza
+// para birimiyle gelir). Mağaza yüklenemezse aşağıdaki fallback'ler kullanılır.
+export interface Pricing {
+    yearly: string;      // ör. "$7.99" — yıllık fiyat (priceString)
+    monthly: string;     // ör. "$1.99" — aylık fiyat (priceString)
+    perMonth: string;    // yıllık/12 — "ayda sadece X" satırı
+    anchor: string;      // aylık×12 — üstü çizili çapa fiyatı
+    savingsPct: number;  // 1 - yıllık/(aylık×12)
+}
+
+const FALLBACK_PRICING: Pricing = {
+    yearly: '$7.99',
+    monthly: '$1.99',
+    perMonth: '$0.67',
+    anchor: '$23.88',
+    savingsPct: 67,
+};
+
+// priceString kalıbındaki sayıyı yeni değerle değiştirir; böylece hesaplanan
+// tutarlar (aylık eşdeğer, çapa) kullanıcının para birimi simgesi/formatıyla
+// gösterilir. Not: binlik ayraçlı çok büyük tutarlarda ayraç korunmaz — bu
+// ekrandaki küçük tutarlar için yeterli.
+function formatWithSameCurrency(template: string, value: number): string {
+    const usesComma = /\d,\d{2}(?!\d)/.test(template);
+    const num = usesComma ? value.toFixed(2).replace('.', ',') : value.toFixed(2);
+    return template.replace(/\d[\d.,\s]*\d|\d/, num);
+}
+
+function derivePricing(offerings: any): Pricing {
+    try {
+        const annualPkg = offerings?.annual
+            ?? offerings?.availablePackages?.find((p: any) => p.packageType === 'ANNUAL');
+        const monthlyPkg = offerings?.monthly
+            ?? offerings?.availablePackages?.find((p: any) => p.packageType === 'MONTHLY');
+        const y = annualPkg?.product;
+        const m = monthlyPkg?.product;
+        if (!y?.priceString || !m?.priceString || !y.price || !m.price) return FALLBACK_PRICING;
+
+        const anchorVal = m.price * 12;
+        return {
+            yearly: y.priceString,
+            monthly: m.priceString,
+            perMonth: formatWithSameCurrency(y.priceString, y.price / 12),
+            anchor: formatWithSameCurrency(m.priceString, anchorVal),
+            savingsPct: Math.round((1 - y.price / anchorVal) * 100),
+        };
+    } catch {
+        return FALLBACK_PRICING;
+    }
+}
+
 const FEATURES = [
-    { icon: 'infinite-outline', key: 'unlimited_lists' },
     { icon: 'ban-outline', key: 'no_ads' },
+    { icon: 'infinite-outline', key: 'unlimited_lists' },
     { icon: 'color-palette-outline', key: 'themes' },
     { icon: 'cloud-upload-outline', key: 'cloud_sync' },
     { icon: 'share-social-outline', key: 'no_watermark' },
     { icon: 'layers-outline', key: 'all_content' },
-    { icon: 'time-outline', key: 'extended_history' },
 ];
 
 function createStyles(theme: AppTheme) {
@@ -47,6 +102,8 @@ function createStyles(theme: AppTheme) {
             alignItems: 'center', justifyContent: 'center',
             marginBottom: theme.spacing.md,
             borderWidth: 1, borderColor: `${theme.colors.primary}40`,
+            shadowColor: theme.colors.primary, shadowOpacity: 0.45, shadowRadius: 18,
+            shadowOffset: { width: 0, height: 0 }, elevation: 8,
         },
         heroTitle: { fontSize: 27, fontWeight: '800', color: theme.colors.text, textAlign: 'center', letterSpacing: -0.6 },
         heroSub: { fontSize: 14, color: theme.colors.textSecondary, marginTop: 6, textAlign: 'center', maxWidth: 280, lineHeight: 20 },
@@ -68,65 +125,82 @@ function createStyles(theme: AppTheme) {
         },
         featureText: { flex: 1, color: theme.colors.text, fontSize: 14, fontWeight: '600' },
 
-        planRow: { flexDirection: 'row', gap: theme.spacing.sm, marginBottom: theme.spacing.md },
+        // Plan kartları — alt alta
         planCard: {
-            flex: 1, borderRadius: theme.borderRadius.lg,
+            borderRadius: theme.borderRadius.lg,
             backgroundColor: theme.colors.surface,
             borderWidth: 2, borderColor: theme.colors.surfaceBorder,
-            padding: theme.spacing.md, alignItems: 'center',
-            minHeight: 160,
+            padding: theme.spacing.md,
+            marginBottom: theme.spacing.sm,
         },
         planCardActive: {
             borderColor: theme.colors.primary,
             backgroundColor: `${theme.colors.primary}14`,
             ...theme.colors.cardShadow,
         },
-        planBadgeRow: { height: 22, marginBottom: 6, justifyContent: 'center' },
-        bestValueBadge: {
-            backgroundColor: theme.colors.primary, borderRadius: 20,
-            paddingHorizontal: 10, paddingVertical: 2,
+        planTopRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+        radioOuter: {
+            width: 22, height: 22, borderRadius: 11,
+            borderWidth: 2, borderColor: theme.colors.surfaceBorder,
+            alignItems: 'center', justifyContent: 'center',
         },
-        bestValueText: { color: '#fff', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
-        planLabel: { fontSize: 13, fontWeight: '700', color: theme.colors.textSecondary, marginBottom: 4 },
-        planLabelActive: { color: theme.colors.primary },
-        planPrice: { fontSize: 28, fontWeight: '800', color: theme.colors.text, letterSpacing: -0.5 },
-        planPriceActive: { color: theme.colors.primary },
-        planSub: { fontSize: 11, color: theme.colors.textSecondary, marginTop: 2, textAlign: 'center' },
-        planSavings: { fontSize: 11, color: theme.colors.success, fontWeight: '700', marginTop: 4, textAlign: 'center' },
-        selectedDot: { position: 'absolute', top: 10, right: 10 },
+        radioOuterActive: { borderColor: theme.colors.primary },
+        radioInner: { width: 12, height: 12, borderRadius: 6, backgroundColor: theme.colors.primary },
+        planLabel: { fontSize: 16, fontWeight: '800', color: theme.colors.text },
+        saveBadge: {
+            backgroundColor: theme.colors.success, borderRadius: 20,
+            paddingHorizontal: 10, paddingVertical: 3, marginLeft: 'auto',
+        },
+        saveBadgeText: { color: '#fff', fontSize: 10, fontWeight: '800', letterSpacing: 0.5 },
+        planPriceRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, marginTop: 10, marginLeft: 32 },
+        anchorPrice: {
+            fontSize: 15, color: theme.colors.textSecondary,
+            textDecorationLine: 'line-through', marginBottom: 4, opacity: 0.8,
+        },
+        planPrice: { fontSize: 30, fontWeight: '800', color: theme.colors.text, letterSpacing: -0.5 },
+        planPeriod: { fontSize: 14, color: theme.colors.textSecondary, fontWeight: '600', marginBottom: 5 },
+        perMonthText: { fontSize: 13, color: theme.colors.success, fontWeight: '700', marginTop: 4, marginLeft: 32 },
+        planSubText: { fontSize: 12, color: theme.colors.textSecondary, marginTop: 4, marginLeft: 32 },
 
-        trialNote: {
-            textAlign: 'center', color: theme.colors.textSecondary,
-            fontSize: 12, marginBottom: theme.spacing.md,
-            paddingHorizontal: theme.spacing.md, fontWeight: '500',
+        trialBadgeWrap: { alignItems: 'center', marginTop: 4, marginBottom: theme.spacing.md },
+        trialBadge: {
+            backgroundColor: `${theme.colors.success}1F`,
+            borderWidth: 1, borderColor: `${theme.colors.success}55`,
+            borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6,
         },
+        trialBadgeText: { color: theme.colors.success, fontSize: 13, fontWeight: '800' },
+
         ctaBtn: {
             backgroundColor: theme.colors.primary, borderRadius: theme.borderRadius.lg,
             padding: theme.spacing.md + 2, alignItems: 'center',
-            marginBottom: theme.spacing.md,
+            marginBottom: theme.spacing.sm,
             shadowColor: theme.colors.primary, shadowOpacity: 0.35, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
             elevation: 8,
         },
         ctaBtnDisabled: { opacity: 0.7 },
         ctaText: { color: '#fff', fontSize: 17, fontWeight: '800', letterSpacing: 0.2 },
-
-        trustCard: {
-            backgroundColor: theme.colors.surface,
-            borderRadius: theme.borderRadius.md,
-            borderWidth: 1, borderColor: theme.colors.surfaceBorder,
-            paddingVertical: 10, paddingHorizontal: theme.spacing.md,
-            marginBottom: theme.spacing.md, gap: 8,
+        ctaNote: {
+            textAlign: 'center', color: theme.colors.textSecondary,
+            fontSize: 12, marginBottom: theme.spacing.md, fontWeight: '500',
+            paddingHorizontal: theme.spacing.md,
         },
-        trustRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-        trustText: { flex: 1, color: theme.colors.textSecondary, fontSize: 12, fontWeight: '600' },
+
+        trustLine: {
+            textAlign: 'center', color: theme.colors.textSecondary,
+            fontSize: 13, fontWeight: '600', marginBottom: theme.spacing.md,
+        },
 
         legalText: {
             textAlign: 'center', color: theme.colors.textSecondary,
-            fontSize: 10, marginBottom: theme.spacing.md, opacity: 0.8,
+            fontSize: 10, marginBottom: theme.spacing.sm, opacity: 0.8,
             paddingHorizontal: theme.spacing.lg, lineHeight: 15,
         },
-        restoreBtn: { alignItems: 'center', paddingVertical: theme.spacing.sm },
-        restoreText: { color: theme.colors.primary, fontSize: 13, fontWeight: '600' },
+        linksRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6, marginBottom: theme.spacing.sm },
+        linkText: { color: theme.colors.primary, fontSize: 12, fontWeight: '600', padding: 4 },
+        linkDot: { color: theme.colors.textSecondary, fontSize: 12 },
+
+        restoreBtn: { alignItems: 'center', paddingVertical: theme.spacing.md, minHeight: 44 },
+        restoreText: { color: theme.colors.primary, fontSize: 14, fontWeight: '700' },
     });
 }
 
@@ -134,7 +208,8 @@ export default function PaywallScreen({ navigation }: any) {
     const { t } = useTranslation();
     const { theme } = useTheme();
     const styles = useMemo(() => createStyles(theme), [theme]);
-    const { isPro, isLoading, purchaseMonthly, purchaseYearly, restorePurchases } = usePro();
+    const { isPro, isLoading, offerings, purchaseMonthly, purchaseYearly, restorePurchases } = usePro();
+    const pricing = useMemo(() => derivePricing(offerings), [offerings]);
     const [selectedPlan, setSelectedPlan] = useState<Plan>('yearly');
     const [purchasing, setPurchasing] = useState(false);
     const [restoring, setRestoring] = useState(false);
@@ -167,6 +242,7 @@ export default function PaywallScreen({ navigation }: any) {
                 : await purchaseMonthly();
             if (success) {
                 track('subscription_started', { plan: selectedPlan });
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
                 navigation.goBack();
             }
         } finally {
@@ -189,15 +265,25 @@ export default function PaywallScreen({ navigation }: any) {
         }
     };
 
+    const selectPlan = (plan: Plan) => {
+        setSelectedPlan(plan);
+        Haptics.selectionAsync();
+    };
+
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView
                 contentContainerStyle={styles.scroll}
                 showsVerticalScrollIndicator={false}
             >
-                {/* Close */}
+                {/* Kapat (X) */}
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeBtn}>
+                    <TouchableOpacity
+                        onPress={() => navigation.goBack()}
+                        style={styles.closeBtn}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('common.back', 'Geri')}
+                    >
                         <Ionicons name="close" size={24} color={theme.colors.text} />
                     </TouchableOpacity>
                 </View>
@@ -216,7 +302,7 @@ export default function PaywallScreen({ navigation }: any) {
                     <Text style={styles.heroSub}>{t('paywall.hero_sub')}</Text>
                 </MotiView>
 
-                {/* Feature list */}
+                {/* Özellik kartı — 6 satır */}
                 <MotiView
                     from={{ opacity: 0, translateY: 20 }}
                     animate={{ opacity: 1, translateY: 0 }}
@@ -234,98 +320,116 @@ export default function PaywallScreen({ navigation }: any) {
                     ))}
                 </MotiView>
 
-                {/* Plan selector */}
+                {/* Plan kartları — alt alta, yıllık üstte */}
                 <MotiView
                     from={{ opacity: 0, translateY: 20 }}
                     animate={{ opacity: 1, translateY: 0 }}
                     transition={{ type: 'spring', stiffness: 200, damping: 20, delay: 200 }}
-                    style={styles.planRow}
                 >
-                    {/* Yearly — default */}
+                    {/* Yıllık — varsayılan seçili */}
                     <TouchableOpacity
                         style={[styles.planCard, selectedPlan === 'yearly' && styles.planCardActive]}
-                        onPress={() => { setSelectedPlan('yearly'); Haptics.selectionAsync(); }}
+                        onPress={() => selectPlan('yearly')}
                         activeOpacity={0.85}
+                        accessibilityRole="radio"
+                        accessibilityState={{ checked: selectedPlan === 'yearly' }}
+                        accessibilityLabel={t('paywall.yearly')}
                     >
-                        <View style={styles.planBadgeRow}>
-                            <View style={styles.bestValueBadge}>
-                                <Text style={styles.bestValueText}>{t('paywall.best_value')}</Text>
+                        <View style={styles.planTopRow}>
+                            <View style={[styles.radioOuter, selectedPlan === 'yearly' && styles.radioOuterActive]}>
+                                {selectedPlan === 'yearly' && <View style={styles.radioInner} />}
+                            </View>
+                            <Text style={styles.planLabel}>{t('paywall.yearly')}</Text>
+                            <View style={styles.saveBadge}>
+                                <Text style={styles.saveBadgeText}>
+                                    {t('paywall.save_badge', { pct: pricing.savingsPct })}
+                                </Text>
                             </View>
                         </View>
-                        <Text style={[styles.planLabel, selectedPlan === 'yearly' && styles.planLabelActive]}>
-                            {t('paywall.yearly')}
+                        <View style={styles.planPriceRow}>
+                            <Text style={styles.anchorPrice}>{pricing.anchor}</Text>
+                            <Text style={styles.planPrice}>{pricing.yearly}</Text>
+                            <Text style={styles.planPeriod}>{t('paywall.per_year')}</Text>
+                        </View>
+                        <Text style={styles.perMonthText}>
+                            {t('paywall.per_month_only', { price: pricing.perMonth })}
                         </Text>
-                        <Text style={[styles.planPrice, selectedPlan === 'yearly' && styles.planPriceActive]}>
-                            $7.99
-                        </Text>
-                        <Text style={styles.planSub}>{t('paywall.yearly_per_month')}</Text>
-                        <Text style={styles.planSavings}>{t('paywall.savings_67')}</Text>
-                        {selectedPlan === 'yearly' && (
-                            <View style={styles.selectedDot}>
-                                <Ionicons name="checkmark-circle" size={20} color={theme.colors.primary} />
-                            </View>
-                        )}
                     </TouchableOpacity>
 
-                    {/* Monthly */}
+                    {/* Aylık */}
                     <TouchableOpacity
                         style={[styles.planCard, selectedPlan === 'monthly' && styles.planCardActive]}
-                        onPress={() => { setSelectedPlan('monthly'); Haptics.selectionAsync(); }}
+                        onPress={() => selectPlan('monthly')}
                         activeOpacity={0.85}
+                        accessibilityRole="radio"
+                        accessibilityState={{ checked: selectedPlan === 'monthly' }}
+                        accessibilityLabel={t('paywall.monthly')}
                     >
-                        <View style={styles.planBadgeRow} />
-                        <Text style={[styles.planLabel, selectedPlan === 'monthly' && styles.planLabelActive]}>
-                            {t('paywall.monthly')}
-                        </Text>
-                        <Text style={[styles.planPrice, selectedPlan === 'monthly' && styles.planPriceActive]}>
-                            $1.99
-                        </Text>
-                        <Text style={styles.planSub}>{t('paywall.monthly_billed')}</Text>
-                        {selectedPlan === 'monthly' && (
-                            <View style={styles.selectedDot}>
-                                <Ionicons name="checkmark-circle" size={20} color={theme.colors.primary} />
+                        <View style={styles.planTopRow}>
+                            <View style={[styles.radioOuter, selectedPlan === 'monthly' && styles.radioOuterActive]}>
+                                {selectedPlan === 'monthly' && <View style={styles.radioInner} />}
                             </View>
-                        )}
+                            <Text style={styles.planLabel}>{t('paywall.monthly')}</Text>
+                        </View>
+                        <View style={styles.planPriceRow}>
+                            <Text style={styles.planPrice}>{pricing.monthly}</Text>
+                            <Text style={styles.planPeriod}>{t('paywall.per_month')}</Text>
+                        </View>
+                        <Text style={styles.planSubText}>{t('paywall.monthly_billed')}</Text>
                     </TouchableOpacity>
                 </MotiView>
 
-                {/* Trial note */}
-                <Text style={styles.trialNote}>{t('paywall.trial_note')}</Text>
-
-                {/* CTA */}
-                <TouchableOpacity
-                    style={[styles.ctaBtn, purchasing && styles.ctaBtnDisabled]}
-                    onPress={handlePurchase}
-                    disabled={purchasing || isLoading}
-                    activeOpacity={0.9}
+                {/* Deneme rozeti + CTA */}
+                <MotiView
+                    from={{ opacity: 0, translateY: 20 }}
+                    animate={{ opacity: 1, translateY: 0 }}
+                    transition={{ type: 'spring', stiffness: 200, damping: 20, delay: 300 }}
                 >
-                    {purchasing ? (
-                        <ActivityIndicator color="#fff" />
-                    ) : (
-                        <Text style={styles.ctaText}>
-                            {selectedPlan === 'yearly'
-                                ? t('paywall.cta_yearly')
-                                : t('paywall.cta_monthly')}
-                        </Text>
-                    )}
-                </TouchableOpacity>
-
-                {/* Trust signals */}
-                <View style={styles.trustCard}>
-                    <View style={styles.trustRow}>
-                        <Ionicons name="shield-checkmark" size={16} color={theme.colors.success} />
-                        <Text style={styles.trustText}>{t('paywall.secure_payment')}</Text>
+                    <View style={styles.trialBadgeWrap}>
+                        <View style={styles.trialBadge}>
+                            <Text style={styles.trialBadgeText}>{t('paywall.trial_badge')}</Text>
+                        </View>
                     </View>
-                    <View style={styles.trustRow}>
-                        <Ionicons name="hand-left-outline" size={16} color={theme.colors.success} />
-                        <Text style={styles.trustText}>{t('paywall.cancel_anytime')}</Text>
-                    </View>
-                </View>
 
-                {/* Legal */}
+                    <TouchableOpacity
+                        style={[styles.ctaBtn, purchasing && styles.ctaBtnDisabled]}
+                        onPress={handlePurchase}
+                        disabled={purchasing || isLoading}
+                        activeOpacity={0.9}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('paywall.cta_trial')}
+                    >
+                        {purchasing ? (
+                            <ActivityIndicator color="#fff" />
+                        ) : (
+                            <Text style={styles.ctaText}>{t('paywall.cta_trial')}</Text>
+                        )}
+                    </TouchableOpacity>
+                </MotiView>
+                <Text style={styles.ctaNote}>
+                    {selectedPlan === 'yearly'
+                        ? t('paywall.cta_note_yearly', { price: pricing.yearly })
+                        : t('paywall.cta_note_monthly', { price: pricing.monthly })}
+                </Text>
+
+                {/* Güven satırı */}
+                <Text style={styles.trustLine}>{t('paywall.trust_line')}</Text>
+
+                {/* Yasal */}
                 <Text style={styles.legalText}>{t('paywall.legal')}</Text>
 
-                {/* Restore */}
+                {/* Linkler */}
+                <View style={styles.linksRow}>
+                    <TouchableOpacity onPress={() => Linking.openURL(PRIVACY_URL).catch(() => {})}>
+                        <Text style={styles.linkText}>{t('paywall.privacy')}</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.linkDot}>•</Text>
+                    <TouchableOpacity onPress={() => Linking.openURL(TERMS_URL).catch(() => {})}>
+                        <Text style={styles.linkText}>{t('paywall.terms')}</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* Geri yükle — en altta, görünür */}
                 <TouchableOpacity onPress={handleRestore} disabled={restoring} style={styles.restoreBtn}>
                     {restoring
                         ? <ActivityIndicator size="small" color={theme.colors.textSecondary} />

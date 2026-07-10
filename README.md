@@ -85,6 +85,11 @@ The app detects device locale on first launch (Turkish or English). Language can
 
 ## Development Notes
 
+> **⚠️ Before release:** `PRIVACY_URL` and `TERMS_URL` at the top of
+> `src/screens/main/PaywallScreen.tsx` point to placeholder pages
+> (`https://pickforme.app/privacy` / `/terms`). Replace them with the real,
+> hosted URLs — both stores require working links on the paywall.
+
 - Run `npx tsc --noEmit` before committing — must pass clean.
 - Run `npx expo-doctor` to catch SDK/package mismatches.
 - Each development phase lives on its own branch (`feat/fazN`).
