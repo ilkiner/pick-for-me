@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { BannerAd, BannerAdSize, TestIds, AD_UNITS } from '../core/AdManager';
+import { BannerAd, BannerAdSize, getAdUnit } from '../core/AdManager';
 import { usePro } from '../store/ProContext';
 
 interface Props {
@@ -10,13 +10,15 @@ interface Props {
 export function BannerAdView({ style }: Props) {
     const { isPro } = usePro();
 
-    // Don't render anything for Pro users or if native module unavailable
-    if (isPro || !BannerAd) return null;
+    // Pro kullanıcı, native modül yok (Expo Go) ya da production'da
+    // env'de banner ID tanımlı değilse (getAdUnit warn verir) render etme.
+    const unitId = !isPro && BannerAd ? getAdUnit('banner') : null;
+    if (isPro || !BannerAd || !unitId) return null;
 
     return (
         <View style={[styles.container, style]}>
             <BannerAd
-                unitId={AD_UNITS.banner}
+                unitId={unitId}
                 size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
                 requestOptions={{ requestNonPersonalizedAdsOnly: false }}
             />
