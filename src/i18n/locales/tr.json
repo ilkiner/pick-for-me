@@ -4,7 +4,10 @@
         "ok": "Tamam",
         "back": "Geri",
         "clear": "Temizle",
-        "add": "Ekle"
+        "add": "Ekle",
+        "error_title": "Bir şeyler ters gitti",
+        "error_body": "Beklenmedik bir hata oluştu. Endişelenme, verilerine bir şey olmadı.",
+        "error_retry": "Tekrar Dene"
     },
     "login": {
         "title": "Giriş Yap",
@@ -78,7 +81,9 @@
             "lists_desc": "Listelerini kaydet ve yeniden kullan"
         },
         "logout": "Çıkış",
-        "recent": "SON KULLANILANLAR"
+        "recent": "SON KULLANILANLAR",
+        "fav_add": "Favorilere ekle",
+        "fav_remove": "Favoriden çıkar"
     },
     "tools": {
         "wheel": {

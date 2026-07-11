@@ -151,7 +151,7 @@ export default function HomeScreen({ navigation }: any) {
                     onPress={() => handleToggleFav(item)}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     accessibilityRole="button"
-                    accessibilityLabel={isFav ? 'Favoriden çıkar' : 'Favorilere ekle'}
+                    accessibilityLabel={isFav ? t('home.fav_remove', 'Favoriden çıkar') : t('home.fav_add', 'Favorilere ekle')}
                 >
                     <Ionicons name={isFav ? 'star' : 'star-outline'} size={18} color={isFav ? '#FFD60A' : theme.colors.surfaceBorder} />
                 </TouchableOpacity>

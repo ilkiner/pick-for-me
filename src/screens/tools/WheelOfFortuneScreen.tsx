@@ -203,7 +203,7 @@ export default function WheelOfFortuneScreen({ navigation, route }: any) {
                     <TouchableOpacity
                         onPress={() => navigation.goBack()}
                         style={styles.backBtn}
-                        accessibilityLabel="Geri"
+                        accessibilityLabel={t('common.back', 'Geri')}
                         accessibilityRole="button"
                     >
                         <Ionicons name="chevron-back" size={26} color={theme.colors.text} />

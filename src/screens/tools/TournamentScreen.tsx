@@ -49,7 +49,7 @@ export default function TournamentScreen({ navigation, route }: any) {
 
     const startTournament = () => {
         if (items.length < 2) {
-            Alert.alert(t('tournament.need_items_title', 'Yetersiz'), t('tournament.need_items_msg', 'En az 2 katılımcı gerekli.'));
+            Alert.alert(t('tools.tournament.need_items_title', 'Yetersiz'), t('tools.tournament.need_items_msg', 'En az 2 katılımcı gerekli.'));
             return;
         }
         const firstRound = PickEngine.buildBracket(items);
@@ -110,14 +110,14 @@ export default function TournamentScreen({ navigation, route }: any) {
                     onPress={phase === 'playing' ? reset : () => navigation.goBack()}
                     style={styles.backBtn}
                     accessibilityRole="button"
-                    accessibilityLabel={phase === 'playing' ? t('tournament.reset', 'Sıfırla') : t('common.back', 'Geri')}
+                    accessibilityLabel={phase === 'playing' ? t('tools.tournament.reset', 'Sıfırla') : t('common.back', 'Geri')}
                 >
                     <Ionicons name={phase === 'playing' ? 'refresh' : 'chevron-back'} size={22} color={theme.colors.text} />
                 </TouchableOpacity>
                 <View style={styles.headerCenter}>
                     <Text style={styles.title}>{t('tools.tournament.title', 'Turnuva')}</Text>
                     {phase === 'playing' && (
-                        <Text style={styles.roundBadge}>{t('tournament.round', 'Tur')} {round}</Text>
+                        <Text style={styles.roundBadge}>{t('tools.tournament.round', 'Tur')} {round}</Text>
                     )}
                 </View>
                 <View style={{ width: 44 }} />
@@ -125,7 +125,7 @@ export default function TournamentScreen({ navigation, route }: any) {
 
             {phase === 'setup' && (
                 <ScrollView contentContainerStyle={styles.setupContent} keyboardShouldPersistTaps="handled">
-                    <Text style={styles.sectionLabel}>{t('tournament.participants', 'Katılımcılar')}</Text>
+                    <Text style={styles.sectionLabel}>{t('tools.tournament.participants', 'Katılımcılar')}</Text>
 
                     <TouchableOpacity
                         style={styles.loadListBtn}
@@ -143,7 +143,7 @@ export default function TournamentScreen({ navigation, route }: any) {
                             value={newItem}
                             onChangeText={setNewItem}
                             onSubmitEditing={addItem}
-                            placeholder={t('tournament.add_participant', 'Katılımcı ekle...')}
+                            placeholder={t('tools.tournament.add_participant', 'Katılımcı ekle...')}
                             placeholderTextColor={theme.colors.textSecondary}
                         />
                         <TouchableOpacity
@@ -185,10 +185,10 @@ export default function TournamentScreen({ navigation, route }: any) {
                             style={styles.startBtn}
                             onPress={startTournament}
                             accessibilityRole="button"
-                            accessibilityLabel={t('tournament.start', 'Turnuvayı Başlat')}
+                            accessibilityLabel={t('tools.tournament.start', 'Turnuvayı Başlat')}
                         >
                             <Ionicons name="trophy-outline" size={22} color="#FFF" />
-                            <Text style={styles.startBtnText}>{t('tournament.start', 'Turnuvayı Başlat')}</Text>
+                            <Text style={styles.startBtnText}>{t('tools.tournament.start', 'Turnuvayı Başlat')}</Text>
                         </TouchableOpacity>
                     )}
                 </ScrollView>
@@ -200,10 +200,10 @@ export default function TournamentScreen({ navigation, route }: any) {
                         <View style={[styles.progressBarFill, { width: `${progress * 100}%` }]} />
                     </View>
                     <Text style={styles.matchCounter}>
-                        {currentMatchIdx + 1} / {totalMatchesThisRound} {t('tournament.match', 'maç')}
+                        {currentMatchIdx + 1} / {totalMatchesThisRound} {t('tools.tournament.match', 'maç')}
                     </Text>
 
-                    <Text style={styles.vsLabel}>{t('tournament.pick_winner', 'Kazananı Seç')}</Text>
+                    <Text style={styles.vsLabel}>{t('tools.tournament.pick_winner', 'Kazananı Seç')}</Text>
 
                     <MotiView
                         key={`match-${round}-${currentMatchIdx}`}
@@ -216,11 +216,11 @@ export default function TournamentScreen({ navigation, route }: any) {
                             style={[styles.matchCard, styles.matchCardA]}
                             onPress={() => pickWinner(currentMatch.a)}
                             accessibilityRole="button"
-                            accessibilityLabel={`${t('tournament.tap_win', 'Seç')}: ${currentMatch.a}`}
+                            accessibilityLabel={`${t('tools.tournament.tap_win', 'Seç')}: ${currentMatch.a}`}
                         >
                             <Text style={styles.matchCardText} numberOfLines={3}>{currentMatch.a}</Text>
                             <View style={styles.matchCardTap}>
-                                <Text style={styles.matchCardTapText}>{t('tournament.tap_win', 'Seç')}</Text>
+                                <Text style={styles.matchCardTapText}>{t('tools.tournament.tap_win', 'Seç')}</Text>
                             </View>
                         </TouchableOpacity>
 
@@ -233,11 +233,11 @@ export default function TournamentScreen({ navigation, route }: any) {
                                 style={[styles.matchCard, styles.matchCardB]}
                                 onPress={() => pickWinner(currentMatch.b!)}
                                 accessibilityRole="button"
-                                accessibilityLabel={`${t('tournament.tap_win', 'Seç')}: ${currentMatch.b}`}
+                                accessibilityLabel={`${t('tools.tournament.tap_win', 'Seç')}: ${currentMatch.b}`}
                             >
                                 <Text style={styles.matchCardText} numberOfLines={3}>{currentMatch.b}</Text>
                                 <View style={styles.matchCardTap}>
-                                    <Text style={styles.matchCardTapText}>{t('tournament.tap_win', 'Seç')}</Text>
+                                    <Text style={styles.matchCardTapText}>{t('tools.tournament.tap_win', 'Seç')}</Text>
                                 </View>
                             </TouchableOpacity>
                         ) : (
@@ -245,16 +245,16 @@ export default function TournamentScreen({ navigation, route }: any) {
                                 style={[styles.matchCard, styles.matchCardBye]}
                                 onPress={() => pickWinner(currentMatch.a)}
                                 accessibilityRole="button"
-                                accessibilityLabel={t('tournament.bye_hint', 'Otomatik geç')}
+                                accessibilityLabel={t('tools.tournament.bye_hint', 'Otomatik geç')}
                             >
-                                <Text style={styles.byeText}>{t('tournament.bye', 'BYE')}</Text>
-                                <Text style={styles.byeHint}>{t('tournament.bye_hint', 'Otomatik geç')}</Text>
+                                <Text style={styles.byeText}>{t('tools.tournament.bye', 'BYE')}</Text>
+                                <Text style={styles.byeHint}>{t('tools.tournament.bye_hint', 'Otomatik geç')}</Text>
                             </TouchableOpacity>
                         )}
                     </MotiView>
 
                     <Text style={styles.winnersSoFar}>
-                        {roundWinners.length > 0 && `${t('tournament.passed', 'Geçenler')}: ${roundWinners.join(' · ')}`}
+                        {roundWinners.length > 0 && `${t('tools.tournament.passed', 'Geçenler')}: ${roundWinners.join(' · ')}`}
                     </Text>
                 </View>
             )}

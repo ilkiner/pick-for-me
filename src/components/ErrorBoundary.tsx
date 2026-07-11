@@ -1,6 +1,7 @@
 import React, { Component, ReactNode } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import i18n from '../i18n';
 
 interface Props { children: ReactNode }
 interface State { hasError: boolean }
@@ -22,14 +23,14 @@ export class ErrorBoundary extends Component<Props, State> {
                 <SafeAreaView style={styles.container}>
                     <View style={styles.content}>
                         <Text style={styles.emoji}>⚠️</Text>
-                        <Text style={styles.title}>Bir şeyler ters gitti</Text>
-                        <Text style={styles.body}>Beklenmedik bir hata oluştu. Endişelenme, verilerine bir şey olmadı.</Text>
+                        <Text style={styles.title}>{i18n.t('common.error_title', 'Bir şeyler ters gitti')}</Text>
+                        <Text style={styles.body}>{i18n.t('common.error_body', 'Beklenmedik bir hata oluştu. Endişelenme, verilerine bir şey olmadı.')}</Text>
                         <TouchableOpacity
                             style={styles.btn}
                             onPress={() => this.setState({ hasError: false })}
                             accessibilityRole="button"
                         >
-                            <Text style={styles.btnText}>Tekrar Dene</Text>
+                            <Text style={styles.btnText}>{i18n.t('common.error_retry', 'Tekrar Dene')}</Text>
                         </TouchableOpacity>
                     </View>
                 </SafeAreaView>

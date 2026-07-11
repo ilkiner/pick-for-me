@@ -4,7 +4,10 @@
         "ok": "OK",
         "back": "Back",
         "clear": "Clear",
-        "add": "Add"
+        "add": "Add",
+        "error_title": "Something went wrong",
+        "error_body": "An unexpected error occurred. Don't worry — your data is safe.",
+        "error_retry": "Try Again"
     },
     "login": {
         "title": "Login",
@@ -78,7 +81,9 @@
             "lists_desc": "Save and reuse your lists"
         },
         "logout": "Logout",
-        "recent": "RECENTLY USED"
+        "recent": "RECENTLY USED",
+        "fav_add": "Add to favorites",
+        "fav_remove": "Remove from favorites"
     },
     "onboarding": {
         "skip": "Skip",
