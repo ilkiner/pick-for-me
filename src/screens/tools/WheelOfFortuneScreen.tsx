@@ -85,7 +85,12 @@ export default function WheelOfFortuneScreen({ navigation, route }: any) {
         setIsSpinning(false);
         setWinner(result);
 
-        await SoundManager.playAndWait('wheel-stop');
+        // Kazanan vurgusu, duruş sesi ne kadar kısa olursa olsun (veya ses
+        // kapalıyken) en az bu süre görünsün.
+        await Promise.all([
+            SoundManager.playAndWait('wheel-stop'),
+            new Promise<void>(resolve => setTimeout(resolve, 1200)),
+        ]);
 
         setWinner(null);
         navigation.navigate('Result', { result, type: 'wheel', sourceRoute: 'WheelOfFortune' });

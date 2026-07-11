@@ -4,7 +4,9 @@ export type SoundName = 'wheel-spin' | 'wheel-stop' | 'dice-roll' | 'coin-flip' 
 
 const SOUND_FILES: Record<SoundName, any> = {
     'wheel-spin': require('../../assets/sounds/mixkit-bike-wheel-spinning-1613.wav'),
-    'wheel-stop': require('../../assets/sounds/wheel-stop.mp3'),
+    // wheel-stop.mp3 0 baytlık placeholder'dı; duruşta kısa "tık" için tap sesi kullanılıyor.
+    // Özel bir duruş sesi eklenirse burayı ona yönlendir.
+    'wheel-stop': require('../../assets/sounds/mixkit-arcade-game-jump-coin-216.wav'),
     'dice-roll':  require('../../assets/sounds/mixkit-drum-roll-566.wav'),
     'coin-flip':  require('../../assets/sounds/677853__el_boss__coin-flip-ping.mp3'),
     'winner':     require('../../assets/sounds/mixkit-ethereal-fairy-win-sound-2019.wav'),
@@ -125,6 +127,17 @@ class SoundManager {
             await sound.playAsync();
         } catch {
             // ignore decode / playback errors
+        }
+    }
+
+    // Tek seferlik bir sesi erken durdurur (ör. animasyon sesten önce bittiğinde).
+    async stop(name: SoundName): Promise<void> {
+        const sound = this.sounds[name];
+        if (!sound) return;
+        try {
+            await sound.stopAsync();
+        } catch {
+            // ignore
         }
     }
 

@@ -46,7 +46,6 @@ export default function CoinFlipScreen({ navigation }: any) {
     const handleFlip = async () => {
         if (isFlipping) return;
         setIsFlipping(true);
-        SoundManager.play('coin-flip');
 
         const newCount = flipCount + 1;
         let isEdge = false;

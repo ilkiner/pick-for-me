@@ -61,6 +61,9 @@ export default function DiceScreen({ navigation }: any) {
             shakeLoop.stop();
             rotateAnim.setValue(0);
             translateX.setValue(0);
+            // Davul sesi (~6 sn) animasyondan uzun; zarlar durunca kes ki
+            // winner sesiyle üst üste binmesin.
+            SoundManager.stop('dice-roll');
             setResults(newResults);
             setRollKey(k => k + 1);
             setIsRolling(false);
