@@ -45,7 +45,7 @@ function AppInner() {
                     i18n.changeLanguage(savedLang);
                 } else {
                     const deviceLang = Localization.getLocales()[0]?.languageCode;
-                    i18n.changeLanguage(deviceLang === 'tr' ? 'tr' : 'en');
+                    i18n.changeLanguage(deviceLang === 'tr' || deviceLang === 'es' ? deviceLang : 'en');
                 }
             } catch (e) {
                 console.error('Error loading language', e);

@@ -18,10 +18,10 @@ import DINNERS_DATA from '../../content/dinners.json';
 type IdeaCategory = 'all' | ContentCategory;
 type TabMode = 'app' | 'favorites';
 
-interface IdeaItem { tr: string; en: string; }
+interface IdeaItem { tr: string; en: string; es: string; }
 
 const IDEAS = IDEAS_DATA as Record<ContentCategory, IdeaItem[]>;
-const DINNERS = DINNERS_DATA as Record<'tr' | 'en', string[]>;
+const DINNERS = DINNERS_DATA as Record<'tr' | 'en' | 'es', string[]>;
 
 const CATEGORY_META: Record<ContentCategory, { icon: string; color: string; labelKey: string }> = {
     food:     { icon: 'restaurant-outline', color: '#FF6B6B', labelKey: 'food' },
@@ -38,7 +38,7 @@ export default function IdeaGeneratorScreen({ navigation }: any) {
     const { t, i18n } = useTranslation();
     const { theme } = useTheme();
     const styles = useMemo(() => createStyles(theme), [theme]);
-    const lang = (i18n.language === 'tr' ? 'tr' : 'en') as 'tr' | 'en';
+    const lang = (['tr', 'es'].includes(i18n.language) ? i18n.language : 'en') as 'tr' | 'en' | 'es';
 
     const [tab, setTab] = useState<TabMode>('app');
     const [category, setCategory] = useState<IdeaCategory>('all');

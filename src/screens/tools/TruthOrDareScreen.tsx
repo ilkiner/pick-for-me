@@ -14,7 +14,8 @@ import TOD_DATA from '../../content/truthOrDare.json';
 
 type CardType = 'truth' | 'dare';
 
-const TOD = TOD_DATA as { truth: { tr: string[]; en: string[] }; dare: { tr: string[]; en: string[] } };
+type TodLang = 'tr' | 'en' | 'es';
+const TOD = TOD_DATA as { truth: Record<TodLang, string[]>; dare: Record<TodLang, string[]> };
 
 const TYPE_COLOR: Record<CardType, string> = {
     truth: '#4ECDC4',
@@ -25,7 +26,7 @@ export default function TruthOrDareScreen({ navigation }: any) {
     const { t, i18n } = useTranslation();
     const { theme } = useTheme();
     const styles = useMemo(() => createStyles(theme), [theme]);
-    const lang = (i18n.language === 'tr' ? 'tr' : 'en') as 'tr' | 'en';
+    const lang = (['tr', 'es'].includes(i18n.language) ? i18n.language : 'en') as TodLang;
 
     const [players, setPlayers] = useState<string[]>([]);
     const [newPlayer, setNewPlayer] = useState('');

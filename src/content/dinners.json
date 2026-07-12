@@ -48,5 +48,30 @@
     "Caesar salad", "Cobb salad", "Buddha bowl", "Avocado toast and eggs", "Omelette and salad",
     "Tomato soup and grilled cheese", "Lentil soup and bread", "Minestrone", "Chicken noodle soup", "Baked potato bar",
     "Breakfast for dinner", "Pancakes and bacon", "English breakfast", "Charcuterie board", "Homemade sub sandwiches"
+  ],
+  "es": [
+    "Paella de mariscos", "Paella valenciana", "Tortilla de patatas", "Gazpacho y picoteo", "Croquetas caseras",
+    "Patatas bravas y tapas", "Jamón, queso y pan con tomate", "Pulpo a la gallega", "Gambas al ajillo", "Fideuá",
+    "Cocido madrileño", "Lentejas guisadas", "Fabada asturiana", "Salmorejo con huevo", "Pisto con huevo frito",
+    "Albóndigas en salsa", "Pollo al ajillo", "Merluza a la plancha", "Bacalao al pil-pil", "Calamares a la romana",
+    "Empanada gallega", "Bocadillo de calamares", "Huevos rotos con jamón", "Arroz negro", "Arroz a la cubana",
+    "Tacos al pastor", "Tacos de carnitas", "Quesadillas", "Burritos", "Enchiladas verdes",
+    "Fajitas de pollo", "Nachos con guacamole", "Chilaquiles", "Pozole", "Tamales",
+    "Arepas rellenas", "Empanadas argentinas", "Asado con ensalada", "Milanesa con puré", "Choripán",
+    "Ceviche", "Lomo saltado", "Arroz chaufa", "Ropa vieja", "Gallo pinto",
+    "Feijoada", "Moqueca de pescado", "Bandeja paisa", "Ají de gallina", "Sancocho",
+    "Espagueti a la boloñesa", "Espagueti carbonara", "Lasaña", "Pasta al pesto", "Ñoquis con salsa de tomate",
+    "Risotto de champiñones", "Pizza margarita", "Pizza cuatro quesos", "Calzone", "Focaccia con embutidos",
+    "Hamburguesa con queso", "Hamburguesa de pollo", "Perritos calientes", "Sándwich club", "Sándwich mixto",
+    "Pollo asado con patatas", "Pollo al curry con arroz", "Salmón a la plancha", "Dorada al horno", "Atún con ensalada",
+    "Sopa de pollo con fideos", "Crema de calabaza", "Sopa de tomate", "Crema de verduras", "Caldo de pescado",
+    "Ensalada César", "Ensalada griega", "Ensalada de quinoa", "Poke bowl", "Buddha bowl",
+    "Sushi variado", "Ramen", "Pad thai", "Arroz frito", "Fideos salteados con verduras",
+    "Pollo teriyaki", "Gyozas", "Rollitos de primavera", "Curry verde tailandés", "Pho",
+    "Kebab de cordero", "Dürüm de döner", "Lahmacun (pizza turca)", "Köfte (albóndigas turcas)", "Hummus con pita",
+    "Shakshuka", "Falafel con ensalada", "Cuscús con verduras", "Tabulé", "Musaka",
+    "Tostadas de aguacate con huevo", "Tortilla francesa con ensalada", "Crepes salados", "Quiche de espinacas", "Tabla de quesos y embutidos",
+    "Patatas asadas rellenas", "Pimientos rellenos", "Berenjenas rellenas", "Coliflor al horno con queso", "Verduras a la parrilla con arroz",
+    "Desayuno para cenar", "Tortitas con fruta", "Huevos rancheros", "Sopa de lentejas con pan", "Bocadillos variados caseros"
   ]
 }

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, Switch, ScrollView } f
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GlassCard } from '../../components/GlassCard';
 import { isSupabaseConfigured, supabase } from '../../storage/supabase';
 import { deleteAccount } from '../../storage/accountDeletion';
@@ -70,6 +71,7 @@ const THEME_OPTIONS: { mode: ThemeMode; labelKey: string; icon: string }[] = [
 const LANGUAGE_OPTIONS: { code: string; label: string; flag: string }[] = [
     { code: 'tr', label: 'Türkçe',  flag: '🇹🇷' },
     { code: 'en', label: 'English', flag: '🇬🇧' },
+    { code: 'es', label: 'Español', flag: '🇪🇸' },
 ];
 
 export default function SettingsScreen({ navigation }: any) {
@@ -238,7 +240,11 @@ export default function SettingsScreen({ navigation }: any) {
                             <TouchableOpacity
                                 key={lang.code}
                                 style={[styles.segBtn, i18n.language === lang.code && styles.segBtnActive]}
-                                onPress={() => i18n.changeLanguage(lang.code)}
+                                onPress={() => {
+                                    i18n.changeLanguage(lang.code);
+                                    // App.tsx açılışta 'appLanguage' okur; kaydetmezsek seçim yeniden başlatmada kaybolur.
+                                    AsyncStorage.setItem('appLanguage', lang.code).catch(() => {});
+                                }}
                                 activeOpacity={0.8}
                             >
                                 <Text style={styles.segFlag}>{lang.flag}</Text>

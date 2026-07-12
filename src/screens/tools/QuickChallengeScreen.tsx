@@ -20,6 +20,7 @@ interface ChallengeItem {
     difficulty: Difficulty;
     text_tr: string;
     text_en: string;
+    text_es: string;
     suggestedSeconds?: number;
 }
 
@@ -50,8 +51,8 @@ export default function QuickChallengeScreen({ navigation }: any) {
     const { t, i18n } = useTranslation();
     const { theme } = useTheme();
     const styles = useMemo(() => createStyles(theme), [theme]);
-    const lang = (i18n.language === 'tr' ? 'tr' : 'en') as 'tr' | 'en';
-    const textOf = (c: ChallengeItem) => (lang === 'tr' ? c.text_tr : c.text_en);
+    const lang = (['tr', 'es'].includes(i18n.language) ? i18n.language : 'en') as 'tr' | 'en' | 'es';
+    const textOf = (c: ChallengeItem) => (lang === 'tr' ? c.text_tr : lang === 'es' ? c.text_es : c.text_en);
 
     const [filterCategory, setFilterCategory] = useState<ChallengeCategory | 'all'>('all');
     const [filterDifficulty, setFilterDifficulty] = useState<Difficulty | 'all'>('all');
