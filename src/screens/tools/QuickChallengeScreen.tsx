@@ -11,15 +11,16 @@ import { AppTheme } from '../../core/Theme';
 import { GlassCard } from '../../components/GlassCard';
 import ALL_CHALLENGES from '../../content/challenges.json';
 
-type ChallengeCategory = 'home' | 'sport' | 'social' | 'productivity' | 'fun';
+type ChallengeCategory = 'home' | 'sport' | 'social' | 'productivity' | 'fun' | 'selfcare';
 type Difficulty = 'easy' | 'medium' | 'hard';
 
 interface ChallengeItem {
-    tr: string;
-    en: string;
+    id: string;
     category: ChallengeCategory;
     difficulty: Difficulty;
-    duration: number;
+    text_tr: string;
+    text_en: string;
+    suggestedSeconds?: number;
 }
 
 const CHALLENGES = ALL_CHALLENGES as ChallengeItem[];
@@ -30,6 +31,7 @@ const CATEGORY_META: Record<ChallengeCategory, { icon: string; color: string }> 
     social:       { icon: 'people-outline',        color: '#6366F1' },
     productivity: { icon: 'flash-outline',         color: '#FFD166' },
     fun:          { icon: 'happy-outline',         color: '#4ECDC4' },
+    selfcare:     { icon: 'leaf-outline',          color: '#10B981' },
 };
 
 const DIFFICULTY_COLOR: Record<Difficulty, string> = {
@@ -49,6 +51,7 @@ export default function QuickChallengeScreen({ navigation }: any) {
     const { theme } = useTheme();
     const styles = useMemo(() => createStyles(theme), [theme]);
     const lang = (i18n.language === 'tr' ? 'tr' : 'en') as 'tr' | 'en';
+    const textOf = (c: ChallengeItem) => (lang === 'tr' ? c.text_tr : c.text_en);
 
     const [filterCategory, setFilterCategory] = useState<ChallengeCategory | 'all'>('all');
     const [filterDifficulty, setFilterDifficulty] = useState<Difficulty | 'all'>('all');
@@ -135,7 +138,7 @@ export default function QuickChallengeScreen({ navigation }: any) {
         const interval = setInterval(() => {
             counter++;
             const rnd = CHALLENGES[Math.floor(Math.random() * CHALLENGES.length)];
-            setDisplayedText(rnd[lang]);
+            setDisplayedText(textOf(rnd));
             setDisplayedCategory(rnd.category);
             Animated.sequence([
                 Animated.timing(translateY, { toValue: -10, duration: 32, useNativeDriver: true }),
@@ -149,7 +152,7 @@ export default function QuickChallengeScreen({ navigation }: any) {
                     Animated.spring(cardScale, { toValue: 1, friction: 5, tension: 50, useNativeDriver: true }),
                 ]).start();
                 setChallenge(final);
-                setDisplayedText(final[lang]);
+                setDisplayedText(textOf(final));
                 setDisplayedCategory(final.category);
                 setIsShuffling(false);
                 celebrateWinner();
@@ -178,7 +181,7 @@ export default function QuickChallengeScreen({ navigation }: any) {
     const handleDone = async () => {
         await incrementStreak();
         // Kutlama ResultScreen'de tek noktadan verilir
-        navigation.navigate('Result', { result: challenge?.[lang], type: 'challenge' });
+        navigation.navigate('Result', { result: challenge ? textOf(challenge) : '', type: 'challenge' });
     };
 
     const catMeta = displayedCategory ? CATEGORY_META[displayedCategory] : null;
@@ -276,7 +279,7 @@ export default function QuickChallengeScreen({ navigation }: any) {
                         </Animated.View>
 
                         {/* Timer display */}
-                        {(timerActive || (timerLeft === 0 && !timerActive && challenge?.duration && challenge.duration > 0)) && (
+                        {(timerActive || (timerLeft === 0 && !timerActive && challenge?.suggestedSeconds && challenge.suggestedSeconds > 0)) && (
                             <View style={styles.timerRow}>
                                 {timerActive ? (
                                     <>
@@ -301,16 +304,16 @@ export default function QuickChallengeScreen({ navigation }: any) {
                 </Animated.View>
 
                 {/* Timer start button */}
-                {challenge && !isShuffling && challenge.duration > 0 && !timerActive && timerLeft === 0 && (
+                {challenge && !isShuffling && (challenge.suggestedSeconds ?? 0) > 0 && !timerActive && timerLeft === 0 && (
                     <TouchableOpacity
                         style={[styles.timerBtn, { borderColor: catMeta?.color ?? theme.colors.primary }]}
-                        onPress={() => startTimer(challenge.duration)}
+                        onPress={() => startTimer(challenge.suggestedSeconds!)}
                     >
                         <Ionicons name="timer-outline" size={18} color={catMeta?.color ?? theme.colors.primary} />
                         <Text style={[styles.timerBtnText, { color: catMeta?.color ?? theme.colors.primary }]}>
-                            {t('tools.challenge.timer_start')} ({challenge.duration >= 60
-                                ? `${Math.floor(challenge.duration / 60)} dk`
-                                : `${challenge.duration}s`})
+                            {t('tools.challenge.timer_start')} ({challenge.suggestedSeconds! >= 60
+                                ? `${Math.floor(challenge.suggestedSeconds! / 60)} ${t('tools.challenge.minutes_short', 'dk')}`
+                                : `${challenge.suggestedSeconds}s`})
                         </Text>
                     </TouchableOpacity>
                 )}
