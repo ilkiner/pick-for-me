@@ -2,52 +2,69 @@
   "action": [
     "Mad Max: Fury Road", "John Wick", "The Dark Knight", "Inception", "Interstellar",
     "The Matrix", "Die Hard", "Mission: Impossible – Fallout", "Top Gun: Maverick",
-    "Avengers: Endgame", "Spider-Man: No Way Home", "Black Panther"
+    "Avengers: Endgame", "Spider-Man: No Way Home", "Black Panther", "Gladiator",
+    "The Bourne Identity", "Casino Royale", "Edge of Tomorrow", "Kill Bill: Vol. 1",
+    "Terminator 2: Judgment Day", "Baby Driver", "Dune: Part Two"
   ],
   "comedy": [
     "The Grand Budapest Hotel", "Superbad", "Game Night", "The Nice Guys",
-    "Knives Out", "Parasite", "Clueless", "Some Like It Hot", "Airplane!",
-    "Monty Python and the Holy Grail", "The Big Lebowski"
+    "Knives Out", "Clueless", "Some Like It Hot", "Airplane!",
+    "Monty Python and the Holy Grail", "The Big Lebowski", "Groundhog Day",
+    "The Hangover", "Bridesmaids", "Anchorman", "Hot Fuzz", "Shaun of the Dead",
+    "Ferris Bueller's Day Off", "Home Alone", "Free Guy", "Jojo Rabbit"
   ],
   "drama": [
     "The Shawshank Redemption", "The Godfather", "Schindler's List", "Forrest Gump",
     "12 Angry Men", "Requiem for a Dream", "American History X", "Good Will Hunting",
-    "A Beautiful Mind", "The Pursuit of Happyness", "Manchester by the Sea"
+    "A Beautiful Mind", "The Pursuit of Happyness", "Manchester by the Sea",
+    "The Green Mile", "Dead Poets Society", "Whiplash", "Spotlight",
+    "The Social Network", "Marriage Story", "Nomadland", "CODA", "Oppenheimer"
   ],
   "horror": [
     "Get Out", "Hereditary", "A Quiet Place", "Midsommar", "It Follows",
     "The Conjuring", "Scream", "Halloween", "Psycho", "The Shining",
-    "Alien", "The Babadook"
+    "Alien", "The Babadook", "It", "The Exorcist", "Sinister",
+    "The Witch", "Us", "Insidious", "28 Days Later", "Smile"
   ],
   "scifi": [
     "Arrival", "Ex Machina", "Blade Runner 2049", "Everything Everywhere All at Once",
     "District 9", "Her", "Annihilation", "Moon", "Children of Men",
-    "Dune", "Avatar", "The Martian"
+    "Dune", "Avatar", "The Martian", "Gravity", "Looper",
+    "Source Code", "Minority Report", "Snowpiercer", "Tenet", "Ready Player One", "E.T."
   ],
   "romance": [
     "La La Land", "About Time", "Before Sunrise", "Pride and Prejudice",
     "The Notebook", "When Harry Met Sally", "Eternal Sunshine of the Spotless Mind",
-    "Amélie", "Call Me by Your Name", "Portrait of a Lady on Fire"
+    "Amélie", "Call Me by Your Name", "Portrait of a Lady on Fire",
+    "Notting Hill", "10 Things I Hate About You", "Titanic", "Crazy Rich Asians",
+    "500 Days of Summer", "Silver Linings Playbook", "The Fault in Our Stars",
+    "To All the Boys I've Loved Before", "Past Lives", "Anyone but You"
   ],
   "animation": [
     "Spider-Man: Into the Spider-Verse", "Spirited Away", "WALL-E", "Up",
     "The Lion King", "Coco", "Soul", "Toy Story", "Princess Mononoke",
-    "Your Name", "Howl's Moving Castle", "Encanto"
+    "Your Name", "Howl's Moving Castle", "Encanto", "Inside Out",
+    "Zootopia", "How to Train Your Dragon", "Kung Fu Panda", "Ratatouille",
+    "Klaus", "Puss in Boots: The Last Wish", "The Incredibles"
   ],
   "thriller": [
     "Parasite", "Gone Girl", "Prisoners", "Zodiac", "Se7en",
-    "No Country for Old Men", "Nightcrawler", "Whiplash", "The Silence of the Lambs",
-    "Oldboy", "Memento", "Black Swan"
+    "No Country for Old Men", "Nightcrawler", "The Silence of the Lambs",
+    "Oldboy", "Memento", "Black Swan", "Shutter Island", "The Prestige",
+    "Heat", "Sicario", "Wind River", "The Girl with the Dragon Tattoo",
+    "Knock at the Cabin", "The Menu", "Glass Onion"
   ],
   "trending": [
     "Squid Game", "Stranger Things", "Money Heist", "Dark", "Narcos",
     "Mindhunter", "Lupin", "The Witcher", "Bridgerton", "Ozark",
-    "Breaking Bad", "Better Call Saul"
+    "Breaking Bad", "Better Call Saul", "Wednesday", "The Last of Us",
+    "The Bear", "Severance", "The Boys", "Peaky Blinders", "Ted Lasso", "Arcane"
   ],
   "classics": [
     "The Shawshank Redemption", "The Godfather", "The Dark Knight", "12 Angry Men",
     "Schindler's List", "Pulp Fiction", "Forrest Gump", "Inception", "The Matrix",
     "Goodfellas", "The Lord of the Rings: The Return of the King", "Fight Club",
-    "Interstellar", "The Silence of the Lambs", "Se7en", "Parasite"
+    "Interstellar", "The Silence of the Lambs", "Se7en", "Parasite",
+    "Casablanca", "Back to the Future", "One Flew Over the Cuckoo's Nest", "The Godfather Part II"
   ]
 }
