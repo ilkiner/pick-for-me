@@ -78,7 +78,9 @@
             "challenge_desc": "Küçük bir görev tamamla",
             "tournament_desc": "Eleme usulü kazan",
             "orderteam_desc": "Karıştır veya takımlara böl",
-            "lists_desc": "Listelerini kaydet ve yeniden kullan"
+            "lists_desc": "Listelerini kaydet ve yeniden kullan",
+            "truthordare": "Doğruluk-Cesaret",
+            "truthordare_desc": "Klasik parti oyunu"
         },
         "logout": "Çıkış",
         "recent": "SON KULLANILANLAR",
@@ -300,6 +302,16 @@
             "teams_result": "TAKIMLAR",
             "team_label": "Takım",
             "need_more_hint": "Karıştırmak veya takım kurmak için en az 2 kişi/öğe ekle."
+        },
+        "truthordare": {
+            "title": "Doğruluk mu Cesaret mi?",
+            "truth": "Doğruluk",
+            "dare": "Cesaret",
+            "random": "Rastgele",
+            "players_label": "Oyuncular (opsiyonel)",
+            "add_player": "İsim ekle...",
+            "turn_label": "Sıra",
+            "empty": "Seçimini yap: doğruluk mu, cesaret mi?"
         }
     },
     "lists": {

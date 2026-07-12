@@ -29,6 +29,7 @@ const TOOL_DEFS: ToolItem[] = [
     { id: '8',  key: 'tournament', iconLib: Ionicons,                iconName: 'trophy',      route: 'Tournament',     color: () => '#FFD60A',         desc: 'tournament' },
     { id: '9',  key: 'orderteam',  iconLib: Ionicons,                iconName: 'people',      route: 'OrderTeam',      color: t => t.colors.accent,    desc: 'orderteam' },
     { id: '10', key: 'lists',      iconLib: Ionicons,                iconName: 'bookmark',    route: 'SavedLists',     color: t => t.colors.primary,   desc: 'lists' },
+    { id: '11', key: 'truthordare', iconLib: MaterialCommunityIcons, iconName: 'cards-playing-outline', route: 'TruthOrDare', color: () => '#E91E63', desc: 'truthordare' },
 ];
 
 const TOOL_BY_ID = new Map(TOOL_DEFS.map(t => [t.id, t]));

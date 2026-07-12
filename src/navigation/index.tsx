@@ -17,6 +17,7 @@ import IdeaGeneratorScreen from '../screens/tools/IdeaGeneratorScreen';
 import QuickChallengeScreen from '../screens/tools/QuickChallengeScreen';
 import MoviePickerScreen from '../screens/tools/MoviePickerScreen';
 import TournamentScreen from '../screens/tools/TournamentScreen';
+import TruthOrDareScreen from '../screens/tools/TruthOrDareScreen';
 import OrderTeamScreen from '../screens/tools/OrderTeamScreen';
 import SavedListsScreen from '../screens/lists/SavedListsScreen';
 import { Ionicons } from '@expo/vector-icons';
@@ -110,6 +111,7 @@ export function RootNavigator({ session }: { session: any }) {
                     <Stack.Screen name="QuickChallenge" component={QuickChallengeScreen} />
                     <Stack.Screen name="MoviePicker" component={MoviePickerScreen} />
                     <Stack.Screen name="Tournament" component={TournamentScreen} />
+                    <Stack.Screen name="TruthOrDare" component={TruthOrDareScreen} />
                     <Stack.Screen name="OrderTeam" component={OrderTeamScreen} />
                     <Stack.Screen name="SavedLists" component={SavedListsScreen} />
                 </>

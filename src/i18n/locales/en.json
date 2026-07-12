@@ -78,7 +78,9 @@
             "challenge_desc": "Complete a mini task",
             "tournament_desc": "Elimination bracket winner",
             "orderteam_desc": "Shuffle or split into teams",
-            "lists_desc": "Save and reuse your lists"
+            "lists_desc": "Save and reuse your lists",
+            "truthordare": "Truth or Dare",
+            "truthordare_desc": "The classic party game"
         },
         "logout": "Logout",
         "recent": "RECENTLY USED",
@@ -352,6 +354,16 @@
             "teams_result": "TEAMS",
             "team_label": "Team",
             "need_more_hint": "Add at least 2 people/items to shuffle or build teams."
+        },
+        "truthordare": {
+            "title": "Truth or Dare?",
+            "truth": "Truth",
+            "dare": "Dare",
+            "random": "Random",
+            "players_label": "Players (optional)",
+            "add_player": "Add a name...",
+            "turn_label": "Turn",
+            "empty": "Make your pick: truth or dare?"
         }
     },
     "lists": {
