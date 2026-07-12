@@ -187,7 +187,7 @@ export default function QuickChallengeScreen({ navigation }: any) {
     const catMeta = displayedCategory ? CATEGORY_META[displayedCategory] : null;
     const diffColor = challenge ? DIFFICULTY_COLOR[challenge.difficulty] : null;
 
-    const CATEGORIES: (ChallengeCategory | 'all')[] = ['all', 'home', 'sport', 'social', 'productivity', 'fun'];
+    const CATEGORIES: (ChallengeCategory | 'all')[] = ['all', 'home', 'sport', 'social', 'productivity', 'fun', 'selfcare'];
     const DIFFICULTIES: (Difficulty | 'all')[] = ['all', 'easy', 'medium', 'hard'];
 
     return (

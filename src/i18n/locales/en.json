@@ -274,13 +274,15 @@
                 "sport": "Sport",
                 "social": "Social",
                 "productivity": "Productivity",
-                "fun": "Fun"
+                "fun": "Fun",
+                "selfcare": "Self-Care"
             },
             "difficulties": {
                 "easy": "Easy",
                 "medium": "Medium",
                 "hard": "Hard"
-            }
+            },
+            "minutes_short": "min"
         },
         "idea": {
             "title": "Random Idea",

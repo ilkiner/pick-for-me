@@ -222,13 +222,15 @@
                 "sport": "Spor",
                 "social": "Sosyal",
                 "productivity": "Üretkenlik",
-                "fun": "Eğlence"
+                "fun": "Eğlence",
+                "selfcare": "Öz Bakım"
             },
             "difficulties": {
                 "easy": "Kolay",
                 "medium": "Orta",
                 "hard": "Zor"
-            }
+            },
+            "minutes_short": "dk"
         },
         "idea": {
             "title": "Rastgele Fikir",
