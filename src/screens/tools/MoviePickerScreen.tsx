@@ -1,8 +1,9 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Platform, KeyboardAvoidingView, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { PickEngine } from '../../core/PickEngine';
 import { MatchEngine, MatchItem } from '../../core/MatchEngine';
 import { LocalStorage } from '../../storage/local';
@@ -14,10 +15,19 @@ import { MatchFlow } from '../../components/MatchFlow';
 import MOVIES_DATA from '../../content/movies.json';
 
 type Mode = 'random' | 'together';
-type MatchSource = 'all' | 'mylist' | 'classics' | 'trending' | 'action' | 'comedy' | 'horror' | 'scifi' | 'romance' | 'animation';
+type Genre = 'action' | 'comedy' | 'drama' | 'thriller' | 'horror' | 'scifi' | 'romance' | 'animation';
+type MatchSource = 'all' | 'mylist' | 'classics' | 'trending' | Genre;
 type MatchPhase = 'setup' | 'playing';
 
-const GENRES = ['action', 'comedy', 'horror', 'scifi', 'romance', 'animation'] as const;
+const GENRES: Genre[] = ['action', 'comedy', 'drama', 'thriller', 'horror', 'scifi', 'romance', 'animation'];
+
+// Hazır paketler: hızlı ekleme çipleri bu sırayla çıkar
+const PACK_KEYS: string[] = ['classics', 'trending', ...GENRES];
+
+// Bir başlığın hazır paketten mi yoksa kullanıcıdan mı geldiğini ayırt etmek
+// için tüm paket başlıklarının düz kümesi. Kullanıcının kendi eklediklerini
+// korurken paket filmlerini toplu silmeyi mümkün kılar.
+const PACK_TITLES = new Set(Object.values(MOVIES_DATA as Record<string, string[]>).flat());
 
 export default function MoviePickerScreen({ navigation }: any) {
     const { t } = useTranslation();
@@ -58,9 +68,45 @@ export default function MoviePickerScreen({ navigation }: any) {
 
     const moviesData = MOVIES_DATA as Record<string, string[]>;
 
-    const addPredefinedList = (list: string[]) => {
-        const newOpts = Array.from(new Set([...movies, ...list]));
-        saveOptions(newOpts);
+    // Hazır paket çipleri AÇ/KAPA çalışır: paket zaten listedeyse tekrar
+    // basmak onu kaldırır. (Eskiden yalnızca ekliyordu; ikinci dokunuş Set
+    // ile eleniyor ve ekranda hiçbir şey olmuyormuş gibi görünüyordu.)
+    const isPackLoaded = (packKey: string) => {
+        const list = moviesData[packKey] ?? [];
+        if (list.length === 0) return false;
+        const current = new Set(movies);
+        return list.every(title => current.has(title));
+    };
+
+    const togglePack = (packKey: string) => {
+        const list = moviesData[packKey] ?? [];
+        if (list.length === 0) return;
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+        if (isPackLoaded(packKey)) {
+            const remove = new Set(list);
+            saveOptions(movies.filter(title => !remove.has(title)));
+        } else {
+            saveOptions(Array.from(new Set([...movies, ...list])));
+        }
+    };
+
+    // Hazır listelerden gelenleri toplu sil — kullanıcının kendi ekledikleri kalır
+    const packCount = movies.filter(title => PACK_TITLES.has(title)).length;
+
+    const removePackTitles = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+        saveOptions(movies.filter(title => !PACK_TITLES.has(title)));
+    };
+
+    const clearAll = () => {
+        Alert.alert(
+            t('tools.movie.clear_confirm_title', 'Tüm listeyi sil'),
+            t('tools.movie.clear_confirm_msg', 'Kendi eklediklerin dahil her şey silinecek.'),
+            [
+                { text: t('common.cancel', 'İptal'), style: 'cancel' },
+                { text: t('tools.movie.clear_all', 'Tümünü sil'), style: 'destructive', onPress: () => saveOptions([]) },
+            ]
+        );
     };
 
     const handlePick = () => {
@@ -150,21 +196,67 @@ export default function MoviePickerScreen({ navigation }: any) {
     const renderRandomMode = () => (
         <>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickAddScroll} contentContainerStyle={styles.quickAddContainer}>
-                <TouchableOpacity style={styles.quickAddBtn} onPress={() => addPredefinedList(moviesData.classics)}>
-                    <Text style={styles.quickAddText}>{t('tools.movie.classics')}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.quickAddBtn} onPress={() => addPredefinedList(moviesData.trending)}>
-                    <Text style={styles.quickAddText}>{t('tools.movie.trending')}</Text>
-                </TouchableOpacity>
-                {GENRES.map(genre => (
-                    <TouchableOpacity key={genre} style={styles.quickAddBtn} onPress={() => addPredefinedList(moviesData[genre])}>
-                        <Text style={styles.quickAddText}>{t(`tools.movie.genre_${genre}`, genre)}</Text>
-                    </TouchableOpacity>
-                ))}
-                <TouchableOpacity style={[styles.quickAddBtn, styles.clearBtn]} onPress={() => saveOptions([])}>
-                    <Text style={styles.quickAddText}>{t('tools.common.clear', 'Temizle')}</Text>
-                </TouchableOpacity>
+                {PACK_KEYS.map(packKey => {
+                    const loaded = isPackLoaded(packKey);
+                    const label = packKey === 'classics'
+                        ? t('tools.movie.classics')
+                        : packKey === 'trending'
+                            ? t('tools.movie.trending')
+                            : t(`tools.movie.genre_${packKey}`, packKey);
+                    return (
+                        <TouchableOpacity
+                            key={packKey}
+                            style={[styles.quickAddBtn, loaded && styles.quickAddBtnActive]}
+                            onPress={() => togglePack(packKey)}
+                            activeOpacity={0.7}
+                            accessibilityRole="button"
+                            accessibilityState={{ selected: loaded }}
+                            accessibilityLabel={label}
+                        >
+                            <Ionicons
+                                name={loaded ? 'checkmark-circle' : 'add-circle-outline'}
+                                size={14}
+                                color={loaded ? '#fff' : theme.colors.textSecondary}
+                            />
+                            <Text style={[styles.quickAddText, loaded && styles.quickAddTextActive]}>{label}</Text>
+                        </TouchableOpacity>
+                    );
+                })}
             </ScrollView>
+
+            {/* Liste yönetimi: hazır paketten gelenleri kendi eklediklerine
+                dokunmadan toplu sil, ya da her şeyi temizle */}
+            {movies.length > 0 && (
+                <View style={styles.manageRow}>
+                    <Text style={styles.manageInfo} numberOfLines={1}>
+                        {packCount > 0
+                            ? t('tools.movie.packs_loaded', { count: packCount, defaultValue: 'Hazır listelerden {{count}} film' })
+                            : t('tools.movie.own_only', 'Sadece senin eklediklerin')}
+                    </Text>
+                    {packCount > 0 && (
+                        <TouchableOpacity
+                            style={styles.manageBtn}
+                            onPress={removePackTitles}
+                            accessibilityRole="button"
+                            accessibilityLabel={t('tools.movie.remove_packs', 'Hazır listeleri kaldır')}
+                        >
+                            <Ionicons name="layers-outline" size={14} color={theme.colors.primary} />
+                            <Text style={styles.manageBtnText}>{t('tools.movie.remove_packs', 'Hazır listeleri kaldır')}</Text>
+                        </TouchableOpacity>
+                    )}
+                    <TouchableOpacity
+                        style={[styles.manageBtn, styles.manageBtnDanger]}
+                        onPress={clearAll}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('tools.movie.clear_all', 'Tümünü sil')}
+                    >
+                        <Ionicons name="trash-outline" size={14} color={theme.colors.error} />
+                        <Text style={[styles.manageBtnText, { color: theme.colors.error }]}>
+                            {t('tools.movie.clear_all', 'Tümünü sil')}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            )}
 
             <View style={styles.inputSection}>
                 <View style={styles.inputContainer}>
@@ -273,9 +365,30 @@ function createStyles(theme: AppTheme) {
 
     quickAddScroll: { marginBottom: theme.spacing.md, flexGrow: 0 },
     quickAddContainer: { flexDirection: 'row', paddingHorizontal: theme.spacing.md, gap: 8 },
-    quickAddBtn: { backgroundColor: theme.colors.surface, paddingVertical: 10, paddingHorizontal: 14, borderRadius: theme.borderRadius.md, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.surfaceBorder },
-    clearBtn: { borderColor: 'rgba(239, 68, 68, 0.3)' },
+    quickAddBtn: {
+        flexDirection: 'row', alignItems: 'center', gap: 5,
+        backgroundColor: theme.colors.surface, paddingVertical: 10, paddingHorizontal: 14,
+        borderRadius: theme.borderRadius.md, minHeight: 44,
+        borderWidth: 1, borderColor: theme.colors.surfaceBorder,
+    },
+    quickAddBtnActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
     quickAddText: { color: theme.colors.text, fontSize: 12, fontWeight: '700' },
+    quickAddTextActive: { color: '#fff' },
+
+    manageRow: {
+        flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap',
+        paddingHorizontal: theme.spacing.md, marginBottom: theme.spacing.md,
+    },
+    manageInfo: { width: '100%', color: theme.colors.textSecondary, fontSize: 11, fontWeight: '600' },
+    manageBtn: {
+        flexDirection: 'row', alignItems: 'center', gap: 5,
+        paddingHorizontal: 10, paddingVertical: 8, minHeight: 36,
+        borderRadius: theme.borderRadius.sm,
+        borderWidth: 1, borderColor: theme.colors.surfaceBorder,
+        backgroundColor: theme.colors.surface,
+    },
+    manageBtnDanger: { borderColor: 'rgba(239, 68, 68, 0.35)' },
+    manageBtnText: { color: theme.colors.primary, fontSize: 11, fontWeight: '700' },
     inputSection: { paddingHorizontal: theme.spacing.md, marginBottom: theme.spacing.md },
     inputContainer: { flexDirection: 'row', gap: 10 },
     input: { flex: 1, backgroundColor: theme.colors.surface, color: theme.colors.text, padding: theme.spacing.md, borderRadius: theme.borderRadius.md, borderWidth: 1, borderColor: theme.colors.surfaceBorder, fontSize: 16 },

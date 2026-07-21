@@ -181,7 +181,15 @@
             "genre_horror": "Korku",
             "genre_scifi": "Sci-Fi",
             "genre_romance": "Romantik",
-            "genre_animation": "Animasyon"
+            "genre_animation": "Animasyon",
+            "genre_drama": "Dram",
+            "genre_thriller": "Gerilim",
+            "packs_loaded": "Hazır listelerden {{count}} film",
+            "own_only": "Sadece senin eklediklerin",
+            "remove_packs": "Hazır listeleri kaldır",
+            "clear_all": "Tümünü sil",
+            "clear_confirm_title": "Tüm listeyi sil",
+            "clear_confirm_msg": "Kendi eklediklerin dahil her şey silinecek."
         },
         "match": {
             "mode_random": "Rastgele",
