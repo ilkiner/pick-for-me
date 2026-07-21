@@ -130,6 +130,26 @@ class SoundManager {
         }
     }
 
+    // Sesi kademeli kısarak durdurur — animasyon bitmeden önce çağrılırsa
+    // sonuç göründüğünde ses çoktan bitmiş olur (ani kesilme hissi de olmaz).
+    async fadeOutStop(name: SoundName, fadeMs = 300): Promise<void> {
+        const sound = this.sounds[name];
+        if (!sound) return;
+        if (this._loopingSound === sound) this._loopingSound = null;
+        try {
+            const steps = 5;
+            for (let i = steps - 1; i >= 1; i--) {
+                await sound.setVolumeAsync(i / steps);
+                await new Promise(r => setTimeout(r, fadeMs / steps));
+            }
+            await sound.stopAsync();
+            await sound.setIsLoopingAsync(false);
+            await sound.setVolumeAsync(1);
+        } catch {
+            // ignore
+        }
+    }
+
     // Tek seferlik bir sesi erken durdurur (ör. animasyon sesten önce bittiğinde).
     async stop(name: SoundName): Promise<void> {
         const sound = this.sounds[name];

@@ -80,7 +80,7 @@ export default function WheelOfFortuneScreen({ navigation, route }: any) {
     };
 
     const onSpinDone = async (result: { id: string; label: string }) => {
-        SoundManager.stopLoop();
+        SoundManager.stopLoop(); // güvence — normalde fade zaten bitirmiş olur
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         setIsSpinning(false);
         setWinner(result);
@@ -116,8 +116,13 @@ export default function WheelOfFortuneScreen({ navigation, route }: any) {
         if (delta < 0) delta += TWO_PI;
         const endRad = spinRad.value + 5 * TWO_PI + delta;
 
+        const SPIN_MS = 4200;
+        // Dönüş sesi animasyondan önce sönümlenerek bitsin; sonuç göründüğünde
+        // ses hâlâ çalıyor olmasın (runOnJS + async stop gecikmesini telafi eder).
+        setTimeout(() => SoundManager.fadeOutStop('wheel-spin', 350), SPIN_MS - 550);
+
         spinRad.value = withTiming(endRad, {
-            duration: 4200,
+            duration: SPIN_MS,
             easing: Easing.out(Easing.poly(4)),
         }, (finished) => {
             if (finished) {

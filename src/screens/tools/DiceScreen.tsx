@@ -56,20 +56,23 @@ export default function DiceScreen({ navigation }: any) {
 
         SoundManager.play('dice-roll');
 
+        const ROLL_MS = 3800;
+        // Davul sesi (~6 sn) animasyondan uzun; sonuç görünmeden önce
+        // sönümlenerek bitsin ki ses sonuçtan sonraya sarkmasın.
+        setTimeout(() => SoundManager.fadeOutStop('dice-roll', 300), ROLL_MS - 500);
+
         setTimeout(() => {
             spinLoop.stop();
             shakeLoop.stop();
             rotateAnim.setValue(0);
             translateX.setValue(0);
-            // Davul sesi (~6 sn) animasyondan uzun; zarlar durunca kes ki
-            // winner sesiyle üst üste binmesin.
-            SoundManager.stop('dice-roll');
+            SoundManager.stop('dice-roll'); // güvence — fade normalde bitirmiş olur
             setResults(newResults);
             setRollKey(k => k + 1);
             setIsRolling(false);
             celebrateWinner();
             trackResult().then(maybeRequestReview).catch(() => {});
-        }, 3800);
+        }, ROLL_MS);
     };
 
     const rotation = rotateAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
