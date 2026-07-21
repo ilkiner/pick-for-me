@@ -85,7 +85,13 @@
         "logout": "Logout",
         "recent": "RECENTLY USED",
         "fav_add": "Add to favorites",
-        "fav_remove": "Remove from favorites"
+        "fav_remove": "Remove from favorites",
+        "daily": {
+            "title": "Today's Challenge",
+            "done_btn": "I did it",
+            "done_msg": "A new one awaits you tomorrow ✅",
+            "share_text": "I completed today's challenge: {{task}}"
+        }
     },
     "onboarding": {
         "skip": "Skip",

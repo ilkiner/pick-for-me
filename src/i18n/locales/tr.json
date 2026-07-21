@@ -85,7 +85,13 @@
         "logout": "Çıkış",
         "recent": "SON KULLANILANLAR",
         "fav_add": "Favorilere ekle",
-        "fav_remove": "Favoriden çıkar"
+        "fav_remove": "Favoriden çıkar",
+        "daily": {
+            "title": "Bugünün Görevi",
+            "done_btn": "Tamamladım",
+            "done_msg": "Yarın yenisi seni bekliyor ✅",
+            "share_text": "Bugünün görevini tamamladım: {{task}}"
+        }
     },
     "tools": {
         "wheel": {

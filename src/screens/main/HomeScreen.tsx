@@ -6,6 +6,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { FontAwesome5, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { GlassCard } from '../../components/GlassCard';
+import { DailyChallengeCard } from '../../components/DailyChallengeCard';
 import { BannerAdView } from '../../components/BannerAdView';
 import { AdManager } from '../../core/AdManager';
 import { usePro } from '../../store/ProContext';
@@ -174,6 +175,8 @@ export default function HomeScreen({ navigation }: any) {
                     </TouchableOpacity>
                 )}
             </View>
+
+            <DailyChallengeCard />
 
             {recentTools.length > 0 && (
                 <View style={styles.recentSection}>
