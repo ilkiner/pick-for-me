@@ -6,11 +6,10 @@ import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { pushHistoryItemToCloud } from '../../storage/syncService';
-import ViewShot, { captureRef } from 'react-native-view-shot';
-import * as Sharing from 'expo-sharing';
 import QRCode from 'react-native-qrcode-svg';
 import { ModernButton } from '../../components/ModernButton';
 import { GlassCard } from '../../components/GlassCard';
+import { ShareCard, ShareCardHandle } from '../../components/ShareCard';
 import { usePro, HISTORY_RETENTION_FREE_MS, HISTORY_RETENTION_PRO_MS, HISTORY_MAX_ITEMS } from '../../store/ProContext';
 import { AdManager } from '../../core/AdManager';
 import { useTheme } from '../../store/ThemeContext';
@@ -103,7 +102,7 @@ export default function ResultScreen({ route, navigation }: any) {
 
     const scaleAnim = useRef(new Animated.Value(0.5)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
-    const viewShotRef = useRef<any>(null);
+    const shareCardRef = useRef<ShareCardHandle>(null);
 
     const [history, setHistory] = useState<HistoryItem[]>([]);
     const [showQR, setShowQR] = useState(false);
@@ -216,17 +215,30 @@ export default function ResultScreen({ route, navigation }: any) {
         }
     };
 
+    // Araç türüne göre story kartındaki rozet (araç adı) ve dekoratif emoji
+    const SHARE_META: Record<string, { toolKey: string; emoji: string }> = {
+        wheel:       { toolKey: 'wheel',       emoji: '🎡' },
+        dice:        { toolKey: 'dice',        emoji: '🎲' },
+        coin:        { toolKey: 'coin',        emoji: '🪙' },
+        color:       { toolKey: 'color',       emoji: '🎨' },
+        movie:       { toolKey: 'movie',       emoji: '🍿' },
+        idea:        { toolKey: 'idea',        emoji: '💡' },
+        challenge:   { toolKey: 'challenge',   emoji: '⚡' },
+        tournament:  { toolKey: 'tournament',  emoji: '🏆' },
+        orderteam:   { toolKey: 'orderteam',   emoji: '👥' },
+        truthordare: { toolKey: 'truthordare', emoji: '🃏' },
+    };
+
     const handleShare = async () => {
-        if (isSharing || !viewShotRef.current) return;
+        if (isSharing) return;
         setIsSharing(true);
         try {
-            const uri = await captureRef(viewShotRef, { format: 'png', quality: 0.95 });
-            const canShare = await Sharing.isAvailableAsync();
-            if (canShare) {
-                await Sharing.shareAsync(uri, { mimeType: 'image/png' });
-            }
-        } catch {
-            // share cancelled or failed silently
+            const meta = SHARE_META[type] ?? { toolKey: '', emoji: '✨' };
+            await shareCardRef.current?.share({
+                text: getResultText(result, type),
+                badge: meta.toolKey ? t(`home.tools.${meta.toolKey}`) : undefined,
+                emoji: meta.emoji,
+            });
         } finally {
             setIsSharing(false);
         }
@@ -347,7 +359,7 @@ export default function ResultScreen({ route, navigation }: any) {
             </View>
 
             <View style={styles.content}>
-                <ViewShot ref={viewShotRef} style={styles.viewShot}>
+                <View style={styles.viewShot}>
                     <Animated.View style={[
                         styles.resultContainer,
                         { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
@@ -379,11 +391,7 @@ export default function ResultScreen({ route, navigation }: any) {
                         </View>
                     )}
 
-                    {/* Watermark for free users — removed for Pro */}
-                    {!isPro && (
-                        <Text style={styles.watermark}>Pick For Me</Text>
-                    )}
-                </ViewShot>
+                </View>
 
                 <View style={styles.shareRow}>
                     <TouchableOpacity
@@ -406,6 +414,8 @@ export default function ResultScreen({ route, navigation }: any) {
                     </TouchableOpacity>
                 </View>
             </View>
+
+            <ShareCard ref={shareCardRef} />
 
             <View style={styles.footer}>
                 <ModernButton

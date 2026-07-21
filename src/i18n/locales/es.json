@@ -85,7 +85,13 @@
         "logout": "Salir",
         "recent": "USADOS RECIENTEMENTE",
         "fav_add": "Añadir a favoritos",
-        "fav_remove": "Quitar de favoritos"
+        "fav_remove": "Quitar de favoritos",
+        "daily": {
+            "title": "Reto del día",
+            "done_btn": "¡Hecho!",
+            "done_msg": "Mañana te espera uno nuevo ✅",
+            "share_text": "Completé el reto de hoy: {{task}}"
+        }
     },
     "onboarding": {
         "skip": "Saltar",

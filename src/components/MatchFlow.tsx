@@ -3,8 +3,6 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import ViewShot, { captureRef } from 'react-native-view-shot';
-import * as Sharing from 'expo-sharing';
 import { MotiView } from 'moti';
 import { useTheme } from '../store/ThemeContext';
 import { AppTheme } from '../core/Theme';
@@ -13,7 +11,7 @@ import { ModernButton } from './ModernButton';
 import { SwipeDeck } from './SwipeDeck';
 import SoundManager from '../core/SoundManager';
 import { MatchEngine, MatchItem } from '../core/MatchEngine';
-import { usePro } from '../store/ProContext';
+import { ShareCard, ShareCardHandle } from './ShareCard';
 
 // "Birlikte Seç" akışı: 1. oyuncu kaydırır → telefonu uzat ara ekranı →
 // 2. oyuncu AYNI desteyi kaydırır → eşleşme / eşleşmeme sonucu.
@@ -73,14 +71,13 @@ function ConfettiBurst() {
 export function MatchFlow({ deck, resultI18nKey, onRetry, onChangeSource }: MatchFlowProps) {
     const { t } = useTranslation();
     const { theme } = useTheme();
-    const { isPro } = usePro();
     const styles = useMemo(() => createStyles(theme), [theme]);
 
     const [phase, setPhase] = useState<Phase>('p1');
     const [likesA, setLikesA] = useState<string[]>([]);
     const [matchedLabel, setMatchedLabel] = useState<string | null>(null);
     const [isSharing, setIsSharing] = useState(false);
-    const viewShotRef = useRef<any>(null);
+    const shareCardRef = useRef<ShareCardHandle>(null);
 
     const handlePlayer1Done = (likedIds: string[]) => {
         setLikesA(likedIds);
@@ -101,16 +98,14 @@ export function MatchFlow({ deck, resultI18nKey, onRetry, onChangeSource }: Matc
     };
 
     const handleShare = async () => {
-        if (isSharing || !viewShotRef.current) return;
+        if (isSharing || !matchedLabel) return;
         setIsSharing(true);
         try {
-            const uri = await captureRef(viewShotRef, { format: 'png', quality: 0.95 });
-            const canShare = await Sharing.isAvailableAsync();
-            if (canShare) {
-                await Sharing.shareAsync(uri, { mimeType: 'image/png' });
-            }
-        } catch {
-            // paylaşım iptal edildi / başarısız — sessiz geç
+            await shareCardRef.current?.share({
+                text: t(resultI18nKey, { item: matchedLabel }),
+                badge: t('tools.match.mode_together', 'Birlikte Seç'),
+                emoji: '🎉',
+            });
         } finally {
             setIsSharing(false);
         }
@@ -155,20 +150,19 @@ export function MatchFlow({ deck, resultI18nKey, onRetry, onChangeSource }: Matc
         return (
             <View style={styles.centered}>
                 <ConfettiBurst />
-                <ViewShot ref={viewShotRef} style={styles.viewShot}>
-                    <MotiView
-                        from={{ scale: 0.6, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ type: 'spring', damping: 12 }}
-                    >
-                        <GlassCard style={styles.matchCard}>
-                            <Text style={styles.matchText} adjustsFontSizeToFit numberOfLines={4}>
-                                {t(resultI18nKey, { item: matchedLabel })}
-                            </Text>
-                        </GlassCard>
-                    </MotiView>
-                    {!isPro && <Text style={styles.watermark}>Pick For Me</Text>}
-                </ViewShot>
+                <MotiView
+                    from={{ scale: 0.6, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: 'spring', damping: 12 }}
+                >
+                    <GlassCard style={styles.matchCard}>
+                        <Text style={styles.matchText} adjustsFontSizeToFit numberOfLines={4}>
+                            {t(resultI18nKey, { item: matchedLabel })}
+                        </Text>
+                    </GlassCard>
+                </MotiView>
+
+                <ShareCard ref={shareCardRef} />
 
                 <TouchableOpacity
                     style={styles.shareBtn}
