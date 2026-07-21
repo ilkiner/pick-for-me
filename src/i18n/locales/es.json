@@ -233,7 +233,15 @@
             "genre_horror": "Terror",
             "genre_scifi": "Ciencia ficción",
             "genre_romance": "Romance",
-            "genre_animation": "Animación"
+            "genre_animation": "Animación",
+            "genre_drama": "Drama",
+            "genre_thriller": "Suspense",
+            "packs_loaded": "{{count}} títulos de listas predefinidas",
+            "own_only": "Solo lo que añadiste tú",
+            "remove_packs": "Quitar listas predefinidas",
+            "clear_all": "Borrar todo",
+            "clear_confirm_title": "Borrar toda la lista",
+            "clear_confirm_msg": "Se borrará todo, incluido lo que añadiste tú."
         },
         "match": {
             "mode_random": "Aleatorio",

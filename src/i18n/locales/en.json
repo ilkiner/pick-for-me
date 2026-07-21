@@ -233,7 +233,15 @@
             "genre_horror": "Horror",
             "genre_scifi": "Sci-Fi",
             "genre_romance": "Romance",
-            "genre_animation": "Animation"
+            "genre_animation": "Animation",
+            "genre_drama": "Drama",
+            "genre_thriller": "Thriller",
+            "packs_loaded": "{{count}} titles from ready-made lists",
+            "own_only": "Only your own additions",
+            "remove_packs": "Remove ready-made lists",
+            "clear_all": "Clear all",
+            "clear_confirm_title": "Clear the whole list",
+            "clear_confirm_msg": "Everything will be deleted, including your own additions."
         },
         "match": {
             "mode_random": "Random",
