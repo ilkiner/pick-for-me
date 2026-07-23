@@ -110,7 +110,7 @@
       "@sentry/react-native"
     ],
     "extra": {
-      "privacyPolicyUrl": "https://pickforme.app/privacy"
+      "privacyPolicyUrl": "https://ilkiner.github.io/pick-for-me/privacy-policy.html"
     }
   }
 }

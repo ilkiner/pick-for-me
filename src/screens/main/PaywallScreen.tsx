@@ -15,9 +15,8 @@ import { usePro } from '../../store/ProContext';
 
 type Plan = 'monthly' | 'yearly';
 
-// Yayın öncesi gerçek URL'lerle değiştir (bkz. README)
-const PRIVACY_URL = 'https://pickforme.app/privacy';
-const TERMS_URL = 'https://pickforme.app/terms';
+const PRIVACY_URL = 'https://ilkiner.github.io/pick-for-me/privacy-policy.html';
+const TERMS_URL = 'https://ilkiner.github.io/pick-for-me/terms.html';
 
 // ─── Fiyatlandırma ────────────────────────────────────────────────────────────
 // Fiyatlar koda gömülmez: RevenueCat offerings'ten okunur (kullanıcının mağaza

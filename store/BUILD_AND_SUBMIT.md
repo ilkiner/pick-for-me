@@ -102,7 +102,7 @@ If the build is rejected for SDK version, upgrade: `npx expo install expo@~55.0.
    - News app: No
    - COVID-19: No
    - Data safety form (see section below)
-   - Privacy policy: https://pickforme.app/privacy
+   - Privacy policy: https://ilkiner.github.io/pick-for-me/privacy-policy.html
 
 4. Upload AAB:
    - Release → Internal testing → Create release → Upload AAB
@@ -163,7 +163,7 @@ Typical timeline: 1-3 days review for Android, 1-7 days for iOS.
 - [ ] `.env` filled with production keys
 - [ ] AdMob test IDs replaced with real IDs
 - [ ] RevenueCat products created in App Store Connect + Play Console
-- [ ] Privacy policy hosted at https://pickforme.app/privacy
+- [ ] Privacy policy hosted at https://ilkiner.github.io/pick-for-me/privacy-policy.html
 - [ ] Data safety form completed
 - [ ] Screenshots added (min 2 phone screenshots)
 - [ ] Store description added (EN + TR)

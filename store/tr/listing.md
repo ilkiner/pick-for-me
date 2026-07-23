@@ -68,7 +68,7 @@ Araçlar / Yardımcı Programlar
 Herkes
 
 ## Gizlilik Politikası URL'si
-https://pickforme.app/privacy
+https://ilkiner.github.io/pick-for-me/privacy-policy.html
 
 ## Ekran Görüntüsü Yazıları (kısa, fayda odaklı)
 1. "Çarkı çevir — 3 saniyede cevabın hazır"

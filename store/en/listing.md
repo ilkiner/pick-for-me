@@ -75,7 +75,7 @@ Tools / Utilities
 Everyone
 
 ## Privacy Policy URL
-https://pickforme.app/privacy
+https://ilkiner.github.io/pick-for-me/privacy-policy.html
 
 ## Screenshots Required
 - Phone: 1080×1920 or 1440×2560 (at least 2, max 8)

@@ -70,7 +70,8 @@ No extra secrets needed — `SUPABASE_URL`, `SUPABASE_ANON_KEY` and
 If the function is unreachable, the app falls back to deleting the user's
 cloud rows (`saved_lists`, `activity_history`), signing out, and showing a
 "deletion request received" message. The web request page for Play Console is
-`store/account-deletion.html` (host it and enter its URL under
+`store/account-deletion.html`, hosted at
+`https://ilkiner.github.io/pick-for-me/account-deletion.html` (entered under
 **Play Console → App content → Data safety → Account deletion**).
 
 ## Ads (AdMob)
@@ -120,11 +121,6 @@ src/
 The app detects device locale on first launch (Turkish or English). Language can be toggled any time in Settings.
 
 ## Development Notes
-
-> **⚠️ Before release:** `PRIVACY_URL` and `TERMS_URL` at the top of
-> `src/screens/main/PaywallScreen.tsx` point to placeholder pages
-> (`https://pickforme.app/privacy` / `/terms`). Replace them with the real,
-> hosted URLs — both stores require working links on the paywall.
 
 - Run `npx tsc --noEmit` before committing — must pass clean.
 - Run `npx expo-doctor` to catch SDK/package mismatches.
