@@ -88,6 +88,30 @@ disables that ad format with a console warning.
 > baked into the native build and cannot come from env at runtime. Also set
 > the 6 `EXPO_PUBLIC_ADMOB_*` unit IDs in the EAS build environment.
 
+## Building & Submitting (EAS)
+
+Build profiles live in `eas.json` (`development` / `preview` / `production`).
+`appVersionSource` is `remote`, so EAS owns `versionCode` / `buildNumber` for
+production builds — the values in `app.json` are not what ships.
+
+```bash
+eas build --profile production --platform android
+eas submit --profile production --platform android
+```
+
+**iOS submit credentials are intentionally left empty** in
+`eas.json` (`submit.production.ios`). Fill `appleId`, `ascAppId` and
+`appleTeamId` at submit time — either by letting `eas submit` prompt for them
+interactively, or by passing them via EAS secrets / CLI flags. They are kept
+out of the repo on purpose so no Apple account identifiers are committed.
+
+```bash
+eas submit --profile production --platform ios   # prompts for the three values
+```
+
+Ad unit IDs and other `EXPO_PUBLIC_*` values must be set in the EAS build
+environment (project secrets), since `.env` is not uploaded with the build.
+
 ## Project Structure
 
 ```

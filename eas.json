@@ -14,9 +14,6 @@
       "android": {
         "gradleCommand": ":app:assembleDebug",
         "buildType": "apk"
-      },
-      "env": {
-        "EXPO_PUBLIC_APP_VARIANT": "development"
       }
     },
     "preview": {
@@ -26,9 +23,6 @@
       },
       "android": {
         "buildType": "apk"
-      },
-      "env": {
-        "EXPO_PUBLIC_APP_VARIANT": "preview"
       }
     },
     "production": {
@@ -38,9 +32,6 @@
       },
       "android": {
         "buildType": "app-bundle"
-      },
-      "env": {
-        "EXPO_PUBLIC_APP_VARIANT": "production"
       }
     }
   },
@@ -52,7 +43,6 @@
         "releaseStatus": "draft"
       },
       "ios": {
-        // appleId boş bırakıldı — EAS secrets / eas submit sırasında girilecek
         "appleId": "",
         "ascAppId": "",
         "appleTeamId": ""
