@@ -1,3 +1,12 @@
+// BAKIM NOTU — ÖNEMLİ:
+// challenges.json'a her yeni görev eklendiğinde DAILY_SALT artırılmalı,
+// aksi halde mevcut kullanıcılarda günün görevi rotasyonu kayar.
+// Sebep: seçim `seed % CHALLENGES.length` ile yapılıyor; dizi uzunluğu
+// değişince aynı tarih bambaşka bir göreve düşer ve kullanıcı, gün
+// ortasında görevinin değiştiğini görür. Tuzu artırmak bu kaymayı
+// kontrollü hale getirir: rotasyon herkes için aynı anda, kasıtlı olarak
+// yeniden başlar.
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ALL_CHALLENGES from '../content/challenges.json';
 
@@ -19,9 +28,10 @@ export interface DailyChallenge {
 
 const CHALLENGES = ALL_CHALLENGES as DailyChallenge[];
 
-// Sürüm tuzu: içerik listesi büyüyünce v2 yaparak herkes için aynı anda
-// yeni bir rotasyon başlatılabilir.
-const DAILY_SALT = 'pfm-daily-v1';
+// Sürüm tuzu: içerik listesi her büyüdüğünde sondaki sayı artırılır
+// (v2 → v3 → ...), böylece rotasyon herkes için aynı anda yenilenir.
+// v2: içerik 252 → 268 göreve çıktı.
+const DAILY_SALT = 'pfm-daily-v2';
 
 // Cihazın YEREL gününü YYYY-MM-DD olarak verir (UTC değil — görev
 // kullanıcının kendi gece yarısında değişmeli).
