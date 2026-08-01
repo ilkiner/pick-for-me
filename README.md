@@ -81,12 +81,13 @@ Ad **unit** IDs are read from env (`EXPO_PUBLIC_ADMOB_BANNER_ANDROID/_IOS`,
 (`__DEV__`) always use Google's test IDs; in production a missing env value
 disables that ad format with a console warning.
 
-> **⚠️ Before release:** the AdMob **App IDs** in `app.json`
-> (`plugins → react-native-google-mobile-ads → androidAppId / iosAppId`) are
-> still Google's sample IDs (`ca-app-pub-3940256099942544~…`). Replace them
-> with your real App IDs from the AdMob console and rebuild — App IDs are
-> baked into the native build and cannot come from env at runtime. Also set
-> the 6 `EXPO_PUBLIC_ADMOB_*` unit IDs in the EAS build environment.
+The production AdMob **App IDs** are set in `app.json`
+(`plugins → react-native-google-mobile-ads → androidAppId / iosAppId`). They are
+baked into the native build and cannot come from env at runtime, so changing
+them requires a rebuild.
+
+> **⚠️ Before release:** make sure the 6 `EXPO_PUBLIC_ADMOB_*` unit IDs are set
+> in the EAS build environment — `.env` is not uploaded with the build.
 
 ## Building & Submitting (EAS)
 
