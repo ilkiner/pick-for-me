@@ -17,17 +17,47 @@ EXPO_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJhb...
 EXPO_PUBLIC_REVENUECAT_KEY_IOS=appl_xxxx
 EXPO_PUBLIC_REVENUECAT_KEY_ANDROID=goog_xxxx
+EXPO_PUBLIC_ADMOB_BANNER_ANDROID=ca-app-pub-xxxx/xxxx
+EXPO_PUBLIC_ADMOB_INTERSTITIAL_ANDROID=ca-app-pub-xxxx/xxxx
+EXPO_PUBLIC_ADMOB_REWARDED_ANDROID=ca-app-pub-xxxx/xxxx
+EXPO_PUBLIC_ADMOB_BANNER_IOS=ca-app-pub-xxxx/xxxx
+EXPO_PUBLIC_ADMOB_INTERSTITIAL_IOS=ca-app-pub-xxxx/xxxx
+EXPO_PUBLIC_ADMOB_REWARDED_IOS=ca-app-pub-xxxx/xxxx
 ```
+
+See `.env.example` for the full list. `.env` only covers local dev — EAS builds
+read their own env (Step 1).
 
 ---
 
-## Step 1 — Replace AdMob test IDs with production IDs
+## Step 1 — Push AdMob ad unit IDs to EAS
 
-In `app.json`, replace:
-- `ca-app-pub-3940256099942544~3347511713` → your Android App ID
-- `ca-app-pub-3940256099942544~1458002511` → your iOS App ID
+✅ **Done already:** the production AdMob **App IDs** live in `app.json`
+(`plugins → react-native-google-mobile-ads`). They are baked into the native
+build, so changing them needs a rebuild — not a config change.
 
-In `src/core/AdManager.ts`, replace the test ad unit IDs with production IDs.
+The **ad unit** IDs come from env at build time (`src/core/AdManager.ts` reads
+them; no hardcoded IDs to edit). `.env` is gitignored and is *not* uploaded with
+an EAS build, so the six values must be registered with EAS:
+
+```bash
+eas env:create --environment production --name EXPO_PUBLIC_ADMOB_BANNER_ANDROID       --value ca-app-pub-…/…
+eas env:create --environment production --name EXPO_PUBLIC_ADMOB_INTERSTITIAL_ANDROID --value ca-app-pub-…/…
+eas env:create --environment production --name EXPO_PUBLIC_ADMOB_REWARDED_ANDROID     --value ca-app-pub-…/…
+eas env:create --environment production --name EXPO_PUBLIC_ADMOB_BANNER_IOS           --value ca-app-pub-…/…
+eas env:create --environment production --name EXPO_PUBLIC_ADMOB_INTERSTITIAL_IOS     --value ca-app-pub-…/…
+eas env:create --environment production --name EXPO_PUBLIC_ADMOB_REWARDED_IOS         --value ca-app-pub-…/…
+```
+
+(On older EAS CLI versions this is `eas secret:create --scope project --name … --value …`.)
+Copy the values from your local `.env`. Use visibility `plaintext` — `EXPO_PUBLIC_*`
+vars are inlined into the JS bundle regardless, and ad unit IDs are not secrets.
+
+Verify with `eas env:list --environment production` before building. A missing
+value does **not** fail the build: that ad format is silently disabled in
+production with a console warning.
+
+`__DEV__` builds always use Google's test IDs, so dev builds need none of this.
 
 ---
 
@@ -161,7 +191,8 @@ Typical timeline: 1-3 days review for Android, 1-7 days for iOS.
 ## Checklist before production release
 
 - [ ] `.env` filled with production keys
-- [ ] AdMob test IDs replaced with real IDs
+- [x] AdMob App IDs in `app.json` are the real ones (no longer Google's samples)
+- [ ] AdMob ad unit IDs registered as EAS env vars for the `production` environment
 - [ ] RevenueCat products created in App Store Connect + Play Console
 - [ ] Privacy policy hosted at https://ilkiner.github.io/pick-for-me/privacy-policy.html
 - [ ] Data safety form completed
