@@ -10,3 +10,10 @@ yarn-error.log*
 .idea/
 .gstack/
 .claude/settings.local.json
+
+# Signing & service-account credentials — never commit
+google-service-account.json
+*.p8
+*.p12
+*.keystore
+*.jks

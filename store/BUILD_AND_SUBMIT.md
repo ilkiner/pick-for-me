@@ -176,7 +176,14 @@ eas submit --platform ios --profile production
 For Android automated submit, create a service account:
 - play.google.com/console → Setup → API access → Link to Google Cloud
 - Create service account with "Release Manager" role
-- Download JSON key → save as `google-service-account.json` (gitignored)
+- Download JSON key → save as `google-service-account.json`
+
+> **🔑 Keep it out of git.** `.gitignore` covers that **exact filename**, plus
+> `*.p8` / `*.p12` / `*.keystore` / `*.jks` for signing material. Rename the file
+> and it is no longer ignored — so keep the name, or add the new one to
+> `.gitignore` first. This key has "Release Manager" rights on the Play listing;
+> if it ever lands in a commit, revoke it in Google Cloud and issue a new one —
+> deleting the file in a later commit does not remove it from history.
 
 ---
 
