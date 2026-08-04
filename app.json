@@ -110,7 +110,11 @@
       "@sentry/react-native"
     ],
     "extra": {
-      "privacyPolicyUrl": "https://ilkiner.github.io/pick-for-me/privacy-policy.html"
-    }
+      "privacyPolicyUrl": "https://ilkiner.github.io/pick-for-me/privacy-policy.html",
+      "eas": {
+        "projectId": "c7cba3fc-aecb-4865-9053-c3ef9f6515eb"
+      }
+    },
+    "owner": "ilkinr"
   }
 }
