@@ -335,7 +335,10 @@
             "edge": "Edge",
             "clear": "Clear History",
             "clear_confirm_title": "Clear History",
-            "clear_confirm_msg": "All activity history will be deleted. Are you sure?"
+            "clear_confirm_msg": "All activity history will be deleted. Are you sure?",
+            "clear_confirm_msg_synced": "Your activity history will be deleted from this device and from the cloud. Are you sure?",
+            "clear_cloud_failed_title": "Cleared on this device",
+            "clear_cloud_failed_msg": "Your history was removed from this device, but we couldn't reach the cloud copy. It will be cleared the next time you try."
         },
         "tournament": {
             "title": "Tournament",

@@ -283,7 +283,10 @@
             "edge": "Dik",
             "clear": "Geçmişi Temizle",
             "clear_confirm_title": "Geçmişi Temizle",
-            "clear_confirm_msg": "Tüm aktivite geçmişi silinecek. Emin misin?"
+            "clear_confirm_msg": "Tüm aktivite geçmişi silinecek. Emin misin?",
+            "clear_confirm_msg_synced": "Aktivite geçmişin hem bu cihazdan hem de buluttan silinecek. Emin misin?",
+            "clear_cloud_failed_title": "Bu cihazda temizlendi",
+            "clear_cloud_failed_msg": "Geçmişin bu cihazdan silindi, ancak buluttaki kopyaya şu an ulaşılamadı. Bir dahaki denemende o da temizlenecek."
         },
         "tournament": {
             "title": "Turnuva",

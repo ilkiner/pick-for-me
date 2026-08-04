@@ -1,11 +1,17 @@
 import { isSupabaseConfigured, supabase } from './supabase';
 import { SavedList } from './savedLists';
+import { ClearHistoryResult, HistoryItem } from './history';
 
-export interface HistoryItem {
-    id: string;
-    type: string;
-    result: any;
-    timestamp: number;
+// ─── Session ──────────────────────────────────────────────────────────────────
+
+export async function hasCloudSession(): Promise<boolean> {
+    if (!isSupabaseConfigured()) return false;
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        return !!session;
+    } catch {
+        return false;
+    }
 }
 
 // ─── Saved Lists Sync ─────────────────────────────────────────────────────────
@@ -114,6 +120,28 @@ export async function pullHistoryFromCloud(retentionMs: number = 48 * 60 * 60 * 
         result: row.result,
         timestamp: row.timestamp,
     }));
+}
+
+export async function clearHistoryInCloud(): Promise<ClearHistoryResult> {
+    if (!isSupabaseConfigured()) return 'local_only';
+
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return 'local_only';
+
+        // RLS kullanıcıyı zaten kendi satırlarıyla sınırlıyor; user_id filtresi
+        // niyeti açık bırakmak için, accountDeletion ile aynı desende.
+        const { error } = await supabase
+            .from('activity_history')
+            .delete()
+            .eq('user_id', session.user.id);
+
+        if (error) throw error;
+        return 'cleared';
+    } catch (e) {
+        console.warn('[Sync] clearHistory error:', e);
+        return 'cloud_failed';
+    }
 }
 
 // Merge strategy: cloud wins for lists (authoritative), local wins for history

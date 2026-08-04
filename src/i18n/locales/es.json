@@ -335,7 +335,10 @@
             "edge": "Canto",
             "clear": "Borrar historial",
             "clear_confirm_title": "Borrar historial",
-            "clear_confirm_msg": "Se eliminará todo el historial de actividad. ¿Seguro?"
+            "clear_confirm_msg": "Se eliminará todo el historial de actividad. ¿Seguro?",
+            "clear_confirm_msg_synced": "Tu historial de actividad se eliminará de este dispositivo y de la nube. ¿Seguro?",
+            "clear_cloud_failed_title": "Borrado en este dispositivo",
+            "clear_cloud_failed_msg": "Tu historial se eliminó de este dispositivo, pero no pudimos acceder a la copia en la nube. Se borrará la próxima vez que lo intentes."
         },
         "tournament": {
             "title": "Torneo",

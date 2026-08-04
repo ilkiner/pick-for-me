@@ -6,6 +6,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { pushHistoryItemToCloud } from '../../storage/syncService';
+import { HistoryStorage } from '../../storage/history';
 import QRCode from 'react-native-qrcode-svg';
 import { ModernButton } from '../../components/ModernButton';
 import { GlassCard } from '../../components/GlassCard';
@@ -175,18 +176,30 @@ export default function ResultScreen({ route, navigation }: any) {
         }
     }, [isSingleResult, result]);
 
-    const clearHistory = () => {
+    const clearHistory = async () => {
+        // Oturum açıksa geçmiş buluta da yazılıyor — onay metni bunu söylemeli.
+        const synced = await HistoryStorage.isSynced();
+
         Alert.alert(
             t('tools.results.clear_confirm_title', 'Clear History'),
-            t('tools.results.clear_confirm_msg', 'All activity history will be deleted.'),
+            synced
+                ? t('tools.results.clear_confirm_msg_synced', 'Your activity history will be deleted from this device and from the cloud. Are you sure?')
+                : t('tools.results.clear_confirm_msg', 'All activity history will be deleted.'),
             [
                 { text: t('common.cancel', 'Cancel'), style: 'cancel' },
                 {
                     text: t('tools.results.clear', 'Clear'),
                     style: 'destructive',
                     onPress: async () => {
-                        await AsyncStorage.removeItem('@app_history');
+                        const outcome = await HistoryStorage.clear();
                         setHistory([]);
+
+                        if (outcome === 'cloud_failed') {
+                            Alert.alert(
+                                t('tools.results.clear_cloud_failed_title', 'Cleared on this device'),
+                                t('tools.results.clear_cloud_failed_msg', 'Your history was removed from this device, but we could not reach the cloud copy. It will be cleared next time you try.')
+                            );
+                        }
                     },
                 },
             ]
