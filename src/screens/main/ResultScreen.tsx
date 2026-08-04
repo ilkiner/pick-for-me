@@ -3,28 +3,19 @@ import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, ScrollVie
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
-import { pushHistoryItemToCloud } from '../../storage/syncService';
-import { HistoryStorage } from '../../storage/history';
+import { HistoryItem, HistoryStorage } from '../../storage/history';
 import QRCode from 'react-native-qrcode-svg';
 import { ModernButton } from '../../components/ModernButton';
 import { GlassCard } from '../../components/GlassCard';
 import { ShareCard, ShareCardHandle } from '../../components/ShareCard';
-import { usePro, HISTORY_RETENTION_FREE_MS, HISTORY_RETENTION_PRO_MS, HISTORY_MAX_ITEMS } from '../../store/ProContext';
+import { usePro, HISTORY_RETENTION_FREE_MS, HISTORY_RETENTION_PRO_MS } from '../../store/ProContext';
 import { AdManager } from '../../core/AdManager';
 import { useTheme } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
 import { celebrateWinner } from '../../core/celebrate';
 import { trackResult, maybeRequestReview } from '../../core/ReviewManager';
 import { track } from '../../core/Analytics';
-
-interface HistoryItem {
-    id: string;
-    type: string;
-    result: any;
-    timestamp: number;
-}
 
 function createStyles(theme: AppTheme) {
     return StyleSheet.create({
@@ -110,30 +101,13 @@ export default function ResultScreen({ route, navigation }: any) {
     const [isSharing, setIsSharing] = useState(false);
 
     const loadHistory = async () => {
-        try {
-            const stored = await AsyncStorage.getItem('@app_history');
-            if (stored) {
-                const parsed: HistoryItem[] = JSON.parse(stored);
+        // Storage always keeps the PRO window (10 days) so an upgrade
+        // unlocks older history retroactively and a lapse loses nothing.
+        const kept = await HistoryStorage.load(HISTORY_RETENTION_PRO_MS);
 
-                // Storage always keeps the PRO window (10 days) so an upgrade
-                // unlocks older history retroactively and a lapse loses nothing.
-                const storageCutoff = Date.now() - HISTORY_RETENTION_PRO_MS;
-                let kept = parsed.filter(item => item.timestamp > storageCutoff);
-                kept.sort((a, b) => b.timestamp - a.timestamp);
-                kept = kept.slice(0, HISTORY_MAX_ITEMS);
-
-                // Display window depends on tier: 10 days pro, 48 h free
-                const displayCutoff = Date.now() - (isPro ? HISTORY_RETENTION_PRO_MS : HISTORY_RETENTION_FREE_MS);
-                setHistory(kept.filter(item => item.timestamp > displayCutoff));
-
-                // Cleanup old items from storage if needed
-                if (kept.length !== parsed.length) {
-                     await AsyncStorage.setItem('@app_history', JSON.stringify(kept));
-                }
-            }
-        } catch (e) {
-            console.error("Failed to load history", e);
-        }
+        // Display window depends on tier: 10 days pro, 48 h free
+        const displayCutoff = Date.now() - (isPro ? HISTORY_RETENTION_PRO_MS : HISTORY_RETENTION_FREE_MS);
+        setHistory(kept.filter(item => item.timestamp > displayCutoff));
     };
 
     useFocusEffect(
@@ -149,7 +123,7 @@ export default function ResultScreen({ route, navigation }: any) {
             celebrateWinner();
 
             // Auto-save to history
-            saveToHistory(type, result);
+            HistoryStorage.add(type, result);
 
             track('result_generated', { type });
             trackResult().then(maybeRequestReview).catch(() => {});
@@ -204,28 +178,6 @@ export default function ResultScreen({ route, navigation }: any) {
                 },
             ]
         );
-    };
-
-    const saveToHistory = async (saveType: string, val: any) => {
-        try {
-            const stored = await AsyncStorage.getItem('@app_history');
-            let parsed = stored ? JSON.parse(stored) : [];
-            const newItem: HistoryItem = {
-                id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
-                type: saveType || 'unknown',
-                result: val,
-                timestamp: Date.now()
-            };
-            parsed.push(newItem);
-            // Safety cap: keep newest items only
-            if (parsed.length > HISTORY_MAX_ITEMS) {
-                parsed = parsed.slice(parsed.length - HISTORY_MAX_ITEMS);
-            }
-            await AsyncStorage.setItem('@app_history', JSON.stringify(parsed));
-            pushHistoryItemToCloud(newItem).catch(() => {});
-        } catch (e) {
-            console.error("Failed to save history", e);
-        }
     };
 
     // Araç türüne göre story kartındaki rozet (araç adı) ve dekoratif emoji
