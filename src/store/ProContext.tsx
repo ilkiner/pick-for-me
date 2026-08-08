@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import * as SecureStore from 'expo-secure-store';
+import { isSupabaseConfigured, supabase } from '../storage/supabase';
 
 // RevenueCat — graceful fallback when native module not available (Expo Go / simulator)
 let Purchases: any = null;
@@ -88,13 +89,45 @@ export function ProProvider({ children, navigationRef }: Props) {
     const [offerings, setOfferings] = useState<any>(null);
     const [devProOverride, setDevProOverride] = useState<boolean | null>(null);
 
+    // RevenueCat'in şu an bağlı olduğu Supabase kullanıcısı. Token yenileme gibi
+    // olaylarda aynı kimlik için tekrar tekrar logIn çağırmamak için tutuluyor.
+    const linkedUserIdRef = useRef<string | null>(null);
+
     // Dev-only: cycle Free → Pro → real state for testing both tiers
     const devTogglePro = useCallback(() => {
         if (!__DEV__) return;
         setDevProOverride(prev => (prev === null ? true : prev === true ? false : null));
     }, []);
 
+    // RevenueCat kimliğini Supabase kullanıcısına bağlar (userId null → logOut).
+    // Böylece RevenueCat panelinden belirli bir kullanıcıya promotional
+    // entitlement tanımlanabiliyor. Yalnızca configure() başarılı olduktan sonra
+    // çağrılmalı; yapılandırılmamış SDK'da logIn/logOut hata verir.
+    const linkRevenueCatIdentity = useCallback(async (userId: string | null) => {
+        if (!Purchases) return;
+        if (linkedUserIdRef.current === userId) return;
+
+        try {
+            const customerInfo = userId
+                ? (await Purchases.logIn(userId)).customerInfo
+                : await Purchases.logOut();
+
+            linkedUserIdRef.current = userId;
+
+            // Kimlik değişince entitlement'lar da değişebilir (ör. o kullanıcıya
+            // tanımlanmış promotional entitlement) — Pro durumunu tazele.
+            const active = customerInfo?.entitlements?.active?.[ENTITLEMENT_PRO] !== undefined;
+            setIsPro(active);
+            await writeProCache(active);
+        } catch (e) {
+            console.warn('[Pro] RevenueCat identity link failed:', e);
+        }
+    }, []);
+
     useEffect(() => {
+        let cancelled = false;
+        let unsubscribeAuth: (() => void) | undefined;
+
         (async () => {
             // Restore SecureStore cache — grace period only, not authoritative
             const cached = await readProCache();
@@ -104,6 +137,7 @@ export function ProProvider({ children, navigationRef }: Props) {
                 setIsLoading(false);
                 return;
             }
+            let configured = false;
             try {
                 const { Platform } = require('react-native');
                 const apiKey = Platform.OS === 'ios' ? RC_API_KEY_IOS : RC_API_KEY_ANDROID;
@@ -113,6 +147,7 @@ export function ProProvider({ children, navigationRef }: Props) {
                     return;
                 }
                 await Purchases.configure({ apiKey });
+                configured = true;
 
                 const info = await Purchases.getCustomerInfo();
                 const active = info.entitlements.active[ENTITLEMENT_PRO] !== undefined;
@@ -126,8 +161,39 @@ export function ProProvider({ children, navigationRef }: Props) {
             } finally {
                 setIsLoading(false);
             }
+
+            // Kimlik bağlama configure() sonrasına ait; isLoading'i bekletmemesi
+            // için ayrı tutuldu. Demo modda (Supabase yapılandırılmamış)
+            // bağlanacak bir kullanıcı yok.
+            if (!configured || cancelled || !isSupabaseConfigured()) return;
+
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session?.user?.id) await linkRevenueCatIdentity(session.user.id);
+
+                const { data: { subscription } } = supabase.auth.onAuthStateChange(
+                    (event: string, newSession: any) => {
+                        if (event === 'SIGNED_OUT') {
+                            linkRevenueCatIdentity(null);
+                        } else if (newSession?.user?.id) {
+                            linkRevenueCatIdentity(newSession.user.id);
+                        }
+                    }
+                );
+
+                // Effect bu iş bitmeden söküldüyse aboneliği hemen bırak.
+                if (cancelled) subscription.unsubscribe();
+                else unsubscribeAuth = () => subscription.unsubscribe();
+            } catch (e) {
+                console.warn('[Pro] RevenueCat auth link failed:', e);
+            }
         })();
-    }, []);
+
+        return () => {
+            cancelled = true;
+            unsubscribeAuth?.();
+        };
+    }, [linkRevenueCatIdentity]);
 
     const purchaseProduct = useCallback(async (productId: string): Promise<boolean> => {
         if (!Purchases) {
