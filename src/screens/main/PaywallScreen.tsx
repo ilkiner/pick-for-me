@@ -49,27 +49,94 @@ function resolvePackages(offerings: any): Plans {
     };
 }
 
-// Türetilmiş tutarlar SDK'dan geliyor: yıllık ürünün pricePerMonthString'i
-// fiyatı 12'ye böler, aylık ürünün pricePerYearString'i 12 ile çarpar; ikisi de
-// yerel para birimi formatlayıcısından geçer. Böylece priceString'i elle
-// biçimlendirmeye (binlik ayraçlı para birimlerinde bozuluyordu) gerek kalmıyor.
-// Bu alanlar abonelik dışı ürünlerde ve Amazon'da null olabilir; o durumda ilgili
-// satır gizlenir, uydurulmaz.
+// Beklenen fatura dönemleri (ISO 8601). Mağazadaki base plan bundan farklıysa
+// türetilmiş tutarlar anlamsızdır — hesaplanmaz.
+const ANNUAL_PERIODS = ['P1Y', 'P12M'];
+const MONTHLY_PERIODS = ['P1M'];
+
+// Türetilmiş tutarlar priceString'in biçim düzeninden okunarak yazılır.
+//
+// SDK'nın pricePerMonthString/pricePerYearString alanları burada kullanılamıyor:
+// priceString'i mağaza (Google Play) storefront'a göre biçimlendirip hazır
+// veriyor, pricePer*String'i ise SDK cihaz yerel ayarıyla kendisi üretiyor.
+// İkisi farklı kaynak olduğu için cihaz dili storefront'tan farklı olduğunda
+// yan yana tutarsız çıkıyorlar (PL storefront + EN cihaz: "36,99 PLN" ile
+// "PLN36.99"). Mağazanın biçimiyle garanti uyuşan tek kaynak priceString'in
+// kendisi, o yüzden ayraçları ve simge konumu ondan devralınıyor.
+// \s bölünmez boşluğu (U+00A0) ve dar bölünmez boşluğu (U+202F) da kapsadığı için
+// ayrıca yazmaya gerek yok — pl-PL ve fr-FR gruplama ayracı olarak bunları kullanıyor.
+const NUMBER_RE = /\d[\d\s.,]*\d|\d/;
+
+function readNumberFormat(numText: string) {
+    // Ondalık ayracı 1-2 basamakla biten son ayraçtır; JPY gibi kuruşsuz
+    // para birimlerinde hiç yoktur.
+    const lastSep = Math.max(numText.lastIndexOf('.'), numText.lastIndexOf(','));
+    let decimalSep = '';
+    let decimals = 0;
+    if (lastSep !== -1 && /^\d{1,2}$/.test(numText.slice(lastSep + 1))) {
+        decimalSep = numText[lastSep];
+        decimals = numText.length - lastSep - 1;
+    }
+
+    // Kalan ayraçlardan ilki gruplama ayracıdır (pl-PL'de bölünmez boşluk).
+    // Örnekte hiç gruplama yoksa ondalık ayracın tümleyeni varsayılır.
+    let groupSep = '';
+    for (let i = 0; i < numText.length; i++) {
+        if (i === lastSep && decimalSep) continue;
+        if (/[.,\s]/.test(numText[i])) { groupSep = numText[i]; break; }
+    }
+    if (!groupSep) groupSep = decimalSep === ',' ? '.' : ',';
+
+    return { decimalSep, decimals, groupSep };
+}
+
+function formatLikeStore(template: string, value: number): string | null {
+    if (!Number.isFinite(value) || value < 0) return null;
+    const match = template.match(NUMBER_RE);
+    if (!match) return null;
+
+    const { decimalSep, decimals, groupSep } = readNumberFormat(match[0]);
+    const fixed = decimals > 0 ? value.toFixed(decimals) : Math.round(value).toString();
+    const [intPart, frac] = fixed.split('.');
+    const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, groupSep);
+
+    return template.replace(NUMBER_RE, frac ? grouped + decimalSep + frac : grouped);
+}
+
 function derivePricing(plans: Plans): Pricing | null {
     const y = plans.annual?.product;
     const m = plans.monthly?.product;
     if (!y?.priceString || !m?.priceString) return null;
 
-    const anchorVal = typeof m.price === 'number' ? m.price * 12 : null;
-    const pct = anchorVal && anchorVal > 0 && typeof y.price === 'number'
+    // Fatura dönemi mağazada tanımlı; SDK yalnızca raporluyor. Yıllık sanılan
+    // paket aylık faturalanıyorsa "ayda sadece X" satırı kullanıcıyı yanıltır,
+    // o yüzden dönem doğrulanmadan türetilmiş tutar gösterilmiyor.
+    const annualOk = ANNUAL_PERIODS.includes(y.subscriptionPeriod ?? '');
+    const monthlyOk = MONTHLY_PERIODS.includes(m.subscriptionPeriod ?? '');
+    if (__DEV__ && !annualOk) {
+        console.warn(
+            `[Paywall] Yıllık paketin fatura dönemi "${y.subscriptionPeriod ?? 'null'}" — P1Y bekleniyordu. ` +
+            'Mağazadaki base plan gerçekten yıllık mı?'
+        );
+    }
+    if (__DEV__ && !monthlyOk) {
+        console.warn(
+            `[Paywall] Aylık paketin fatura dönemi "${m.subscriptionPeriod ?? 'null'}" — P1M bekleniyordu.`
+        );
+    }
+
+    const anchorVal = monthlyOk && typeof m.price === 'number' ? m.price * 12 : null;
+    const pct = annualOk && anchorVal && anchorVal > 0 && typeof y.price === 'number'
         ? Math.round((1 - y.price / anchorVal) * 100)
         : null;
 
     return {
         yearly: y.priceString,
         monthly: m.priceString,
-        perMonth: y.pricePerMonthString ?? null,
-        anchor: m.pricePerYearString ?? null,
+        perMonth: annualOk && typeof y.price === 'number'
+            ? formatLikeStore(y.priceString, y.price / 12)
+            : null,
+        anchor: anchorVal !== null ? formatLikeStore(m.priceString, anchorVal) : null,
         savingsPct: pct !== null && pct > 0 ? pct : null,
     };
 }
