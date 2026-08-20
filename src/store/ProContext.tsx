@@ -129,6 +129,17 @@ export function ProProvider({ children, navigationRef }: Props) {
     useEffect(() => {
         let cancelled = false;
         let unsubscribeAuth: (() => void) | undefined;
+        let removeInfoListener: (() => void) | undefined;
+
+        // Abonelik durumu uygulama açıkken de değişebilir: yenileme, iptal, iade,
+        // başka cihazda yapılan satın alma veya RevenueCat panelinden verilen
+        // promotional entitlement. Bu dinleyici olmadan değişiklik ancak
+        // yeniden başlatmada görünürdü.
+        const onCustomerInfoUpdate = (info: any) => {
+            const active = info?.entitlements?.active?.[ENTITLEMENT_PRO] !== undefined;
+            setIsPro(active);
+            writeProCache(active).catch(() => {});
+        };
 
         (async () => {
             // Restore SecureStore cache — grace period only, not authoritative
@@ -150,6 +161,13 @@ export function ProProvider({ children, navigationRef }: Props) {
                 }
                 await Purchases.configure({ apiKey });
                 configured = true;
+
+                // configure() sonrasına ait: yapılandırılmamış SDK'da dinleyici
+                // eklenemez. getCustomerInfo'dan önce bağlanıyor ki arada gelen
+                // güncelleme kaçmasın.
+                Purchases.addCustomerInfoUpdateListener(onCustomerInfoUpdate);
+                if (cancelled) Purchases.removeCustomerInfoUpdateListener(onCustomerInfoUpdate);
+                else removeInfoListener = () => Purchases.removeCustomerInfoUpdateListener(onCustomerInfoUpdate);
 
                 const info = await Purchases.getCustomerInfo();
                 const active = info.entitlements.active[ENTITLEMENT_PRO] !== undefined;
@@ -193,6 +211,7 @@ export function ProProvider({ children, navigationRef }: Props) {
 
         return () => {
             cancelled = true;
+            removeInfoListener?.();
             unsubscribeAuth?.();
         };
     }, [linkRevenueCatIdentity]);
