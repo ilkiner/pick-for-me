@@ -19,32 +19,15 @@ const PRIVACY_URL = 'https://ilkiner.github.io/pick-for-me/privacy-policy.html';
 const TERMS_URL = 'https://ilkiner.github.io/pick-for-me/terms.html';
 
 // ─── Fiyatlandırma ────────────────────────────────────────────────────────────
-// Fiyatlar koda gömülmez: RevenueCat offerings'ten okunur (kullanıcının mağaza
-// para birimiyle gelir). Mağaza yüklenemezse aşağıdaki fallback'ler kullanılır.
+// Fiyatlar koda gömülmez ve uydurulmaz: yalnızca RevenueCat offering'inden,
+// kullanıcının mağaza para birimiyle okunur. Offering yoksa fiyat da yoktur —
+// ekran o durumda hata gösterir, sabit bir dolar fiyatı değil.
 export interface Pricing {
-    yearly: string;      // ör. "$7.99" — yıllık fiyat (priceString)
-    monthly: string;     // ör. "$1.99" — aylık fiyat (priceString)
-    perMonth: string;    // yıllık/12 — "ayda sadece X" satırı
-    anchor: string;      // aylık×12 — üstü çizili çapa fiyatı
-    savingsPct: number;  // 1 - yıllık/(aylık×12)
-}
-
-const FALLBACK_PRICING: Pricing = {
-    yearly: '$7.99',
-    monthly: '$1.99',
-    perMonth: '$0.67',
-    anchor: '$23.88',
-    savingsPct: 67,
-};
-
-// priceString kalıbındaki sayıyı yeni değerle değiştirir; böylece hesaplanan
-// tutarlar (aylık eşdeğer, çapa) kullanıcının para birimi simgesi/formatıyla
-// gösterilir. Not: binlik ayraçlı çok büyük tutarlarda ayraç korunmaz — bu
-// ekrandaki küçük tutarlar için yeterli.
-function formatWithSameCurrency(template: string, value: number): string {
-    const usesComma = /\d,\d{2}(?!\d)/.test(template);
-    const num = usesComma ? value.toFixed(2).replace('.', ',') : value.toFixed(2);
-    return template.replace(/\d[\d.,\s]*\d|\d/, num);
+    yearly: string;             // priceString — yıllık
+    monthly: string;            // priceString — aylık
+    perMonth: string | null;    // yıllığın aylık karşılığı — "ayda sadece X"
+    anchor: string | null;      // aylık×12 — üstü çizili çapa fiyatı
+    savingsPct: number | null;  // 1 - yıllık/(aylık×12)
 }
 
 interface Plans {
@@ -66,23 +49,29 @@ function resolvePackages(offerings: any): Plans {
     };
 }
 
-function derivePricing(plans: Plans): Pricing {
-    try {
-        const y = plans.annual?.product;
-        const m = plans.monthly?.product;
-        if (!y?.priceString || !m?.priceString || !y.price || !m.price) return FALLBACK_PRICING;
+// Türetilmiş tutarlar SDK'dan geliyor: yıllık ürünün pricePerMonthString'i
+// fiyatı 12'ye böler, aylık ürünün pricePerYearString'i 12 ile çarpar; ikisi de
+// yerel para birimi formatlayıcısından geçer. Böylece priceString'i elle
+// biçimlendirmeye (binlik ayraçlı para birimlerinde bozuluyordu) gerek kalmıyor.
+// Bu alanlar abonelik dışı ürünlerde ve Amazon'da null olabilir; o durumda ilgili
+// satır gizlenir, uydurulmaz.
+function derivePricing(plans: Plans): Pricing | null {
+    const y = plans.annual?.product;
+    const m = plans.monthly?.product;
+    if (!y?.priceString || !m?.priceString) return null;
 
-        const anchorVal = m.price * 12;
-        return {
-            yearly: y.priceString,
-            monthly: m.priceString,
-            perMonth: formatWithSameCurrency(y.priceString, y.price / 12),
-            anchor: formatWithSameCurrency(m.priceString, anchorVal),
-            savingsPct: Math.round((1 - y.price / anchorVal) * 100),
-        };
-    } catch {
-        return FALLBACK_PRICING;
-    }
+    const anchorVal = typeof m.price === 'number' ? m.price * 12 : null;
+    const pct = anchorVal && anchorVal > 0 && typeof y.price === 'number'
+        ? Math.round((1 - y.price / anchorVal) * 100)
+        : null;
+
+    return {
+        yearly: y.priceString,
+        monthly: m.priceString,
+        perMonth: y.pricePerMonthString ?? null,
+        anchor: m.pricePerYearString ?? null,
+        savingsPct: pct !== null && pct > 0 ? pct : null,
+    };
 }
 
 const FEATURES = [
@@ -176,6 +165,42 @@ function createStyles(theme: AppTheme) {
         perMonthText: { fontSize: 13, color: theme.colors.success, fontWeight: '700', marginTop: 4, marginLeft: 32 },
         planSubText: { fontSize: 12, color: theme.colors.textSecondary, marginTop: 4, marginLeft: 32 },
 
+        // Fiyatlar yüklenirken — plan kartlarının yerini tutar
+        skeletonCard: {
+            borderRadius: theme.borderRadius.lg,
+            backgroundColor: theme.colors.surface,
+            borderWidth: 2, borderColor: theme.colors.surfaceBorder,
+            padding: theme.spacing.md,
+            marginBottom: theme.spacing.sm,
+            height: 104, justifyContent: 'center', gap: 12,
+        },
+        skeletonBar: { height: 14, borderRadius: 7, backgroundColor: theme.colors.surfaceBorder },
+        skeletonCta: {
+            height: 58, borderRadius: theme.borderRadius.lg,
+            backgroundColor: theme.colors.surfaceBorder,
+            marginTop: theme.spacing.md, marginBottom: theme.spacing.md,
+        },
+
+        // Fiyatlar hiç gelmediğinde
+        errorCard: {
+            borderRadius: theme.borderRadius.lg,
+            backgroundColor: theme.colors.surface,
+            borderWidth: 1, borderColor: theme.colors.surfaceBorder,
+            padding: theme.spacing.lg,
+            alignItems: 'center',
+            marginBottom: theme.spacing.md,
+        },
+        errorTitle: { fontSize: 16, fontWeight: '800', color: theme.colors.text, marginTop: 10, textAlign: 'center' },
+        errorSub: { fontSize: 13, color: theme.colors.textSecondary, marginTop: 6, textAlign: 'center', lineHeight: 19 },
+        retryBtn: {
+            marginTop: theme.spacing.md,
+            backgroundColor: theme.colors.primary,
+            borderRadius: theme.borderRadius.lg,
+            paddingHorizontal: theme.spacing.lg,
+            minHeight: 44, justifyContent: 'center', alignItems: 'center',
+        },
+        retryText: { color: '#fff', fontSize: 15, fontWeight: '800' },
+
         trialBadgeWrap: { alignItems: 'center', marginTop: 4, marginBottom: theme.spacing.md },
         trialBadge: {
             backgroundColor: `${theme.colors.success}1F`,
@@ -222,14 +247,16 @@ export default function PaywallScreen({ navigation }: any) {
     const { t } = useTranslation();
     const { theme } = useTheme();
     const styles = useMemo(() => createStyles(theme), [theme]);
-    const { isPro, isLoading, offerings, purchasePackage, restorePurchases } = usePro();
+    const { isPro, isLoading, offerings, purchasePackage, refreshOfferings, restorePurchases } = usePro();
     const plans = useMemo(() => resolvePackages(offerings), [offerings]);
     const pricing = useMemo(() => derivePricing(plans), [plans]);
     const [selectedPlan, setSelectedPlan] = useState<Plan>('yearly');
     const [purchasing, setPurchasing] = useState(false);
     const [restoring, setRestoring] = useState(false);
+    const [retrying, setRetrying] = useState(false);
 
     const selectedPackage = selectedPlan === 'yearly' ? plans.annual : plans.monthly;
+    const pricesLoading = isLoading || retrying;
 
     React.useEffect(() => { track('paywall_viewed'); }, []);
 
@@ -279,6 +306,15 @@ export default function PaywallScreen({ navigation }: any) {
             }
         } finally {
             setRestoring(false);
+        }
+    };
+
+    const handleRetry = async () => {
+        setRetrying(true);
+        try {
+            await refreshOfferings();
+        } finally {
+            setRetrying(false);
         }
     };
 
@@ -337,6 +373,40 @@ export default function PaywallScreen({ navigation }: any) {
                     ))}
                 </MotiView>
 
+                {pricesLoading ? (
+                    /* Fiyatlar mağazadan gelene kadar — sabit fiyat gösterilmez */
+                    <View>
+                        {[0, 1].map(i => (
+                            <MotiView
+                                key={i}
+                                style={styles.skeletonCard}
+                                from={{ opacity: 0.45 }}
+                                animate={{ opacity: 0.85 }}
+                                transition={{ type: 'timing', duration: 700, loop: true, delay: i * 120 }}
+                            >
+                                <View style={[styles.skeletonBar, { width: '45%' }]} />
+                                <View style={[styles.skeletonBar, { width: '65%', height: 22 }]} />
+                            </MotiView>
+                        ))}
+                        <View style={styles.skeletonCta} />
+                    </View>
+                ) : !pricing ? (
+                    /* Offering hiç gelmedi — uydurma fiyat yerine dürüst hata */
+                    <View style={styles.errorCard}>
+                        <Ionicons name="cloud-offline-outline" size={34} color={theme.colors.textSecondary} />
+                        <Text style={styles.errorTitle}>{t('paywall.prices_unavailable')}</Text>
+                        <Text style={styles.errorSub}>{t('paywall.prices_unavailable_sub')}</Text>
+                        <TouchableOpacity
+                            style={styles.retryBtn}
+                            onPress={handleRetry}
+                            accessibilityRole="button"
+                            accessibilityLabel={t('paywall.retry')}
+                        >
+                            <Text style={styles.retryText}>{t('paywall.retry')}</Text>
+                        </TouchableOpacity>
+                    </View>
+                ) : (
+                  <>
                 {/* Plan kartları — alt alta, yıllık üstte */}
                 <MotiView
                     from={{ opacity: 0, translateY: 20 }}
@@ -357,20 +427,24 @@ export default function PaywallScreen({ navigation }: any) {
                                 {selectedPlan === 'yearly' && <View style={styles.radioInner} />}
                             </View>
                             <Text style={styles.planLabel}>{t('paywall.yearly')}</Text>
-                            <View style={styles.saveBadge}>
-                                <Text style={styles.saveBadgeText}>
-                                    {t('paywall.save_badge', { pct: pricing.savingsPct })}
-                                </Text>
-                            </View>
+                            {pricing.savingsPct !== null && (
+                                <View style={styles.saveBadge}>
+                                    <Text style={styles.saveBadgeText}>
+                                        {t('paywall.save_badge', { pct: pricing.savingsPct })}
+                                    </Text>
+                                </View>
+                            )}
                         </View>
                         <View style={styles.planPriceRow}>
-                            <Text style={styles.anchorPrice}>{pricing.anchor}</Text>
+                            {pricing.anchor && <Text style={styles.anchorPrice}>{pricing.anchor}</Text>}
                             <Text style={styles.planPrice}>{pricing.yearly}</Text>
                             <Text style={styles.planPeriod}>{t('paywall.per_year')}</Text>
                         </View>
-                        <Text style={styles.perMonthText}>
-                            {t('paywall.per_month_only', { price: pricing.perMonth })}
-                        </Text>
+                        {pricing.perMonth && (
+                            <Text style={styles.perMonthText}>
+                                {t('paywall.per_month_only', { price: pricing.perMonth })}
+                            </Text>
+                        )}
                     </TouchableOpacity>
 
                     {/* Aylık */}
@@ -428,6 +502,8 @@ export default function PaywallScreen({ navigation }: any) {
                         ? t('paywall.cta_note_yearly', { price: pricing.yearly })
                         : t('paywall.cta_note_monthly', { price: pricing.monthly })}
                 </Text>
+                  </>
+                )}
 
                 {/* Güven satırı */}
                 <Text style={styles.trustLine}>{t('paywall.trust_line')}</Text>

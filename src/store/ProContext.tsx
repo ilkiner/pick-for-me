@@ -61,6 +61,8 @@ interface ProContextValue {
      * offering'e atfedilir.
      */
     purchasePackage: (pkg: any) => Promise<boolean>;
+    /** Offering'leri yeniden çeker. Paywall'daki "tekrar dene" için. */
+    refreshOfferings: () => Promise<void>;
     restorePurchases: () => Promise<boolean>;
     openPaywall: () => void;
     /** Dev-only: forced Pro state for testing. null = real RevenueCat state */
@@ -74,6 +76,7 @@ const ProContext = createContext<ProContextValue>({
     isLoading: true,
     offerings: null,
     purchasePackage: async () => false,
+    refreshOfferings: async () => {},
     restorePurchases: async () => false,
     openPaywall: () => {},
     devProOverride: null,
@@ -126,6 +129,19 @@ export function ProProvider({ children, navigationRef }: Props) {
         }
     }, []);
 
+    // Offering çekilemezse offerings null bırakılır — paywall bu durumda fiyat
+    // uydurmak yerine hata gösterip bu fonksiyonla tekrar denenmesini sağlar.
+    const refreshOfferings = useCallback(async (): Promise<void> => {
+        if (!Purchases) return;
+        try {
+            const off = await Purchases.getOfferings();
+            setOfferings(off?.current ?? null);
+        } catch (e) {
+            console.warn('[Pro] Offerings fetch failed:', e);
+            setOfferings(null);
+        }
+    }, []);
+
     useEffect(() => {
         let cancelled = false;
         let unsubscribeAuth: (() => void) | undefined;
@@ -174,8 +190,9 @@ export function ProProvider({ children, navigationRef }: Props) {
                 setIsPro(active);
                 await writeProCache(active);
 
-                const off = await Purchases.getOfferings();
-                setOfferings(off.current);
+                // Kendi hatasını yutar: offering çekilememesi Pro durumunu ya da
+                // kimlik bağlamayı düşürmemeli.
+                await refreshOfferings();
             } catch (e) {
                 console.warn('[Pro] RevenueCat init failed:', e);
             } finally {
@@ -214,7 +231,7 @@ export function ProProvider({ children, navigationRef }: Props) {
             removeInfoListener?.();
             unsubscribeAuth?.();
         };
-    }, [linkRevenueCatIdentity]);
+    }, [linkRevenueCatIdentity, refreshOfferings]);
 
     const purchasePackage = useCallback(async (pkg: any): Promise<boolean> => {
         if (!Purchases) {
@@ -262,7 +279,7 @@ export function ProProvider({ children, navigationRef }: Props) {
     return (
         <ProContext.Provider value={{
             isPro: effectiveIsPro, isLoading, offerings,
-            purchasePackage, restorePurchases, openPaywall,
+            purchasePackage, refreshOfferings, restorePurchases, openPaywall,
             devProOverride, devTogglePro,
         }}>
             {children}
