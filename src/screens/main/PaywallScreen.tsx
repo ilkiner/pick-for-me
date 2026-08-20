@@ -47,14 +47,29 @@ function formatWithSameCurrency(template: string, value: number): string {
     return template.replace(/\d[\d.,\s]*\d|\d/, num);
 }
 
-function derivePricing(offerings: any): Pricing {
+interface Plans {
+    annual: any | null;
+    monthly: any | null;
+}
+
+// Offering'deki paketleri çözer. Satın alma da fiyat gösterimi de aynı paket
+// nesnesinden beslenir; böylece gösterilen fiyatla satın alınan ürün ayrışamaz.
+// RevenueCat'in $rc_annual / $rc_monthly kısayolları yoksa packageType'a düşülür.
+function resolvePackages(offerings: any): Plans {
+    return {
+        annual: offerings?.annual
+            ?? offerings?.availablePackages?.find((p: any) => p.packageType === 'ANNUAL')
+            ?? null,
+        monthly: offerings?.monthly
+            ?? offerings?.availablePackages?.find((p: any) => p.packageType === 'MONTHLY')
+            ?? null,
+    };
+}
+
+function derivePricing(plans: Plans): Pricing {
     try {
-        const annualPkg = offerings?.annual
-            ?? offerings?.availablePackages?.find((p: any) => p.packageType === 'ANNUAL');
-        const monthlyPkg = offerings?.monthly
-            ?? offerings?.availablePackages?.find((p: any) => p.packageType === 'MONTHLY');
-        const y = annualPkg?.product;
-        const m = monthlyPkg?.product;
+        const y = plans.annual?.product;
+        const m = plans.monthly?.product;
         if (!y?.priceString || !m?.priceString || !y.price || !m.price) return FALLBACK_PRICING;
 
         const anchorVal = m.price * 12;
@@ -207,11 +222,14 @@ export default function PaywallScreen({ navigation }: any) {
     const { t } = useTranslation();
     const { theme } = useTheme();
     const styles = useMemo(() => createStyles(theme), [theme]);
-    const { isPro, isLoading, offerings, purchaseMonthly, purchaseYearly, restorePurchases } = usePro();
-    const pricing = useMemo(() => derivePricing(offerings), [offerings]);
+    const { isPro, isLoading, offerings, purchasePackage, restorePurchases } = usePro();
+    const plans = useMemo(() => resolvePackages(offerings), [offerings]);
+    const pricing = useMemo(() => derivePricing(plans), [plans]);
     const [selectedPlan, setSelectedPlan] = useState<Plan>('yearly');
     const [purchasing, setPurchasing] = useState(false);
     const [restoring, setRestoring] = useState(false);
+
+    const selectedPackage = selectedPlan === 'yearly' ? plans.annual : plans.monthly;
 
     React.useEffect(() => { track('paywall_viewed'); }, []);
 
@@ -233,12 +251,12 @@ export default function PaywallScreen({ navigation }: any) {
     }
 
     const handlePurchase = async () => {
+        // Paket yoksa satın alınacak bir şey de yok — CTA zaten kapalı.
+        if (!selectedPackage) return;
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         setPurchasing(true);
         try {
-            const success = selectedPlan === 'yearly'
-                ? await purchaseYearly()
-                : await purchaseMonthly();
+            const success = await purchasePackage(selectedPackage);
             if (success) {
                 track('subscription_started', { plan: selectedPlan });
                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
@@ -391,9 +409,9 @@ export default function PaywallScreen({ navigation }: any) {
                     </View>
 
                     <TouchableOpacity
-                        style={[styles.ctaBtn, purchasing && styles.ctaBtnDisabled]}
+                        style={[styles.ctaBtn, (purchasing || !selectedPackage) && styles.ctaBtnDisabled]}
                         onPress={handlePurchase}
-                        disabled={purchasing || isLoading}
+                        disabled={purchasing || isLoading || !selectedPackage}
                         activeOpacity={0.9}
                         accessibilityRole="button"
                         accessibilityLabel={t('paywall.cta_trial')}

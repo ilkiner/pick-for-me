@@ -10,12 +10,10 @@ try {
     // native module not linked — dev-build required
 }
 
-// ─── Product IDs (must match App Store Connect / Play Console) ────────────────
+// ─── RevenueCat yapılandırması ────────────────────────────────────────────────
 // Set EXPO_PUBLIC_REVENUECAT_KEY_IOS / _ANDROID in .env
 export const RC_API_KEY_IOS = process.env.EXPO_PUBLIC_REVENUECAT_KEY_IOS ?? '';
 export const RC_API_KEY_ANDROID = process.env.EXPO_PUBLIC_REVENUECAT_KEY_ANDROID ?? '';
-export const PRODUCT_MONTHLY = 'pickforme_monthly_199';
-export const PRODUCT_YEARLY = 'pickforme_yearly_799';
 export const ENTITLEMENT_PRO = 'pro';
 
 // ─── Free-tier limits ─────────────────────────────────────────────────────────
@@ -56,8 +54,13 @@ interface ProContextValue {
     isPro: boolean;
     isLoading: boolean;
     offerings: any;
-    purchaseMonthly: () => Promise<boolean>;
-    purchaseYearly: () => Promise<boolean>;
+    /**
+     * Offering'den gelen paketi satın alır. Ham ürün kimliğiyle satın alma
+     * yapılmaz: paket üzerinden gidildiğinde Play/App Store'daki doğru teklif
+     * (ör. ücretsiz deneme) seçilir ve satın alma RevenueCat'te doğru
+     * offering'e atfedilir.
+     */
+    purchasePackage: (pkg: any) => Promise<boolean>;
     restorePurchases: () => Promise<boolean>;
     openPaywall: () => void;
     /** Dev-only: forced Pro state for testing. null = real RevenueCat state */
@@ -70,8 +73,7 @@ const ProContext = createContext<ProContextValue>({
     isPro: false,
     isLoading: true,
     offerings: null,
-    purchaseMonthly: async () => false,
-    purchaseYearly: async () => false,
+    purchasePackage: async () => false,
     restorePurchases: async () => false,
     openPaywall: () => {},
     devProOverride: null,
@@ -195,15 +197,17 @@ export function ProProvider({ children, navigationRef }: Props) {
         };
     }, [linkRevenueCatIdentity]);
 
-    const purchaseProduct = useCallback(async (productId: string): Promise<boolean> => {
+    const purchasePackage = useCallback(async (pkg: any): Promise<boolean> => {
         if (!Purchases) {
             console.warn('[Pro] react-native-purchases not linked. Build with EAS.');
             return false;
         }
+        if (!pkg) {
+            console.warn('[Pro] purchasePackage called without a package — offerings not loaded?');
+            return false;
+        }
         try {
-            const products = await Purchases.getProducts([productId]);
-            if (!products.length) return false;
-            const { customerInfo } = await Purchases.purchaseStoreProduct(products[0]);
+            const { customerInfo } = await Purchases.purchasePackage(pkg);
             const active = customerInfo.entitlements.active[ENTITLEMENT_PRO] !== undefined;
             setIsPro(active);
             await writeProCache(active);
@@ -213,9 +217,6 @@ export function ProProvider({ children, navigationRef }: Props) {
             return false;
         }
     }, []);
-
-    const purchaseMonthly = useCallback(() => purchaseProduct(PRODUCT_MONTHLY), [purchaseProduct]);
-    const purchaseYearly = useCallback(() => purchaseProduct(PRODUCT_YEARLY), [purchaseProduct]);
 
     const restorePurchases = useCallback(async (): Promise<boolean> => {
         if (!Purchases) return false;
@@ -242,7 +243,7 @@ export function ProProvider({ children, navigationRef }: Props) {
     return (
         <ProContext.Provider value={{
             isPro: effectiveIsPro, isLoading, offerings,
-            purchaseMonthly, purchaseYearly, restorePurchases, openPaywall,
+            purchasePackage, restorePurchases, openPaywall,
             devProOverride, devTogglePro,
         }}>
             {children}
