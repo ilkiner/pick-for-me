@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Platform, KeyboardAvoidingView, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -18,16 +18,32 @@ type Mode = 'random' | 'together';
 type Genre = 'action' | 'comedy' | 'drama' | 'thriller' | 'horror' | 'scifi' | 'romance' | 'animation';
 type MatchSource = 'all' | 'mylist' | 'classics' | 'trending' | Genre;
 type MatchPhase = 'setup' | 'playing';
+// İçerik türü: hazır listeler film / dizi olarak ayrı tutuluyor, 'mixed' ikisini
+// birleştiriyor. Kategoriler (tür + efsane/popüler) her iki tarafta da aynı.
+type ContentType = 'movie' | 'series' | 'mixed';
 
 const GENRES: Genre[] = ['action', 'comedy', 'drama', 'thriller', 'horror', 'scifi', 'romance', 'animation'];
 
 // Hazır paketler: hızlı ekleme çipleri bu sırayla çıkar
 const PACK_KEYS: string[] = ['classics', 'trending', ...GENRES];
 
+const CONTENT_TYPES: { key: ContentType; icon: string }[] = [
+    { key: 'movie',  icon: 'film-outline' },
+    { key: 'series', icon: 'tv-outline' },
+    { key: 'mixed',  icon: 'albums-outline' },
+];
+
+type MovieContent = Record<'movie' | 'series', Record<string, string[]>>;
+const CONTENT = MOVIES_DATA as MovieContent;
+
 // Bir başlığın hazır paketten mi yoksa kullanıcıdan mı geldiğini ayırt etmek
-// için tüm paket başlıklarının düz kümesi. Kullanıcının kendi eklediklerini
-// korurken paket filmlerini toplu silmeyi mümkün kılar.
-const PACK_TITLES = new Set(Object.values(MOVIES_DATA as Record<string, string[]>).flat());
+// için TÜM paket başlıklarının (film + dizi) düz kümesi. Kullanıcının kendi
+// eklediklerini korurken hazır başlıkları toplu silmeyi mümkün kılar; seçili
+// türden bağımsız çalışmalı, yoksa "Film" seçiliyken eklenmiş diziler kalır.
+const PACK_TITLES = new Set([
+    ...Object.values(CONTENT.movie).flat(),
+    ...Object.values(CONTENT.series).flat(),
+]);
 
 export default function MoviePickerScreen({ navigation }: any) {
     const { t } = useTranslation();
@@ -35,6 +51,10 @@ export default function MoviePickerScreen({ navigation }: any) {
     const styles = useMemo(() => createStyles(theme), [theme]);
     const [movies, setMovies] = useState<string[]>([]);
     const [newMovie, setNewMovie] = useState('');
+
+    // Film / Dizi / Karışık — hem hızlı ekleme paketlerini hem de Birlikte Seç
+    // destesini besleyen havuzu belirler. Varsayılan 'mixed': eski davranış.
+    const [contentType, setContentType] = useState<ContentType>('mixed');
 
     // Birlikte Seç (eşleştirme) modu durumu
     const [mode, setMode] = useState<Mode>('random');
@@ -66,20 +86,27 @@ export default function MoviePickerScreen({ navigation }: any) {
         saveOptions(newOpts);
     };
 
-    const moviesData = MOVIES_DATA as Record<string, string[]>;
+    // Seçili türe göre bir paketin başlıkları. 'mixed' ikisini arka arkaya
+    // verir (film ve dizi havuzları kesişmiyor, ayrıca ayıklamaya gerek yok).
+    const packTitles = useCallback((packKey: string): string[] => {
+        if (contentType === 'mixed') {
+            return [...(CONTENT.movie[packKey] ?? []), ...(CONTENT.series[packKey] ?? [])];
+        }
+        return CONTENT[contentType][packKey] ?? [];
+    }, [contentType]);
 
     // Hazır paket çipleri AÇ/KAPA çalışır: paket zaten listedeyse tekrar
     // basmak onu kaldırır. (Eskiden yalnızca ekliyordu; ikinci dokunuş Set
     // ile eleniyor ve ekranda hiçbir şey olmuyormuş gibi görünüyordu.)
     const isPackLoaded = (packKey: string) => {
-        const list = moviesData[packKey] ?? [];
+        const list = packTitles(packKey);
         if (list.length === 0) return false;
         const current = new Set(movies);
         return list.every(title => current.has(title));
     };
 
     const togglePack = (packKey: string) => {
-        const list = moviesData[packKey] ?? [];
+        const list = packTitles(packKey);
         if (list.length === 0) return;
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
         if (isPackLoaded(packKey)) {
@@ -115,10 +142,12 @@ export default function MoviePickerScreen({ navigation }: any) {
         navigation.navigate('Result', { result, type: 'movie', sourceRoute: 'MoviePicker' });
     };
 
+    // 'all' burada "tüm kategoriler" demek; hangi türden (film/dizi/karışık)
+    // olduğunu contentType belirliyor.
     const getSourcePool = (source: MatchSource): string[] => {
         if (source === 'mylist') return movies;
-        if (source === 'all') return Object.values(moviesData).flat();
-        return moviesData[source] ?? [];
+        if (source === 'all') return PACK_KEYS.flatMap(packTitles);
+        return packTitles(source);
     };
 
     const startMatch = (source: MatchSource) => {
@@ -156,6 +185,39 @@ export default function MoviePickerScreen({ navigation }: any) {
                     </Text>
                 </TouchableOpacity>
             ))}
+        </View>
+    );
+
+    // Film / Dizi / Karışık — her iki modda da geçerli olduğu için mod
+    // sekmelerinin hemen altında, tek yerde duruyor.
+    const renderTypeTabs = () => (
+        <View style={styles.typeRow}>
+            {CONTENT_TYPES.map(({ key, icon }) => {
+                const isActive = contentType === key;
+                const label = t(`tools.movie.type_${key}`);
+                return (
+                    <TouchableOpacity
+                        key={key}
+                        style={[styles.typeBtn, isActive && styles.typeBtnActive]}
+                        onPress={() => {
+                            Haptics.selectionAsync().catch(() => {});
+                            setContentType(key);
+                        }}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: isActive }}
+                        accessibilityLabel={label}
+                    >
+                        <Ionicons
+                            name={icon as any}
+                            size={14}
+                            color={isActive ? '#fff' : theme.colors.textSecondary}
+                        />
+                        <Text style={[styles.typeText, isActive && styles.typeTextActive]} numberOfLines={1}>
+                            {label}
+                        </Text>
+                    </TouchableOpacity>
+                );
+            })}
         </View>
     );
 
@@ -319,6 +381,8 @@ export default function MoviePickerScreen({ navigation }: any) {
                 </View>
 
                 {renderModeTabs()}
+                {/* Deste kaydırılırken tür değiştirmek anlamsız — oyun sırasında gizli */}
+                {(mode === 'random' || matchPhase === 'setup') && renderTypeTabs()}
 
                 {mode === 'random' ? (
                     renderRandomMode()
@@ -350,6 +414,23 @@ function createStyles(theme: AppTheme) {
     tabBtnActive: { backgroundColor: theme.colors.primary },
     tabText: { color: theme.colors.textSecondary, fontWeight: '700', fontSize: 13 },
     tabTextActive: { color: '#fff' },
+
+    // Film / Dizi / Karışık — mod sekmelerinden bir tık daha sakin dursun diye
+    // dolgu yerine çerçeveli (outline) aktif durum kullanılıyor.
+    typeRow: {
+        flexDirection: 'row', gap: 8,
+        marginHorizontal: theme.spacing.md, marginBottom: theme.spacing.md,
+    },
+    typeBtn: {
+        flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5,
+        paddingVertical: 9, paddingHorizontal: 6, minHeight: 44,
+        borderRadius: theme.borderRadius.md,
+        borderWidth: 1.5, borderColor: theme.colors.surfaceBorder,
+        backgroundColor: theme.colors.surface,
+    },
+    typeBtnActive: { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+    typeText: { color: theme.colors.textSecondary, fontWeight: '700', fontSize: 12, flexShrink: 1 },
+    typeTextActive: { color: '#fff' },
 
     setupScroll: { paddingHorizontal: theme.spacing.md, paddingBottom: theme.spacing.xl },
     setupCard: { alignItems: 'center', padding: theme.spacing.xl, gap: theme.spacing.sm, marginBottom: theme.spacing.lg },
