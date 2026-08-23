@@ -18,7 +18,8 @@ function createStyles(theme: AppTheme) {
         container: { flex: 1, backgroundColor: theme.colors.background },
         header: { padding: theme.spacing.lg, paddingBottom: theme.spacing.md },
         title: { fontSize: 32, fontWeight: '800', color: theme.colors.text, letterSpacing: 0.5 },
-        content: { flexGrow: 1, padding: theme.spacing.md },
+        // paddingBottom: son bölüm/sürüm satırı sekme çubuğuna yapışmasın.
+        content: { flexGrow: 1, padding: theme.spacing.md, paddingBottom: theme.spacing.xl },
         section: { marginBottom: theme.spacing.md, padding: theme.spacing.md, borderRadius: theme.borderRadius.lg },
         proSection: { borderColor: 'rgba(255,215,0,0.3)', borderWidth: 1 },
         row: { flexDirection: 'row', alignItems: 'center' },
@@ -38,7 +39,8 @@ function createStyles(theme: AppTheme) {
             alignItems: 'center', justifyContent: 'center',
         },
         toggleText: { color: '#fff', fontWeight: 'bold', fontSize: 12 },
-        versionContainer: { marginTop: 'auto', alignItems: 'center', paddingBottom: theme.spacing.xl },
+        // Alt boşluk artık content'in paddingBottom'ından geliyor; burada tekrarlanmıyor.
+        versionContainer: { marginTop: 'auto', alignItems: 'center', paddingTop: theme.spacing.md },
         versionText: { color: theme.colors.textSecondary, fontSize: 12, letterSpacing: 1 },
         // Theme segment
         segmentRow: { flexDirection: 'row', marginTop: theme.spacing.sm, gap: 6 },
@@ -165,7 +167,8 @@ export default function SettingsScreen({ navigation }: any) {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        // Alt kenar sekme çubuğunun sorumluluğunda — bkz. navigation/index.tsx
+        <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
             <View style={styles.header}>
                 <Text style={styles.title}>{t('settings.title', 'Ayarlar')}</Text>
             </View>

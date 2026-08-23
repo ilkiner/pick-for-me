@@ -38,6 +38,7 @@ const TOOL_BY_ID = new Map(TOOL_DEFS.map(t => [t.id, t]));
 function createStyles(theme: AppTheme) {
     return StyleSheet.create({
         container: { flex: 1, backgroundColor: theme.colors.background },
+        // Son kart / banner sekme çubuğuna yapışmasın diye alt nefes payı.
         listContent: { paddingHorizontal: theme.spacing.md, paddingBottom: theme.spacing.xl },
         headerContainer: { paddingTop: theme.spacing.sm, paddingBottom: theme.spacing.md },
         titleRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', paddingLeft: theme.spacing.xs },
@@ -205,7 +206,9 @@ export default function HomeScreen({ navigation }: any) {
     ), [t, isPro, openPaywall, styles, recentTools, theme, handleToolPress]);
 
     return (
-        <SafeAreaView style={styles.container}>
+        // Alt kenar sekme çubuğunun sorumluluğunda (inset'i o karşılıyor);
+        // burada da uygulanırsa bar'ın üstünde inset kadar boş alan oluşur.
+        <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
             <FlatList
                 data={sortedTools}
                 keyExtractor={(item) => item.id}

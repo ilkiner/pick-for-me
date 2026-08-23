@@ -2,6 +2,7 @@ import 'react-native-url-polyfill/auto';
 import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import * as Sentry from '@sentry/react-native';
@@ -121,13 +122,18 @@ function AppInner() {
 
 function App() {
     return (
-        <ThemeProvider>
-            <SoundProvider>
-                <ErrorBoundary>
-                    <AppInner />
-                </ErrorBoundary>
-            </SoundProvider>
-        </ThemeProvider>
+        // Insets'i kökten sağla: navigator'lar kendi SafeAreaProviderCompat'ını
+        // kurar ama onboarding gibi navigator dışındaki ekranlar açıkta kalıyordu.
+        // initialWindowMetrics ilk karede doğru değerle açılmayı sağlar (zıplama yok).
+        <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+            <ThemeProvider>
+                <SoundProvider>
+                    <ErrorBoundary>
+                        <AppInner />
+                    </ErrorBoundary>
+                </SoundProvider>
+            </ThemeProvider>
+        </SafeAreaProvider>
     );
 }
 

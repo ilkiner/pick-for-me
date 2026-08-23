@@ -21,10 +21,23 @@ import TruthOrDareScreen from '../screens/tools/TruthOrDareScreen';
 import OrderTeamScreen from '../screens/tools/OrderTeamScreen';
 import SavedListsScreen from '../screens/lists/SavedListsScreen';
 import { Ionicons } from '@expo/vector-icons';
-import { View, Platform } from 'react-native';
+import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../store/ThemeContext';
 
 export const navigationRef = createNavigationContainerRef<any>();
+
+// --- Alt bar geometrisi ---
+// Android (Expo SDK 54+ zorunlu edge-to-edge) ve iOS'ta sistem gezinme alanı
+// insets.bottom olarak gelir: üç tuşlu gezinme ~48dp, jest çubuğu ~16-24dp,
+// iOS home indicator 34dp, eski cihazlarda 0. Bar'ın KENDİ yüksekliği sabit
+// kalır ve inset onun ALTINA eklenir — böylece dokunulabilir alan hiçbir
+// zaman sistem tuşlarının üzerine binmez.
+const TAB_BAR_ITEM_HEIGHT = 48;      // min dokunma hedefi (Material: 48dp)
+const TAB_BAR_PADDING_TOP = 8;
+const TAB_BAR_PADDING_BOTTOM = 8;
+const TAB_BAR_MIN_HEIGHT =
+    TAB_BAR_ITEM_HEIGHT + TAB_BAR_PADDING_TOP + TAB_BAR_PADDING_BOTTOM; // 64
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -44,6 +57,7 @@ export const linking = {
 
 function MainTabNavigator() {
     const { theme } = useTheme();
+    const insets = useSafeAreaInsets();
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
@@ -74,12 +88,19 @@ function MainTabNavigator() {
                     backgroundColor: theme.colors.background,
                     borderTopWidth: 1,
                     borderTopColor: theme.colors.surfaceBorder,
-                    height: Platform.OS === 'ios' ? 88 : 68,
-                    paddingBottom: Platform.OS === 'ios' ? 30 : 12,
-                    paddingTop: 12,
+                    // Bar'ın görünür yüksekliği her cihazda TAB_BAR_MIN_HEIGHT;
+                    // inset yalnızca altına eklenir ve o alan boş bırakılır.
+                    height: TAB_BAR_MIN_HEIGHT + insets.bottom,
+                    paddingTop: TAB_BAR_PADDING_TOP,
+                    paddingBottom: TAB_BAR_PADDING_BOTTOM + insets.bottom,
                     elevation: 0,
                     shadowOpacity: 0,
                 },
+                // Yukarıdaki hesap sekmelere tam TAB_BAR_ITEM_HEIGHT bırakıyor;
+                // minHeight bunu açık bir garanti haline getiriyor. justifyContent
+                // ise etiketsiz modda ikonu kutunun dibine yapıştıran varsayılan
+                // 'flex-end' davranışını ezip dikeyde ortalıyor.
+                tabBarItemStyle: { minHeight: TAB_BAR_ITEM_HEIGHT, justifyContent: 'center' },
                 tabBarShowLabel: false,
             })}
         >

@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, ScrollView, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useEffect, useRef, useState, useCallback, useMemo, useContext } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, ScrollView, Alert } from 'react-native';
+import { SafeAreaView, Edge } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
+import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { HistoryItem, HistoryStorage } from '../../storage/history';
 import QRCode from 'react-native-qrcode-svg';
@@ -33,12 +34,16 @@ function createStyles(theme: AppTheme) {
         },
         clearBtnText: { color: theme.colors.error, fontSize: 13, fontWeight: '700' },
         emptyContainer: { alignItems: 'center', marginTop: theme.spacing.xxl, gap: theme.spacing.md },
+        // Son geçmiş kartı sekme çubuğuna yapışmasın.
+        historyContent: { padding: theme.spacing.lg, paddingBottom: theme.spacing.xl },
         content: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: theme.spacing.lg },
         resultContainer: { width: '100%', alignItems: 'center' },
         resultBox: { width: 300, height: 300, borderRadius: 40, alignItems: 'center', justifyContent: 'center', padding: theme.spacing.xl },
         resultText: { fontSize: 56, fontWeight: '900', color: theme.colors.text, textAlign: 'center' },
         colorHex: { marginTop: theme.spacing.xl, fontSize: 24, fontWeight: '700', color: theme.colors.textSecondary, letterSpacing: 2 },
-        footer: { padding: theme.spacing.lg, paddingBottom: Platform.OS === 'ios' ? theme.spacing.xl : theme.spacing.xxl, gap: theme.spacing.md },
+        // Sistem gezinme alanı SafeAreaView'ın bottom edge'inden geliyor; burada
+        // platforma göre sabit pay vermeye gerek yok (eskiden Android'de xxl idi).
+        footer: { padding: theme.spacing.lg, gap: theme.spacing.md },
         actionBtn: { width: '100%' },
         viewShot: { alignItems: 'center', backgroundColor: theme.colors.background },
         shareRow: { flexDirection: 'row', gap: theme.spacing.md, marginTop: theme.spacing.lg, justifyContent: 'center' },
@@ -91,6 +96,14 @@ export default function ResultScreen({ route, navigation }: any) {
     // If we have a direct result from a tool, we're in "Single Result" mode.
     // Otherwise, we're in "History" mode.
     const isSingleResult = result !== undefined && result !== null;
+
+    // Bu ekran hem "Geçmiş" sekmesi hem de araçlardan push edilen bir stack
+    // ekranı olarak açılıyor. Sekme içindeysek alt inset'i sekme çubuğu
+    // karşılıyor; stack'te ise sistem gezinme çubuğunu burada karşılamalıyız.
+    const insideTabs = useContext(BottomTabBarHeightContext) != null;
+    const edges: Edge[] = insideTabs
+        ? ['top', 'left', 'right']
+        : ['top', 'left', 'right', 'bottom'];
 
     const scaleAnim = useRef(new Animated.Value(0.5)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -283,7 +296,7 @@ export default function ResultScreen({ route, navigation }: any) {
 
     if (!isSingleResult) {
         return (
-            <SafeAreaView style={styles.container}>
+            <SafeAreaView style={styles.container} edges={edges}>
                 <View style={styles.historyHeader}>
                     <Text style={styles.headerTitle}>{isPro ? t('tools.results.title_pro') : t('tools.results.title')}</Text>
                     {history.length > 0 && (
@@ -298,7 +311,10 @@ export default function ResultScreen({ route, navigation }: any) {
                         </TouchableOpacity>
                     )}
                 </View>
-                <Animated.ScrollView contentContainerStyle={{ padding: theme.spacing.lg }} style={{ opacity: fadeAnim }}>
+                <Animated.ScrollView
+                    contentContainerStyle={styles.historyContent}
+                    style={{ opacity: fadeAnim }}
+                >
                     {history.length === 0 ? (
                         <View style={styles.emptyContainer}>
                             <Ionicons name="time-outline" size={64} color={theme.colors.surfaceBorder} />
@@ -318,7 +334,7 @@ export default function ResultScreen({ route, navigation }: any) {
         : getResultText(result, type);
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.container} edges={edges}>
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>{t('tools.common.result')}</Text>
             </View>
