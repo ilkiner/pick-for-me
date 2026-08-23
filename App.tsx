@@ -1,6 +1,7 @@
 import 'react-native-url-polyfill/auto';
-import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { View, ActivityIndicator, Alert } from 'react-native';
+import * as Linking from 'expo-linking';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
@@ -19,6 +20,7 @@ import * as Localization from 'expo-localization';
 import OnboardingScreen, { ONBOARDING_KEY } from './src/screens/main/OnboardingScreen';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { initAnalytics, track } from './src/core/Analytics';
+import { consumeRecoveryLink } from './src/core/authLinks';
 
 const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
 const sentryEnabled = Boolean(SENTRY_DSN);
@@ -35,7 +37,10 @@ function AppInner() {
     const [isReady, setIsReady] = useState(false);
     const [session, setSession] = useState<any>(null);
     const [onboardingDone, setOnboardingDone] = useState(false);
-    const { i18n } = useTranslation();
+    // Şifre sıfırlama linkiyle gelindi mi? True ise navigator her şeyin önüne
+    // "yeni şifre belirle" ekranını koyar.
+    const [recovery, setRecovery] = useState(false);
+    const { t, i18n } = useTranslation();
     const { theme, isDark } = useTheme();
 
     useEffect(() => {
@@ -74,6 +79,9 @@ function AppInner() {
 
                 const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: string, newSession: any) => {
                     setSession(newSession);
+                    // Supabase kurtarma oturumu kurulduğunda bu olayı yayar;
+                    // derin bağlantı dinleyicisine ek bir emniyet kemeri.
+                    if (_event === 'PASSWORD_RECOVERY') setRecovery(true);
                     if (_event === 'SIGNED_IN' && newSession) {
                         SavedListsStorage.syncWithCloud().catch(() => {});
                     }
@@ -90,6 +98,52 @@ function AppInner() {
 
         initApp();
     }, []);
+
+    // --- Şifre sıfırlama derin bağlantısı ---
+    // Mail'deki link uygulamayı pickforme://reset-password#access_token=... ile
+    // açar. React Native'de supabase-js bunu kendisi okumaz (detectSessionInUrl
+    // web'e özel), token'ı oturuma çevirmek bize düşer.
+    // Aynı URL iki kez işlenmemeli: soğuk açılışta getInitialURL ve 'url' olayı
+    // çoğu Android cihazda ikisi birden tetikleniyor. Token tek kullanımlık
+    // olduğu için ikinci işleme "süresi dolmuş" uyarısı üretirdi.
+    const handledUrls = useRef<Set<string>>(new Set());
+
+    const handleDeepLink = useCallback(async (url: string | null) => {
+        if (!url || handledUrls.current.has(url)) return;
+        handledUrls.current.add(url);
+
+        const outcome = await consumeRecoveryLink(url);
+
+        if (outcome.status === 'ok') {
+            track('password_reset_link_opened');
+            setRecovery(true);
+            return;
+        }
+        if (outcome.status === 'expired') {
+            Alert.alert(t('auth.reset_link_expired_title'), t('auth.reset_link_expired_msg'));
+            return;
+        }
+        if (outcome.status === 'error') {
+            Alert.alert(
+                t('auth.reset_link_error_title'),
+                outcome.message || t('auth.reset_link_error_msg'),
+            );
+        }
+        // 'ignored': şifre sıfırlama linki değil — React Navigation ilgilensin.
+    }, [t]);
+
+    useEffect(() => {
+        if (!isSupabaseConfigured()) return;
+        let cancelled = false;
+        const onUrl = (url: string | null) => { if (!cancelled) handleDeepLink(url); };
+
+        // Uygulama kapalıyken linke tıklandıysa başlangıç URL'i burada gelir.
+        Linking.getInitialURL().then(onUrl).catch(() => {});
+        // Uygulama açıkken tıklandıysa olay olarak gelir.
+        const sub = Linking.addEventListener('url', ({ url }) => onUrl(url));
+
+        return () => { cancelled = true; sub.remove(); };
+    }, [handleDeepLink]);
 
     if (!isReady) {
         return (
@@ -113,7 +167,11 @@ function AppInner() {
             <ProProvider navigationRef={navigationRef}>
                 <StatusBar style={isDark ? 'light' : 'dark'} />
                 <NavigationContainer ref={navigationRef} linking={linking}>
-                    <RootNavigator session={session} />
+                    <RootNavigator
+                        session={session}
+                        recovery={recovery}
+                        onRecoveryDone={() => setRecovery(false)}
+                    />
                 </NavigationContainer>
             </ProProvider>
         </GestureHandlerRootView>

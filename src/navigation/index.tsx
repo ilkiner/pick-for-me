@@ -4,6 +4,7 @@ import { createNavigationContainerRef } from '@react-navigation/native';
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
+import ResetPasswordScreen from '../screens/auth/ResetPasswordScreen';
 import EmailVerificationScreen from '../screens/auth/EmailVerificationScreen';
 import HomeScreen from '../screens/main/HomeScreen';
 import ResultScreen from '../screens/main/ResultScreen';
@@ -43,13 +44,18 @@ const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 // Deep link mapping for pickforme:// scheme
+//
+// NOT: 'reset-password' bilerek burada YOK. O yolu App.tsx'teki kurtarma
+// dinleyicisi işliyor (bkz. core/authLinks.ts): linkteki token'ın önce oturuma
+// çevrilmesi gerekiyor, düz navigasyon yeterli değil. Eskiden bu yol
+// ForgotPassword'e (e-posta girme ekranı) bağlıydı — kullanıcı linke tıklayınca
+// yeni şifre belirlemek yerine baştan sıfırlama istemek zorunda kalıyordu.
 export const linking = {
     prefixes: ['pickforme://'],
     config: {
         screens: {
             Login: 'login',
             Register: 'register',
-            ForgotPassword: 'reset-password',
             EmailVerification: 'verify-email',
         },
     },
@@ -116,10 +122,25 @@ function MainTabNavigator() {
     );
 }
 
-export function RootNavigator({ session }: { session: any }) {
+export function RootNavigator({
+    session,
+    recovery = false,
+    onRecoveryDone,
+}: {
+    session: any;
+    recovery?: boolean;
+    onRecoveryDone?: () => void;
+}) {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-            {session && session.user ? (
+            {/* Kurtarma modu her şeyin önünde: sıfırlama linkiyle gelen kullanıcı
+                yeni şifresini belirlemeden uygulamaya geçemesin. Bu noktada
+                Supabase oturumu kurulmuş durumda, yani session da doludur. */}
+            {recovery ? (
+                <Stack.Screen name="ResetPassword">
+                    {() => <ResetPasswordScreen onDone={onRecoveryDone ?? (() => {})} />}
+                </Stack.Screen>
+            ) : session && session.user ? (
                 <>
                     <Stack.Screen name="Main" component={MainTabNavigator} />
                     <Stack.Screen name="Result" component={ResultScreen} />

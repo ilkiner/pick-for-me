@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { MotiView } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
+import * as Linking from 'expo-linking';
 import { supabase } from '../../storage/supabase';
 import { useTheme } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
@@ -72,8 +73,15 @@ export default function ForgotPasswordScreen({ navigation }: any) {
         }
         setLoading(true);
         setError('');
+        // Sabit 'pickforme://...' yerine çalışma ortamına göre üret: derleme
+        // alınmış uygulamada pickforme://reset-password, Expo Go'da
+        // exp://<ip>:8081/--/reset-password. Sabit şema Expo Go'da açılmıyordu.
+        // Üretilen adresin Supabase > Authentication > URL Configuration >
+        // Redirect URLs listesinde olması ZORUNLU; yoksa Supabase redirectTo'yu
+        // yok sayıp Site URL'e (varsayılan http://localhost:3000) düşer.
+        const redirectTo = Linking.createURL('reset-password');
         const { error: authError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-            redirectTo: 'pickforme://reset-password',
+            redirectTo,
         });
         if (authError) {
             setError(authError.message);
