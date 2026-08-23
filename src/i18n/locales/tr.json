@@ -90,7 +90,8 @@
             "title": "Bugünün Görevi",
             "done_btn": "Tamamladım",
             "done_msg": "Yarın yenisi seni bekliyor ✅",
-            "share_text": "Bugünün görevini tamamladım: {{task}}"
+            "share_text": "Bugünün görevini tamamladım: {{task}}",
+            "hide": "Bugün için gizle"
         }
     },
     "tools": {

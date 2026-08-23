@@ -90,7 +90,8 @@
             "title": "Today's Challenge",
             "done_btn": "I did it",
             "done_msg": "A new one awaits you tomorrow ✅",
-            "share_text": "I completed today's challenge: {{task}}"
+            "share_text": "I completed today's challenge: {{task}}",
+            "hide": "Hide for today"
         }
     },
     "onboarding": {

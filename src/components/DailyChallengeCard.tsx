@@ -15,6 +15,8 @@ import {
     getDailyChallenge,
     isDailyCompleted,
     markDailyCompleted,
+    isDailyDismissed,
+    markDailyDismissed,
     DailyChallenge,
     ChallengeCategory,
 } from '../core/daily';
@@ -36,14 +38,18 @@ export function DailyChallengeCard() {
 
     const [challenge, setChallenge] = useState<DailyChallenge | null>(null);
     const [completed, setCompleted] = useState(false);
+    const [dismissed, setDismissed] = useState(false);
     const [isSharing, setIsSharing] = useState(false);
     const shareCardRef = useRef<ShareCardHandle>(null);
 
     // Focus'ta yenile: gece yarısı geçtiyse görev ve durum değişmiş olabilir.
     useFocusEffect(
         useCallback(() => {
+            let alive = true;
             setChallenge(getDailyChallenge());
-            isDailyCompleted().then(setCompleted);
+            isDailyCompleted().then(v => { if (alive) setCompleted(v); });
+            isDailyDismissed().then(v => { if (alive) setDismissed(v); });
+            return () => { alive = false; };
         }, [])
     );
 
@@ -78,7 +84,15 @@ export function DailyChallengeCard() {
         await markDailyCompleted();
     };
 
-    if (!challenge) return null;
+    // Kartı o gün için gizle. Ertesi gün (yeni tarih anahtarı) kendiliğinden geri gelir.
+    const handleDismiss = async () => {
+        setDismissed(true);
+        Haptics.selectionAsync().catch(() => {});
+        track('daily_challenge_dismissed', { id: challenge?.id ?? '', completed });
+        await markDailyDismissed();
+    };
+
+    if (!challenge || dismissed) return null;
 
     const meta = CATEGORY_META[challenge.category];
 
@@ -86,18 +100,32 @@ export function DailyChallengeCard() {
         <>
         <GlassCard style={[styles.card, completed && styles.cardDone] as any}>
             <View style={styles.topRow}>
-                <View style={styles.titleWrap}>
-                    <Ionicons name="flash" size={14} color={completed ? theme.colors.success : '#FF9500'} />
-                    <Text style={[styles.title, completed && { color: theme.colors.success }]}>
-                        {t('home.daily.title', 'Bugünün Görevi')}
-                    </Text>
+                {/* Başlık + rozet sarmalanabilir bir grup: dar ekranda ya da uzun
+                    çeviride (EN "Productivity") rozet alt satıra geçer, başlık
+                    kırpılmaz ve kapat butonu köşede sabit kalır. */}
+                <View style={styles.headerInfo}>
+                    <View style={styles.titleWrap}>
+                        <Ionicons name="flash" size={14} color={completed ? theme.colors.successText : '#FF9500'} />
+                        <Text style={[styles.title, completed && { color: theme.colors.successText }]}>
+                            {t('home.daily.title', 'Bugünün Görevi')}
+                        </Text>
+                    </View>
+                    <View style={[styles.categoryChip, { backgroundColor: meta.color + '20' }]}>
+                        <Ionicons name={meta.icon as any} size={12} color={meta.color} />
+                        <Text style={[styles.categoryText, { color: meta.color }]} numberOfLines={1}>
+                            {t(`tools.challenge.categories.${challenge.category}`)}
+                        </Text>
+                    </View>
                 </View>
-                <View style={[styles.categoryChip, { backgroundColor: meta.color + '20' }]}>
-                    <Ionicons name={meta.icon as any} size={12} color={meta.color} />
-                    <Text style={[styles.categoryText, { color: meta.color }]}>
-                        {t(`tools.challenge.categories.${challenge.category}`)}
-                    </Text>
-                </View>
+                <TouchableOpacity
+                    style={styles.closeBtn}
+                    onPress={handleDismiss}
+                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('home.daily.hide', 'Bugün için gizle')}
+                >
+                    <Ionicons name="close" size={16} color={theme.colors.textSecondary} />
+                </TouchableOpacity>
             </View>
 
             <Text style={styles.challengeText}>{challengeText}</Text>
@@ -107,19 +135,26 @@ export function DailyChallengeCard() {
                     from={{ opacity: 0, translateY: 6 }}
                     animate={{ opacity: 1, translateY: 0 }}
                     transition={{ type: 'timing', duration: 350 }}
-                    style={styles.doneRow}
+                    style={styles.doneBlock}
                 >
-                    <Ionicons name="checkmark-circle" size={18} color={theme.colors.success} />
-                    <Text style={styles.doneText}>{t('home.daily.done_msg', 'Yarın yenisi seni bekliyor ✅')}</Text>
+                    <View style={styles.doneRow}>
+                        <Ionicons name="checkmark-circle" size={18} color={theme.colors.successText} />
+                        <Text style={styles.doneText}>{t('home.daily.done_msg', 'Yarın yenisi seni bekliyor ✅')}</Text>
+                    </View>
+                    {/* Paylaş, "Tamamladım" ile aynı geometride tam genişlikte:
+                        uzun çevirilerde bile taşma/kırılma olmuyor. */}
                     <TouchableOpacity
                         style={styles.shareBtn}
                         onPress={handleShare}
                         disabled={isSharing}
+                        activeOpacity={0.85}
                         accessibilityRole="button"
                         accessibilityLabel={t('result.share', 'Paylaş')}
                     >
-                        <Ionicons name="share-outline" size={16} color="#FFF" />
-                        <Text style={styles.shareBtnText}>{isSharing ? '…' : t('result.share', 'Paylaş')}</Text>
+                        <Ionicons name="share-outline" size={17} color="#FFF" />
+                        <Text style={styles.shareBtnText} numberOfLines={1}>
+                            {isSharing ? '…' : t('result.share', 'Paylaş')}
+                        </Text>
                     </TouchableOpacity>
                 </MotiView>
             ) : (
@@ -142,18 +177,32 @@ export function DailyChallengeCard() {
 
 function createStyles(theme: AppTheme) {
     return StyleSheet.create({
+        // TEK KATMAN: başlıktan Paylaş butonuna kadar her şey bu tek yüzeyin
+        // içinde. Dört kenarda da aynı iç boşluk (spacing.md) ve çocuklar
+        // arasında sabit gap — kart içinde ikinci bir zemin YOK.
         card: {
+            backgroundColor: theme.colors.surface,
             padding: theme.spacing.md,
             marginBottom: theme.spacing.md,
             borderWidth: 1,
             borderColor: 'rgba(255,149,0,0.35)',
-            gap: 10,
+            gap: 12,
         },
+        // Tamamlandı durumu yüzeyi DEĞİŞTİRİR, saydamlaştırmaz. Eskiden burada
+        // `success + '14'` vardı: %8 saydam yeşil, GlassCard'ın opak beyaz
+        // zeminini komple değiştiriyordu. Sonuçta light mode'da kartın beyaz
+        // yüzeyi kaybolup içerik lavanta sayfa zemininin üstünde kalıyordu
+        // (hesaplanan renk #E0EAF3, sayfaya karşı kontrast 1.09). Dark mode'da
+        // fark edilmiyordu çünkü oradaki `surface` zaten saydam.
         cardDone: {
+            backgroundColor: theme.colors.successSurface,
             borderColor: theme.colors.success + '60',
-            backgroundColor: theme.colors.success + '14',
         },
-        topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+        topRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+        headerInfo: {
+            flex: 1, flexDirection: 'row', alignItems: 'center',
+            flexWrap: 'wrap', columnGap: 8, rowGap: 6,
+        },
         titleWrap: { flexDirection: 'row', alignItems: 'center', gap: 5 },
         title: {
             fontSize: 12, fontWeight: '800', color: '#FF9500',
@@ -162,22 +211,33 @@ function createStyles(theme: AppTheme) {
         categoryChip: {
             flexDirection: 'row', alignItems: 'center', gap: 4,
             paddingHorizontal: 9, paddingVertical: 4, borderRadius: 20,
+            flexShrink: 1,
         },
-        categoryText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.4 },
+        categoryText: { fontSize: 11, fontWeight: '700', letterSpacing: 0.4, flexShrink: 1 },
+        // 28x28 dokunma alanı (hitSlop ile daha da büyük). Negatif marjlar ikonu
+        // kartın sağ üst köşesine optik olarak oturtur; satır yüksekliğini
+        // büyütmez ve kapat butonu rozet alt satıra kaysa bile köşede kalır.
+        closeBtn: {
+            width: 28, height: 28, borderRadius: 14,
+            alignItems: 'center', justifyContent: 'center',
+            marginRight: -6, marginTop: -6, marginBottom: -6,
+        },
         challengeText: { fontSize: 17, fontWeight: '800', color: theme.colors.text, lineHeight: 24 },
         doneBtn: {
             flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
             backgroundColor: theme.colors.primary, borderRadius: theme.borderRadius.md,
-            paddingVertical: 12, minHeight: 44,
+            paddingHorizontal: theme.spacing.md, paddingVertical: 12, minHeight: 44,
         },
         doneBtnText: { color: '#FFF', fontWeight: '800', fontSize: 14, letterSpacing: 0.3 },
-        doneRow: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44 },
-        doneText: { color: theme.colors.success, fontWeight: '700', fontSize: 14, flex: 1 },
+        // Tamamlandı mesajı ve Paylaş butonu artık dikey: aynı satırda sıkışmıyorlar.
+        doneBlock: { gap: 12 },
+        doneRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+        doneText: { color: theme.colors.successText, fontWeight: '700', fontSize: 14, flex: 1, lineHeight: 20 },
         shareBtn: {
-            flexDirection: 'row', alignItems: 'center', gap: 5,
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
             backgroundColor: theme.colors.primary, borderRadius: theme.borderRadius.md,
-            paddingHorizontal: 14, paddingVertical: 9, minHeight: 38,
+            paddingHorizontal: theme.spacing.md, paddingVertical: 12, minHeight: 44,
         },
-        shareBtnText: { color: '#FFF', fontWeight: '700', fontSize: 13 },
+        shareBtnText: { color: '#FFF', fontWeight: '800', fontSize: 14, letterSpacing: 0.3 },
     });
 }

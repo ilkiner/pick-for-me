@@ -90,7 +90,8 @@
             "title": "Reto del día",
             "done_btn": "¡Hecho!",
             "done_msg": "Mañana te espera uno nuevo ✅",
-            "share_text": "Completé el reto de hoy: {{task}}"
+            "share_text": "Completé el reto de hoy: {{task}}",
+            "hide": "Ocultar por hoy"
         }
     },
     "onboarding": {

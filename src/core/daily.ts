@@ -79,3 +79,28 @@ export async function markDailyCompleted(date: Date = new Date()): Promise<void>
         // storage hatasında sessiz geç — kart bir sonraki açılışta yine tamamlanabilir
     }
 }
+
+// --- Kartı o gün için gizleme (kapatma) ---
+// Tamamlanma durumuyla aynı desen: sadece o günün tarihi saklanır, böylece
+// ertesi gün yeni görevle kart kendiliğinden geri gelir.
+
+const DAILY_DISMISSED_KEY = '@daily_challenge_dismissed_v1';
+
+export async function isDailyDismissed(date: Date = new Date()): Promise<boolean> {
+    try {
+        const raw = await AsyncStorage.getItem(DAILY_DISMISSED_KEY);
+        if (!raw) return false;
+        const { date: dismissedDate } = JSON.parse(raw);
+        return dismissedDate === dateKey(date);
+    } catch {
+        return false;
+    }
+}
+
+export async function markDailyDismissed(date: Date = new Date()): Promise<void> {
+    try {
+        await AsyncStorage.setItem(DAILY_DISMISSED_KEY, JSON.stringify({ date: dateKey(date) }));
+    } catch {
+        // storage hatasında sessiz geç — kart bu oturumda gizli kalır, yarın zaten yenilenir
+    }
+}

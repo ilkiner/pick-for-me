@@ -26,6 +26,14 @@ const darkColors = {
     textSecondary: '#94A3B8',
     error: '#EF4444',
     success: '#10B981',
+    // "Tamamlandı" durumundaki kart yüzeyi. OPAK olması şart: saydam bir yeşil
+    // `surface`in yerine geçtiğinde kartın kendi zemini kaybolur ve içerik
+    // doğrudan sayfa arka planının üzerinde duruyormuş gibi görünür.
+    // Parlaklığı normal kart yüzeyiyle aynı, yalnızca yeşile çalıyor.
+    successSurface: '#1E2B26',
+    // Yeşil METİN için ayrı ton. `success` dolgu/ikon/kenarlık içindir (kontrast
+    // eşiği 3:1); metin 4.5:1 istiyor. Koyu temada `success` zaten yeterli.
+    successText: '#10B981',
     proBadgeBg: 'rgba(34,211,238,0.15)',
     proBadgeText: '#22D3EE',
     statusBar: 'light' as 'light' | 'dark',
@@ -59,6 +67,13 @@ const lightColors = {
     textSecondary: '#4F4E68',
     error: '#DC2626',
     success: '#059669',
+    // Beyaz kartın yeşile çalan hâli — lavanta sayfa zemininden (#F3F1FF)
+    // ayrışacak kadar açık, böylece kart tamamlandığında da "beyaz yüzey"
+    // olarak okunmaya devam eder.
+    successSurface: '#F2FBF7',
+    // `success` (#059669) açık zeminde metin olarak 3.57:1'de kalıyordu — AA
+    // altı. Metin için koyulaştırılmış ton: aynı yüzeyde 5.20:1.
+    successText: '#047857',
     proBadgeBg: '#EDE9FE',
     proBadgeText: '#4F46E5',
     statusBar: 'dark' as 'light' | 'dark',
