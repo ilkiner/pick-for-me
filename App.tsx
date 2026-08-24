@@ -21,6 +21,7 @@ import OnboardingScreen, { ONBOARDING_KEY } from './src/screens/main/OnboardingS
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { initAnalytics, track } from './src/core/Analytics';
 import { consumeRecoveryLink } from './src/core/authLinks';
+import { AdManager } from './src/core/AdManager';
 
 const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
 const sentryEnabled = Boolean(SENTRY_DSN);
@@ -64,6 +65,13 @@ function AppInner() {
 
             initAnalytics();
             track('app_opened');
+
+            // AdMob SDK'sını burada başlat: eskiden HomeScreen'in useEffect'inde
+            // çağrılıyordu, yani banner ile AYNI render'da tetikleniyor ve ilk
+            // reklam isteği init bitmeden gidiyordu. Ayrıca giriş ekranında
+            // kalan kullanıcıda SDK hiç başlatılmıyordu. Await etmiyoruz —
+            // bekleyenler AdManager.subscribeReady ile haberdar oluyor.
+            AdManager.init().catch(() => {});
 
             if (!isSupabaseConfigured()) {
                 console.warn('Supabase not configured. Running in demo mode.');

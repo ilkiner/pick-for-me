@@ -11,7 +11,7 @@ import { ModernButton } from '../../components/ModernButton';
 import { GlassCard } from '../../components/GlassCard';
 import { ShareCard, ShareCardHandle } from '../../components/ShareCard';
 import { usePro, HISTORY_RETENTION_FREE_MS, HISTORY_RETENTION_PRO_MS } from '../../store/ProContext';
-import { AdManager } from '../../core/AdManager';
+import { AdManager, INTERSTITIAL_EVERY_N_RESULTS } from '../../core/AdManager';
 import { useTheme } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
 import { celebrateWinner } from '../../core/celebrate';
@@ -113,6 +113,21 @@ export default function ResultScreen({ route, navigation }: any) {
     const [showQR, setShowQR] = useState(false);
     const [isSharing, setIsSharing] = useState(false);
 
+    // Bu sonuç interstitial'a denk geldi mi? Reklam sonucun ÜSTÜNE değil,
+    // kullanıcı sonuç ekranından ÇIKARKEN gösteriliyor: kutlama animasyonunun
+    // ortasına tam ekran reklam bindirmek hem kötü bir deneyim hem de Google'ın
+    // "içeriği beklenmedik şekilde kesen geçiş reklamı" tanımına giriyor.
+    // Ayrıca AdManager'daki 4 dakikalık cooldown her hâlükârda sınırlıyor.
+    const interstitialPending = useRef(false);
+
+    const leaveResult = useCallback((go: () => void) => {
+        if (interstitialPending.current) {
+            interstitialPending.current = false;
+            AdManager.showInterstitial(isPro);
+        }
+        go();
+    }, [isPro]);
+
     const loadHistory = async () => {
         // Storage always keeps the PRO window (10 days) so an upgrade
         // unlocks older history retroactively and a lapse loses nothing.
@@ -139,7 +154,16 @@ export default function ResultScreen({ route, navigation }: any) {
             HistoryStorage.add(type, result);
 
             track('result_generated', { type });
-            trackResult().then(maybeRequestReview).catch(() => {});
+            trackResult()
+                .then(async (count) => {
+                    const reviewPrompted = await maybeRequestReview();
+                    // Puanlama istemi çıktıysa üstüne bir de reklam açma.
+                    interstitialPending.current =
+                        !reviewPrompted &&
+                        count > 0 &&
+                        count % INTERSTITIAL_EVERY_N_RESULTS === 0;
+                })
+                .catch(() => {});
 
             Animated.parallel([
                 Animated.spring(scaleAnim, {
@@ -401,13 +425,13 @@ export default function ResultScreen({ route, navigation }: any) {
             <View style={styles.footer}>
                 <ModernButton
                     title={t('tools.common.try_again')}
-                    onPress={() => navigation.goBack()}
+                    onPress={() => leaveResult(() => navigation.goBack())}
                     variant="primary"
                     style={styles.actionBtn}
                 />
                 <ModernButton
                     title={t('tools.common.home')}
-                    onPress={() => navigation.navigate('Home')}
+                    onPress={() => leaveResult(() => navigation.navigate('Home'))}
                     variant="outline"
                     style={styles.actionBtn}
                 />

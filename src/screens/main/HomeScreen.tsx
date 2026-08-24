@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useEffect, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Dimensions, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -8,7 +8,6 @@ import * as Haptics from 'expo-haptics';
 import { GlassCard } from '../../components/GlassCard';
 import { DailyChallengeCard } from '../../components/DailyChallengeCard';
 import { BannerAdView } from '../../components/BannerAdView';
-import { AdManager } from '../../core/AdManager';
 import { usePro } from '../../store/ProContext';
 import { useTheme } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
@@ -100,8 +99,6 @@ export default function HomeScreen({ navigation }: any) {
     const styles = useMemo(() => createStyles(theme), [theme]);
     const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
     const [recentIds, setRecentIds] = useState<string[]>([]);
-
-    useEffect(() => { AdManager.init(); }, []);
 
     const loadPrefs = useCallback(async () => {
         const [favs, recents] = await Promise.all([getFavoriteToolIds(), getRecentToolIds()]);
@@ -202,6 +199,13 @@ export default function HomeScreen({ navigation }: any) {
                     </ScrollView>
                 </View>
             )}
+
+            {/* Banner araç ızgarasının HEMEN ÜSTÜNDE. Eskiden ListFooterComponent
+                idi: 11 kartın (6 satır) altında, ekranın ~600px aşağısında
+                kalıyordu ve dibe kadar kaydırmayan hiç görmüyordu. Burada
+                akışın içinde, alt sekme çubuğuna hiç yaklaşmıyor — güvenli
+                alan hesabıyla çakışma riski yok. */}
+            <BannerAdView style={styles.banner} />
         </View>
     ), [t, isPro, openPaywall, styles, recentTools, theme, handleToolPress]);
 
@@ -214,7 +218,6 @@ export default function HomeScreen({ navigation }: any) {
                 keyExtractor={(item) => item.id}
                 numColumns={2}
                 ListHeaderComponent={header}
-                ListFooterComponent={<BannerAdView style={styles.banner} />}
                 contentContainerStyle={styles.listContent}
                 renderItem={renderItem}
                 columnWrapperStyle={styles.columnWrapper}
