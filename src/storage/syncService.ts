@@ -1,6 +1,33 @@
+import * as Sentry from '@sentry/react-native';
 import { isSupabaseConfigured, supabase } from './supabase';
 import { SavedList } from './savedLists';
 import { ClearHistoryResult, HistoryItem } from './history';
+
+/**
+ * Bir senkronizasyon denemesinin sonucu.
+ *  - 'synced'     : buluta yazıldı
+ *  - 'local_only' : Supabase yapılandırılmamış ya da oturum yok — normal durum,
+ *                   kullanıcıyı rahatsız etme
+ *  - 'failed'     : gerçek hata (ağ ya da sunucu reddi) — kullanıcıya söyle
+ *
+ * Eskiden hepsi `console.warn` ile yutuluyordu: kullanıcı listesinin buluta
+ * gitmediğini hiç öğrenmiyordu, biz de üretimde göremiyorduk.
+ */
+export type SyncOutcome = 'synced' | 'local_only' | 'failed';
+
+function reportSyncFailure(operation: string, error: unknown): 'failed' {
+    const message = error instanceof Error ? error.message : String((error as any)?.message ?? error);
+    console.warn(`[Sync] ${operation} failed:`, message);
+    try {
+        Sentry.captureException(
+            error instanceof Error ? error : new Error(`[Sync] ${operation}: ${message}`),
+            { level: 'warning', tags: { area: 'sync', sync_operation: operation } },
+        );
+    } catch {
+        // Sentry yoksa sessiz geç
+    }
+    return 'failed';
+}
 
 // ─── Session ──────────────────────────────────────────────────────────────────
 
@@ -16,27 +43,32 @@ export async function hasCloudSession(): Promise<boolean> {
 
 // ─── Saved Lists Sync ─────────────────────────────────────────────────────────
 
-export async function pushListsToCloud(lists: SavedList[]): Promise<void> {
-    if (!isSupabaseConfigured()) return;
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+export async function pushListsToCloud(lists: SavedList[]): Promise<SyncOutcome> {
+    if (!isSupabaseConfigured()) return 'local_only';
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return 'local_only';
 
-    const userId = session.user.id;
-    const rows = lists.map(l => ({
-        id: l.id,
-        user_id: userId,
-        name: l.name,
-        type: l.type,
-        items: l.items,
-        created_at: l.createdAt,
-        updated_at: l.createdAt,
-    }));
+        const userId = session.user.id;
+        const rows = lists.map(l => ({
+            id: l.id,
+            user_id: userId,
+            name: l.name,
+            type: l.type,
+            items: l.items,
+            created_at: l.createdAt,
+            updated_at: l.createdAt,
+        }));
 
-    const { error } = await supabase
-        .from('saved_lists')
-        .upsert(rows, { onConflict: 'id' });
+        const { error } = await supabase
+            .from('saved_lists')
+            .upsert(rows, { onConflict: 'id' });
 
-    if (error) console.warn('[Sync] pushLists error:', error.message);
+        if (error) return reportSyncFailure('pushLists', error);
+        return 'synced';
+    } catch (e) {
+        return reportSyncFailure('pushLists', e);
+    }
 }
 
 export async function pullListsFromCloud(): Promise<SavedList[] | null> {
@@ -50,7 +82,7 @@ export async function pullListsFromCloud(): Promise<SavedList[] | null> {
         .order('created_at', { ascending: true });
 
     if (error) {
-        console.warn('[Sync] pullLists error:', error.message);
+        reportSyncFailure('pullLists', error);
         return null;
     }
 
@@ -63,35 +95,45 @@ export async function pullListsFromCloud(): Promise<SavedList[] | null> {
     }));
 }
 
-export async function deleteListFromCloud(id: string): Promise<void> {
-    if (!isSupabaseConfigured()) return;
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+export async function deleteListFromCloud(id: string): Promise<SyncOutcome> {
+    if (!isSupabaseConfigured()) return 'local_only';
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return 'local_only';
 
-    const { error } = await supabase
-        .from('saved_lists')
-        .delete()
-        .eq('id', id);
+        const { error } = await supabase
+            .from('saved_lists')
+            .delete()
+            .eq('id', id);
 
-    if (error) console.warn('[Sync] deleteList error:', error.message);
+        if (error) return reportSyncFailure('deleteList', error);
+        return 'synced';
+    } catch (e) {
+        return reportSyncFailure('deleteList', e);
+    }
 }
 
 // ─── Activity History Sync ────────────────────────────────────────────────────
 
-export async function pushHistoryItemToCloud(item: HistoryItem): Promise<void> {
-    if (!isSupabaseConfigured()) return;
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+export async function pushHistoryItemToCloud(item: HistoryItem): Promise<SyncOutcome> {
+    if (!isSupabaseConfigured()) return 'local_only';
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return 'local_only';
 
-    const { error } = await supabase.from('activity_history').upsert({
-        id: item.id,
-        user_id: session.user.id,
-        type: item.type,
-        result: item.result,
-        timestamp: item.timestamp,
-    }, { onConflict: 'id' });
+        const { error } = await supabase.from('activity_history').upsert({
+            id: item.id,
+            user_id: session.user.id,
+            type: item.type,
+            result: item.result,
+            timestamp: item.timestamp,
+        }, { onConflict: 'id' });
 
-    if (error) console.warn('[Sync] pushHistory error:', error.message);
+        if (error) return reportSyncFailure('pushHistory', error);
+        return 'synced';
+    } catch (e) {
+        return reportSyncFailure('pushHistory', e);
+    }
 }
 
 export async function pullHistoryFromCloud(retentionMs: number = 48 * 60 * 60 * 1000): Promise<HistoryItem[] | null> {
@@ -110,7 +152,7 @@ export async function pullHistoryFromCloud(retentionMs: number = 48 * 60 * 60 * 
         .limit(500);
 
     if (error) {
-        console.warn('[Sync] pullHistory error:', error.message);
+        reportSyncFailure('pullHistory', error);
         return null;
     }
 
@@ -139,7 +181,7 @@ export async function clearHistoryInCloud(): Promise<ClearHistoryResult> {
         if (error) throw error;
         return 'cleared';
     } catch (e) {
-        console.warn('[Sync] clearHistory error:', e);
+        reportSyncFailure('clearHistory', e);
         return 'cloud_failed';
     }
 }

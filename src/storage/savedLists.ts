@@ -1,7 +1,14 @@
 import { LocalStorage } from './local';
-import { pushListsToCloud, pullListsFromCloud, deleteListFromCloud, mergeListsWithCloud } from './syncService';
+import {
+    pushListsToCloud, pullListsFromCloud, deleteListFromCloud, mergeListsWithCloud,
+    SyncOutcome,
+} from './syncService';
 
 export type ListType = 'wheel' | 'movie' | 'order' | 'general';
+
+// saved_lists.name üzerindeki DB kısıtıyla aynı: CHECK (char_length BETWEEN 1 AND 100).
+// İstemcide de sınırlamak, kullanıcının sunucu reddine hiç düşmemesini sağlıyor.
+export const LIST_NAME_MAX_LENGTH = 100;
 
 export interface SavedList {
     id: string;
@@ -18,7 +25,10 @@ export const SavedListsStorage = {
         return (await LocalStorage.getItem<SavedList[]>(KEY)) ?? [];
     },
 
-    async save(list: Omit<SavedList, 'id' | 'createdAt'>): Promise<SavedList> {
+    // Not: yerel kayıt her zaman başarılı sayılır; dönen sonuç YALNIZCA bulut
+    // senkronizasyonunu anlatır. Çağıran taraf 'failed' durumunda kullanıcıyı
+    // uyarmalı — veri cihazda duruyor ama buluta gitmedi.
+    async save(list: Omit<SavedList, 'id' | 'createdAt'>): Promise<{ list: SavedList; sync: SyncOutcome }> {
         const all = await this.getAll();
         const newList: SavedList = {
             ...list,
@@ -27,22 +37,23 @@ export const SavedListsStorage = {
         };
         const updated = [...all, newList];
         await LocalStorage.setItem(KEY, updated);
-        pushListsToCloud([newList]).catch(() => {});
-        return newList;
+        const sync = await pushListsToCloud([newList]).catch(() => 'failed' as SyncOutcome);
+        return { list: newList, sync };
     },
 
-    async update(id: string, patch: Partial<Pick<SavedList, 'name' | 'items' | 'type'>>): Promise<void> {
+    async update(id: string, patch: Partial<Pick<SavedList, 'name' | 'items' | 'type'>>): Promise<SyncOutcome> {
         const all = await this.getAll();
         const updated = all.map(l => (l.id === id ? { ...l, ...patch } : l));
         await LocalStorage.setItem(KEY, updated);
         const patched = updated.find(l => l.id === id);
-        if (patched) pushListsToCloud([patched]).catch(() => {});
+        if (!patched) return 'local_only';
+        return pushListsToCloud([patched]).catch(() => 'failed' as SyncOutcome);
     },
 
-    async remove(id: string): Promise<void> {
+    async remove(id: string): Promise<SyncOutcome> {
         const all = await this.getAll();
         await LocalStorage.setItem(KEY, all.filter(l => l.id !== id));
-        deleteListFromCloud(id).catch(() => {});
+        return deleteListFromCloud(id).catch(() => 'failed' as SyncOutcome);
     },
 
     // Call on app start (after auth) to merge local ↔ cloud

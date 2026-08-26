@@ -45,18 +45,17 @@ const Tab = createBottomTabNavigator();
 
 // Deep link mapping for pickforme:// scheme
 //
-// NOT: 'reset-password' bilerek burada YOK. O yolu App.tsx'teki kurtarma
-// dinleyicisi işliyor (bkz. core/authLinks.ts): linkteki token'ın önce oturuma
-// çevrilmesi gerekiyor, düz navigasyon yeterli değil. Eskiden bu yol
-// ForgotPassword'e (e-posta girme ekranı) bağlıydı — kullanıcı linke tıklayınca
-// yeni şifre belirlemek yerine baştan sıfırlama istemek zorunda kalıyordu.
+// NOT: 'reset-password' ve 'verify-email' bilerek burada YOK. İkisini de
+// App.tsx'teki derin bağlantı dinleyicisi işliyor (bkz. core/authLinks.ts):
+// linkteki token'ın önce oturuma çevrilmesi gerekiyor, düz navigasyon yeterli
+// değil. Eskiden 'reset-password' ForgotPassword'e (e-posta girme ekranı),
+// 'verify-email' de token'ı hiç işlemeyen bilgi ekranına bağlıydı.
 export const linking = {
     prefixes: ['pickforme://'],
     config: {
         screens: {
             Login: 'login',
             Register: 'register',
-            EmailVerification: 'verify-email',
         },
     },
 };

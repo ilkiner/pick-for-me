@@ -20,7 +20,7 @@ import * as Localization from 'expo-localization';
 import OnboardingScreen, { ONBOARDING_KEY } from './src/screens/main/OnboardingScreen';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { initAnalytics, track } from './src/core/Analytics';
-import { consumeRecoveryLink } from './src/core/authLinks';
+import { consumeAuthLink } from './src/core/authLinks';
 import { AdManager } from './src/core/AdManager';
 
 const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
@@ -120,24 +120,33 @@ function AppInner() {
         if (!url || handledUrls.current.has(url)) return;
         handledUrls.current.add(url);
 
-        const outcome = await consumeRecoveryLink(url);
+        const outcome = await consumeAuthLink(url);
 
         if (outcome.status === 'ok') {
-            track('password_reset_link_opened');
-            setRecovery(true);
+            if (outcome.kind === 'recovery') {
+                track('password_reset_link_opened');
+                setRecovery(true);
+            } else {
+                // Doğrulama tamam: Supabase oturumu kurdu, onAuthStateChange
+                // navigator'ı ana uygulamaya geçirecek. Kullanıcı ne olduğunu
+                // anlasın diye kısa bir onay veriyoruz.
+                track('email_verified');
+                Alert.alert(t('auth.verify_success_title'), t('auth.verify_success_msg'));
+            }
             return;
         }
         if (outcome.status === 'expired') {
-            Alert.alert(t('auth.reset_link_expired_title'), t('auth.reset_link_expired_msg'));
+            const isRecovery = outcome.kind === 'recovery';
+            Alert.alert(
+                t(isRecovery ? 'auth.reset_link_expired_title' : 'auth.verify_link_expired_title'),
+                t(isRecovery ? 'auth.reset_link_expired_msg' : 'auth.verify_link_expired_msg'),
+            );
             return;
         }
         if (outcome.status === 'error') {
-            Alert.alert(
-                t('auth.reset_link_error_title'),
-                outcome.message || t('auth.reset_link_error_msg'),
-            );
+            Alert.alert(t('auth.link_error_title'), outcome.message || t('auth.link_error_msg'));
         }
-        // 'ignored': şifre sıfırlama linki değil — React Navigation ilgilensin.
+        // 'ignored': bizim akışımıza ait değil — React Navigation ilgilensin.
     }, [t]);
 
     useEffect(() => {

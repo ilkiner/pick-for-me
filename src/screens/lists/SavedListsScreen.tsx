@@ -10,7 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { MotiView } from 'moti';
 import { AppTheme } from '../../core/Theme';
 import { GlassCard } from '../../components/GlassCard';
-import { SavedListsStorage, SavedList, ListType } from '../../storage/savedLists';
+import { SavedListsStorage, SavedList, ListType, LIST_NAME_MAX_LENGTH } from '../../storage/savedLists';
 import { usePro, FREE_LIST_LIMIT, FREE_ITEM_LIMIT } from '../../store/ProContext';
 import { ProGateModal } from '../../components/ProGate';
 import { useTheme } from '../../store/ThemeContext';
@@ -166,6 +166,18 @@ export default function SavedListsScreen({ navigation, route }: Props) {
     const handleSave = async () => {
         const name = formName.trim();
         if (!name) return;
+
+        // Sunucudaki CHECK kısıtıyla aynı sınır. Eskiden uzun isim sessizce
+        // reddediliyor, liste yalnızca cihazda kalıyordu ve kullanıcı bunu
+        // hiç öğrenmiyordu — modalı kapatmadan burada söylüyoruz.
+        if (name.length > LIST_NAME_MAX_LENGTH) {
+            Alert.alert(
+                t('lists.name_too_long_title', 'Liste adı çok uzun'),
+                t('lists.name_too_long_msg', { max: LIST_NAME_MAX_LENGTH }),
+            );
+            return;
+        }
+
         let items = formItems.split('\n').map(s => s.trim()).filter(Boolean);
         if (items.length === 0) return;
 
@@ -178,14 +190,18 @@ export default function SavedListsScreen({ navigation, route }: Props) {
             );
         }
 
-        if (editTarget) {
-            await SavedListsStorage.update(editTarget.id, { name, type: formType, items });
-        } else {
-            await SavedListsStorage.save({ name, type: formType, items });
-        }
+        const sync = editTarget
+            ? await SavedListsStorage.update(editTarget.id, { name, type: formType, items })
+            : (await SavedListsStorage.save({ name, type: formType, items })).sync;
+
         const updated = await SavedListsStorage.getAll();
         setLists(updated);
         setModalVisible(false);
+
+        // 'local_only' normal (oturum yok) — sadece gerçek hatada uyar.
+        if (sync === 'failed') {
+            Alert.alert(t('sync.failed_title'), t('sync.failed_msg'));
+        }
     };
 
     const handleDelete = (list: SavedList) => {
@@ -198,8 +214,12 @@ export default function SavedListsScreen({ navigation, route }: Props) {
                     text: t('lists.delete_confirm', 'Sil'),
                     style: 'destructive',
                     onPress: async () => {
-                        await SavedListsStorage.remove(list.id);
+                        const sync = await SavedListsStorage.remove(list.id);
                         setLists(prev => prev.filter(l => l.id !== list.id));
+                        // Silme buluta gitmediyse liste başka cihazda geri gelir
+                        if (sync === 'failed') {
+                            Alert.alert(t('sync.failed_title'), t('sync.delete_failed_msg'));
+                        }
                     },
                 },
             ]

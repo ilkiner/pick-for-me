@@ -11,10 +11,7 @@ import { supabase } from '../../storage/supabase';
 import { useTheme } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
 import { track } from '../../core/Analytics';
-
-// Supabase'in varsayılan alt sınırı; Dashboard'dan yükseltilirse sunucu yine
-// reddeder ve mesajı olduğu gibi gösteririz.
-const MIN_PASSWORD_LENGTH = 6;
+import { validatePassword, passwordProblemKey, MIN_PASSWORD_LENGTH } from '../../core/passwordPolicy';
 
 function createStyles(theme: AppTheme) {
     return StyleSheet.create({
@@ -87,8 +84,9 @@ export default function ResetPasswordScreen({ onDone }: { onDone: () => void }) 
 
     const handleSubmit = async () => {
         if (loading) return;
-        if (password.length < MIN_PASSWORD_LENGTH) {
-            setError(t('auth.reset_too_short', { count: MIN_PASSWORD_LENGTH }));
+        const problem = validatePassword(password);
+        if (problem) {
+            setError(t(passwordProblemKey(problem), { count: MIN_PASSWORD_LENGTH }));
             return;
         }
         if (password !== confirm) {
@@ -206,7 +204,7 @@ export default function ResetPasswordScreen({ onDone }: { onDone: () => void }) 
                                 </View>
 
                                 <Text style={styles.hint}>
-                                    {t('auth.reset_hint', { count: MIN_PASSWORD_LENGTH })}
+                                    {t('auth.password_hint', { count: MIN_PASSWORD_LENGTH })}
                                 </Text>
 
                                 {error ? <Text style={styles.errorText}>{error}</Text> : null}
