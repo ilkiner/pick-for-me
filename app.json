@@ -38,7 +38,29 @@
         "ACCESS_NETWORK_STATE",
         "VIBRATE"
       ],
-      "allowBackup": false
+      "allowBackup": false,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ],
+          "data": [
+            {
+              "scheme": "https",
+              "host": "ilkiner.github.io",
+              "pathPrefix": "/pick-for-me/reset-password"
+            },
+            {
+              "scheme": "https",
+              "host": "ilkiner.github.io",
+              "pathPrefix": "/pick-for-me/verify-email"
+            }
+          ]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"

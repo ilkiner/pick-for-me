@@ -10,10 +10,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../storage/supabase';
 import { useTheme } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
+import { validatePassword, passwordProblemKey, MIN_PASSWORD_LENGTH } from '../../core/passwordPolicy';
+import { authRedirectUrl } from '../../core/authLinks';
 
-function mapAuthError(msg: string, t: (k: string) => string): string {
+function mapAuthError(msg: string, t: (k: string, o?: any) => string): string {
     if (msg.includes('User already registered')) return t('auth.error_already_registered');
-    if (msg.includes('Password should be at least')) return t('register.error_password_length');
+    // Sunucu politikası da min 8 + harf/rakam; iki mesaj da aynı kurala işaret etsin
+    if (msg.includes('Password should be at least')) {
+        return t('auth.password_too_short', { count: MIN_PASSWORD_LENGTH });
+    }
+    if (msg.includes('Password should contain') || msg.includes('password_requirements')) {
+        return t('auth.password_needs_letter_and_digit');
+    }
     if (msg.includes('Unable to validate email')) return t('auth.error_invalid_email');
     if (msg.includes('Too many requests')) return t('auth.error_too_many_requests');
     return msg;
@@ -80,16 +88,19 @@ export default function RegisterScreen({ navigation }: any) {
             setError(t('login.error_required'));
             return;
         }
-        if (password.length < 8) {
-            setError(t('register.error_password_length'));
+        const problem = validatePassword(password);
+        if (problem) {
+            setError(t(passwordProblemKey(problem), { count: MIN_PASSWORD_LENGTH }));
             return;
         }
         setLoading(true);
         setError('');
+        // Doğrulanmış HTTPS App Link (geliştirmede yerel şema).
+        // Bu adres Supabase > Authentication > Redirect URLs listesinde olmalı.
         const { error: authError } = await supabase.auth.signUp({
             email: email.trim(),
             password,
-            options: { emailRedirectTo: 'pickforme://verify-email' },
+            options: { emailRedirectTo: authRedirectUrl('verification') },
         });
         if (authError) {
             setError(mapAuthError(authError.message, t));

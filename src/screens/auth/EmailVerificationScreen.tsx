@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { MotiView } from 'moti';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../../storage/supabase';
+import { authRedirectUrl } from '../../core/authLinks';
 import { useTheme } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
 
@@ -61,7 +62,13 @@ export default function EmailVerificationScreen({ route, navigation }: any) {
     const handleResend = async () => {
         if (resending || resent) return;
         setResending(true);
-        await supabase.auth.resend({ type: 'signup', email });
+        // Yeniden gönderilen mail de uygulamaya dönmeli — redirect adresi
+        // olmadan link Site URL'e düşer (bkz. core/authLinks.ts).
+        await supabase.auth.resend({
+            type: 'signup',
+            email,
+            options: { emailRedirectTo: authRedirectUrl('verification') },
+        });
         setResending(false);
         setResent(true);
         setTimeout(() => setResent(false), 5000);

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Pick For Me — Reset Password</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 24px; background: #0F0F1E; color: #FFFFFF;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .card {
+    max-width: 420px; width: 100%; text-align: center;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px; padding: 40px 28px;
+  }
+  .mark { font-size: 48px; line-height: 1; margin-bottom: 20px; }
+  h1 { font-size: 22px; font-weight: 800; margin: 0 0 12px; }
+  p { font-size: 15px; line-height: 1.6; color: #94A3B8; margin: 0 0 28px; }
+  a.btn {
+    display: inline-block; background: #6366F1; color: #fff; text-decoration: none;
+    font-weight: 700; font-size: 15px; padding: 14px 32px; border-radius: 14px;
+  }
+  .foot { margin-top: 24px; font-size: 12px; color: #64748B; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="mark">🔑</div>
+    <h1 id="title">Open the app to continue</h1>
+    <p id="body">This password reset link opens inside the Pick For Me app. Install the app, then tap the link in your email again.</p>
+    <a class="btn" id="cta" href="https://play.google.com/store/apps/details?id=com.pickforme.app">Get Pick For Me</a>
+    <div class="foot" id="foot">The link expires after a short time — request a new one if it stops working.</div>
+  </div>
+<script>
+// Bu sayfa yalnizca uygulama KURULU DEGILKEN gorunur. Kuruluysa ve App Links
+// dogrulanmissa Android linki dogrudan uygulamada acar.
+// Not: adresteki token '#' sonrasinda oldugu icin sunucuya HIC gonderilmez;
+// bu sayfa da onu okumaz veya baska bir yere iletmez.
+(function () {
+  var T = {
+    en: { title: 'Open the app to continue',
+          body: 'This password reset link opens inside the Pick For Me app. Install the app, then tap the link in your email again.',
+          cta: 'Get Pick For Me',
+          foot: 'The link expires after a short time — request a new one if it stops working.' },
+    tr: { title: 'Devam etmek için uygulamayı aç',
+          body: 'Bu şifre sıfırlama bağlantısı Pick For Me uygulamasında açılır. Uygulamayı kur, sonra e-postandaki bağlantıya tekrar dokun.',
+          cta: 'Pick For Me’i indir',
+          foot: 'Bağlantı kısa süre sonra geçersiz olur — çalışmazsa yenisini iste.' },
+    es: { title: 'Abre la app para continuar',
+          body: 'Este enlace para restablecer la contraseña se abre en la app Pick For Me. Instala la app y vuelve a tocar el enlace de tu correo.',
+          cta: 'Descargar Pick For Me',
+          foot: 'El enlace caduca pronto — pide uno nuevo si deja de funcionar.' }
+  };
+  var lang = (navigator.language || 'en').slice(0, 2).toLowerCase();
+  var t = T[lang] || T.en;
+  document.documentElement.lang = T[lang] ? lang : 'en';
+  document.getElementById('title').textContent = t.title;
+  document.getElementById('body').textContent = t.body;
+  document.getElementById('cta').textContent = t.cta;
+  document.getElementById('foot').textContent = t.foot;
+})();
+</script>
+</body>
+</html>
