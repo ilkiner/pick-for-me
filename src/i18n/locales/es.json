@@ -21,10 +21,9 @@
         "title": "Registrarse",
         "email": "Correo",
         "password": "Contraseña",
-        "password_hint": "Mínimo 8 caracteres",
+        "password_hint": "Mínimo 8 caracteres, con una letra y un número",
         "submit": "Crear cuenta",
-        "login_prompt": "¿Ya tienes cuenta? Inicia sesión",
-        "error_password_length": "La contraseña debe tener al menos 8 caracteres"
+        "login_prompt": "¿Ya tienes cuenta? Inicia sesión"
     },
     "auth": {
         "forgot_password": "¿Olvidaste tu contraseña?",
@@ -38,18 +37,23 @@
         "reset_subtitle": "Elige una contraseña nueva para tu cuenta. Al guardarla iniciarás sesión.",
         "reset_new": "Contraseña nueva",
         "reset_confirm": "Contraseña nueva (otra vez)",
-        "reset_hint": "Debe tener al menos {{count}} caracteres.",
         "reset_submit": "Actualizar contraseña",
         "reset_cancel": "Cancelar",
-        "reset_too_short": "La contraseña debe tener al menos {{count}} caracteres",
         "reset_mismatch": "Las contraseñas no coinciden",
+        "password_hint": "Mínimo {{count}} caracteres, con una letra y un número.",
+        "password_too_short": "La contraseña debe tener al menos {{count}} caracteres",
+        "password_needs_letter_and_digit": "La contraseña debe incluir al menos una letra y un número",
         "reset_success": "¡Contraseña actualizada!",
         "reset_success_sub": "Ya puedes iniciar sesión con tu contraseña nueva.",
         "reset_continue": "Continuar",
         "reset_link_expired_title": "El enlace ha caducado",
         "reset_link_expired_msg": "Este enlace no es válido o ya se usó. Solicita uno nuevo, por favor.",
-        "reset_link_error_title": "No se pudo abrir el enlace",
-        "reset_link_error_msg": "No pudimos procesar el enlace de restablecimiento. Inténtalo de nuevo.",
+        "verify_success_title": "Correo verificado",
+        "verify_success_msg": "Tu cuenta está lista. ¡Bienvenido!",
+        "verify_link_expired_title": "El enlace ha caducado",
+        "verify_link_expired_msg": "Este enlace de confirmación no es válido o ya se usó. Puedes pedir un correo nuevo desde la pantalla de inicio de sesión.",
+        "link_error_title": "No se pudo abrir el enlace",
+        "link_error_msg": "No pudimos procesar el enlace. Inténtalo de nuevo.",
         "show_password": "Mostrar contraseña",
         "hide_password": "Ocultar contraseña",
         "verify_title": "Revisa tu correo",
@@ -162,7 +166,9 @@
         "delete_requested_title": "Solicitud recibida",
         "delete_requested_msg": "Hemos recibido tu solicitud de eliminación. Tus datos en la nube fueron borrados y se cerró tu sesión; el registro de tu cuenta se eliminará por completo en breve.",
         "delete_error_title": "Error al eliminar",
-        "delete_error_msg": "Algo salió mal al eliminar tus datos. Inténtalo de nuevo o escribe a pickforme.app@gmail.com."
+        "delete_error_msg": "Algo salió mal al eliminar tus datos. Inténtalo de nuevo o escribe a pickforme.app@gmail.com.",
+        "ad_privacy": "Privacidad de anuncios",
+        "ad_privacy_desc": "Cambia tus preferencias de consentimiento"
     },
     "tools": {
         "wheel": {
@@ -429,7 +435,9 @@
             "wheel": "Ruleta",
             "movie": "Películas",
             "order": "Orden/Equipos"
-        }
+        },
+        "name_too_long_title": "Nombre demasiado largo",
+        "name_too_long_msg": "El nombre puede tener como máximo {{max}} caracteres."
     },
     "result": {
         "share": "Compartir"
@@ -477,5 +485,10 @@
         "free_tier": "gratis",
         "limit_title": "Límite del plan gratis",
         "item_limit_msg": "El plan gratis permite hasta {{limit}} elementos por lista."
+    },
+    "sync": {
+        "failed_title": "No se pudo guardar en la nube",
+        "failed_msg": "La lista se guardó en este dispositivo pero no se pudo enviar a la nube. Revisa tu conexión — se reintentará al abrir la app.",
+        "delete_failed_msg": "La lista se borró de este dispositivo pero no de la nube. Puede reaparecer en otro dispositivo."
     }
 }

@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Switch, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GlassCard } from '../../components/GlassCard';
@@ -12,6 +13,7 @@ import { useTheme, ThemeMode } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
 import { useSound } from '../../store/SoundContext';
 import { track } from '../../core/Analytics';
+import { AdManager } from '../../core/AdManager';
 
 function createStyles(theme: AppTheme) {
     return StyleSheet.create({
@@ -82,6 +84,17 @@ export default function SettingsScreen({ navigation }: any) {
     const { theme, mode, setMode } = useTheme();
     const { soundEnabled, setSoundEnabled } = useSound();
     const styles = useMemo(() => createStyles(theme), [theme]);
+
+    // Rıza toplama AdManager.init() içinde asenkron ilerliyor; ekran ondan önce
+    // açılmış olabilir, o yüzden odaklanınca yeniden okunuyor.
+    const [privacyOptionsRequired, setPrivacyOptionsRequired] = useState(
+        () => AdManager.isPrivacyOptionsRequired
+    );
+    useFocusEffect(
+        useCallback(() => {
+            setPrivacyOptionsRequired(AdManager.isPrivacyOptionsRequired);
+        }, [])
+    );
 
     const handleLogout = async () => {
         if (!isSupabaseConfigured()) {
@@ -277,6 +290,28 @@ export default function SettingsScreen({ navigation }: any) {
                         />
                     </View>
                 </GlassCard>
+
+                {/* Reklam gizlilik seçenekleri — UMP, rızanın geri çekilebilmesini
+                    şart koşuyor. Yalnızca rızanın gerekli olduğu bölgelerde
+                    (AB/İngiltere) görünür; başka yerde satır hiç çizilmez. */}
+                {privacyOptionsRequired && (
+                    <GlassCard style={styles.section}>
+                        <TouchableOpacity
+                            style={styles.row}
+                            onPress={() => AdManager.showPrivacyOptions()}
+                            accessibilityRole="button"
+                        >
+                            <View style={styles.iconWrapper}>
+                                <Ionicons name="shield-checkmark-outline" size={22} color={theme.colors.primary} />
+                            </View>
+                            <View style={styles.rowContent}>
+                                <Text style={styles.rowTitle}>{t('settings.ad_privacy')}</Text>
+                                <Text style={styles.rowSubtitle}>{t('settings.ad_privacy_desc')}</Text>
+                            </View>
+                            <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
+                        </TouchableOpacity>
+                    </GlassCard>
+                )}
 
                 {/* Restore purchases */}
                 <GlassCard style={styles.section}>

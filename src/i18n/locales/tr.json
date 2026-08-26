@@ -21,10 +21,9 @@
         "title": "Kayıt Ol",
         "email": "E-posta",
         "password": "Şifre",
-        "password_hint": "En az 8 karakter",
+        "password_hint": "En az 8 karakter, harf ve rakam",
         "submit": "Hesap Oluştur",
-        "login_prompt": "Zaten hesabın var mı? Giriş Yap",
-        "error_password_length": "Şifre en az 8 karakter olmalıdır"
+        "login_prompt": "Zaten hesabın var mı? Giriş Yap"
     },
     "auth": {
         "forgot_password": "Şifremi unuttum",
@@ -38,18 +37,23 @@
         "reset_subtitle": "Hesabın için yeni bir şifre gir. Kaydettikten sonra giriş yapmış olacaksın.",
         "reset_new": "Yeni şifre",
         "reset_confirm": "Yeni şifre (tekrar)",
-        "reset_hint": "En az {{count}} karakter olmalı.",
         "reset_submit": "Şifreyi Güncelle",
         "reset_cancel": "Vazgeç",
-        "reset_too_short": "Şifre en az {{count}} karakter olmalı",
         "reset_mismatch": "Şifreler eşleşmiyor",
+        "password_hint": "En az {{count}} karakter, harf ve rakam içermeli.",
+        "password_too_short": "Şifre en az {{count}} karakter olmalı",
+        "password_needs_letter_and_digit": "Şifre en az bir harf ve bir rakam içermeli",
         "reset_success": "Şifren güncellendi!",
         "reset_success_sub": "Artık yeni şifrenle giriş yapabilirsin.",
         "reset_continue": "Devam Et",
         "reset_link_expired_title": "Bağlantının süresi dolmuş",
         "reset_link_expired_msg": "Bu sıfırlama bağlantısı geçersiz ya da daha önce kullanılmış. Lütfen yeni bir bağlantı iste.",
-        "reset_link_error_title": "Bağlantı açılamadı",
-        "reset_link_error_msg": "Şifre sıfırlama bağlantısı işlenemedi. Lütfen tekrar dene.",
+        "verify_success_title": "E-postan doğrulandı",
+        "verify_success_msg": "Hesabın hazır. Hoş geldin!",
+        "verify_link_expired_title": "Bağlantının süresi dolmuş",
+        "verify_link_expired_msg": "Bu doğrulama bağlantısı geçersiz ya da daha önce kullanılmış. Giriş ekranından yeni bir doğrulama e-postası isteyebilirsin.",
+        "link_error_title": "Bağlantı açılamadı",
+        "link_error_msg": "Bağlantı işlenemedi. Lütfen tekrar dene.",
         "show_password": "Şifreyi göster",
         "hide_password": "Şifreyi gizle",
         "verify_title": "E-postanı Kontrol Et",
@@ -377,7 +381,9 @@
             "wheel": "Çark",
             "movie": "Film",
             "order": "Sıra/Takım"
-        }
+        },
+        "name_too_long_title": "Liste adı çok uzun",
+        "name_too_long_msg": "Liste adı en fazla {{max}} karakter olabilir."
     },
     "result": {
         "share": "Paylaş"
@@ -476,6 +482,13 @@
         "delete_requested_title": "Talep Alındı",
         "delete_requested_msg": "Hesap silme talebin alındı. Bulut verilerin silindi ve oturumun kapatıldı; hesap kaydın en kısa sürede tamamen kaldırılacak.",
         "delete_error_title": "Silme Başarısız",
-        "delete_error_msg": "Verilerin silinirken bir sorun oluştu. Lütfen tekrar dene veya pickforme.app@gmail.com adresine yaz."
+        "delete_error_msg": "Verilerin silinirken bir sorun oluştu. Lütfen tekrar dene veya pickforme.app@gmail.com adresine yaz.",
+        "ad_privacy": "Reklam gizliliği",
+        "ad_privacy_desc": "Reklam rıza tercihlerini değiştir"
+    },
+    "sync": {
+        "failed_title": "Buluta kaydedilemedi",
+        "failed_msg": "Liste cihazına kaydedildi ama buluta gönderilemedi. Bağlantını kontrol et — bir sonraki açılışta yeniden denenecek.",
+        "delete_failed_msg": "Liste cihazından silindi ama buluttan silinemedi. Başka bir cihazda geri gelebilir."
     }
 }

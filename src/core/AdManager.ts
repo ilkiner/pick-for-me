@@ -7,6 +7,8 @@ let BannerAdSize: any = null;
 let TestIds: any = null;
 let AdEventType: any = null;
 let RewardedAdEventType: any = null;
+let AdsConsent: any = null;
+let AdsConsentDebugGeography: any = null;
 
 try {
     const lib = require('react-native-google-mobile-ads');
@@ -18,6 +20,8 @@ try {
     TestIds = lib.TestIds;
     AdEventType = lib.AdEventType;
     RewardedAdEventType = lib.RewardedAdEventType;
+    AdsConsent = lib.AdsConsent;
+    AdsConsentDebugGeography = lib.AdsConsentDebugGeography;
 } catch {
     // native module not linked
 }
@@ -158,10 +162,20 @@ const RETRY_BASE_MS = 4000;
 const RETRY_MAX_MS = 5 * 60 * 1000;
 const RETRY_MAX_ATTEMPTS = 6;
 
+// ─── Rıza (UMP) ──────────────────────────────────────────────────────────────
+// AB/İngiltere kullanıcıları için AdMob'un User Messaging Platform formu GDPR
+// gereği ZORUNLU; rıza toplanmadan reklam istenirse hem yasal sorun olur hem de
+// AdMob genellikle no-fill döner. Form yalnızca gereken bölgelerde gösterilir;
+// AB dışında `NOT_REQUIRED` gelir ve akış görünmez şekilde geçer.
+//
+// Şimdilik yalnızca Android (iOS ATT ayrı bir iş).
+const CONSENT_ENABLED = Platform.OS === 'android';
+
 class AdManagerClass {
     private initPromise: Promise<boolean> | null = null;
     private ready = false;
     private readyListeners = new Set<(ready: boolean) => void>();
+    private privacyOptionsRequired = false;
 
     private lastInterstitialTime = 0;
     private interstitialAd: any = null;
@@ -181,6 +195,15 @@ class AdManagerClass {
 
         this.initPromise = (async () => {
             if (!MobileAds) return false;
+
+            // Rıza HER ŞEYDEN ÖNCE: SDK başlatılmadan ve tek bir reklam
+            // istenmeden önce toplanmalı.
+            if (!(await this.gatherConsent())) {
+                this.ready = false;
+                this.readyListeners.forEach(l => { try { l(false); } catch {} });
+                return false;
+            }
+
             try {
                 // setRequestConfiguration initialize'DAN ÖNCE çağrılmalı, yoksa
                 // ilk reklam isteği yapılandırmayı görmez.
@@ -213,6 +236,64 @@ class AdManagerClass {
         })();
 
         return this.initPromise;
+    }
+
+    /**
+     * UMP rızasını toplar. Reklam istenebiliyorsa true döner.
+     *
+     * Hata durumunda ÖNCE cihazda önbelleklenmiş rıza durumuna bakılır (UMP
+     * kararı yerelde saklar, ağ gerektirmez). O da okunamıyorsa kapalı tarafa
+     * düşüyoruz: rızayı doğrulayamadan reklam istemek GDPR açısından yanlış
+     * taraf. Pratikte bu yalnızca ağın hiç olmadığı ilk açılışta olur — zaten
+     * reklam da dolmazdı.
+     */
+    private async gatherConsent(): Promise<boolean> {
+        if (!CONSENT_ENABLED || !AdsConsent) return true;
+
+        try {
+            const info = await AdsConsent.gatherConsent({
+                testDeviceIdentifiers: TEST_DEVICE_IDS,
+                // Kayıtlı test cihazlarında formu AB'deymiş gibi zorla; aksi
+                // halde AB dışında test ederken form hiç görünmez.
+                debugGeography: TEST_DEVICE_IDS.length > 0 && AdsConsentDebugGeography
+                    ? AdsConsentDebugGeography.EEA
+                    : undefined,
+            });
+            this.privacyOptionsRequired = info?.privacyOptionsRequirementStatus === 'REQUIRED';
+            track('ads_consent', {
+                status: String(info?.status ?? 'UNKNOWN'),
+                can_request_ads: !!info?.canRequestAds,
+                test_mode: isTestAdMode(),
+            });
+            return !!info?.canRequestAds;
+        } catch (e) {
+            reportAdIssue('consent', e);
+            try {
+                const cached = await AdsConsent.getConsentInfo();
+                this.privacyOptionsRequired = cached?.privacyOptionsRequirementStatus === 'REQUIRED';
+                return !!cached?.canRequestAds;
+            } catch {
+                return false;
+            }
+        }
+    }
+
+    /**
+     * AB kullanıcısı rızasını sonradan değiştirebilmeli — UMP politikası bunu
+     * şart koşuyor. Yalnızca gerekli olduğunda (bkz. Ayarlar) gösterilir.
+     */
+    get isPrivacyOptionsRequired() {
+        return this.privacyOptionsRequired;
+    }
+
+    /** Gizlilik seçenekleri formunu açar (rızayı geri çekme / değiştirme). */
+    async showPrivacyOptions(): Promise<void> {
+        if (!AdsConsent) return;
+        try {
+            await AdsConsent.showPrivacyOptionsForm();
+        } catch (e) {
+            reportAdIssue('consent_privacy_form', e);
+        }
     }
 
     /** SDK hazır mı (initialize tamamlandı ve başarılı). */

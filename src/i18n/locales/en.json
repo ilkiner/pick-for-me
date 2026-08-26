@@ -21,10 +21,9 @@
         "title": "Register",
         "email": "Email",
         "password": "Password",
-        "password_hint": "At least 8 characters",
+        "password_hint": "At least 8 characters, with a letter and a number",
         "submit": "Create Account",
-        "login_prompt": "Already have an account? Login",
-        "error_password_length": "Password must be at least 8 characters"
+        "login_prompt": "Already have an account? Login"
     },
     "auth": {
         "forgot_password": "Forgot password?",
@@ -38,18 +37,23 @@
         "reset_subtitle": "Choose a new password for your account. You'll be signed in once you save it.",
         "reset_new": "New password",
         "reset_confirm": "New password (again)",
-        "reset_hint": "Must be at least {{count}} characters.",
         "reset_submit": "Update Password",
         "reset_cancel": "Cancel",
-        "reset_too_short": "Password must be at least {{count}} characters",
         "reset_mismatch": "Passwords don't match",
+        "password_hint": "At least {{count}} characters, with a letter and a number.",
+        "password_too_short": "Password must be at least {{count}} characters",
+        "password_needs_letter_and_digit": "Password must contain at least one letter and one number",
         "reset_success": "Password updated!",
         "reset_success_sub": "You can now sign in with your new password.",
         "reset_continue": "Continue",
         "reset_link_expired_title": "Link expired",
         "reset_link_expired_msg": "This reset link is invalid or has already been used. Please request a new one.",
-        "reset_link_error_title": "Couldn't open the link",
-        "reset_link_error_msg": "We couldn't process the password reset link. Please try again.",
+        "verify_success_title": "Email verified",
+        "verify_success_msg": "Your account is ready. Welcome!",
+        "verify_link_expired_title": "Link expired",
+        "verify_link_expired_msg": "This confirmation link is invalid or has already been used. You can request a new confirmation email from the login screen.",
+        "link_error_title": "Couldn't open the link",
+        "link_error_msg": "We couldn't process the link. Please try again.",
         "show_password": "Show password",
         "hide_password": "Hide password",
         "verify_title": "Check Your Email",
@@ -162,7 +166,9 @@
         "delete_requested_title": "Request Received",
         "delete_requested_msg": "Your deletion request has been received. Your cloud data was deleted and you have been signed out; your account record will be fully removed shortly.",
         "delete_error_title": "Deletion Failed",
-        "delete_error_msg": "Something went wrong while deleting your data. Please try again or email pickforme.app@gmail.com."
+        "delete_error_msg": "Something went wrong while deleting your data. Please try again or email pickforme.app@gmail.com.",
+        "ad_privacy": "Ad privacy",
+        "ad_privacy_desc": "Change your ad consent choices"
     },
     "tools": {
         "wheel": {
@@ -429,7 +435,9 @@
             "wheel": "Wheel",
             "movie": "Movies",
             "order": "Order/Teams"
-        }
+        },
+        "name_too_long_title": "List name too long",
+        "name_too_long_msg": "A list name can be at most {{max}} characters."
     },
     "result": {
         "share": "Share"
@@ -477,5 +485,10 @@
         "free_tier": "free",
         "limit_title": "Free Tier Limit",
         "item_limit_msg": "Free plan allows up to {{limit}} items per list."
+    },
+    "sync": {
+        "failed_title": "Couldn't save to the cloud",
+        "failed_msg": "The list was saved on this device but could not be sent to the cloud. Check your connection — it will retry on the next launch.",
+        "delete_failed_msg": "The list was removed from this device but not from the cloud. It may reappear on another device."
     }
 }
