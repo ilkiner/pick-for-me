@@ -129,7 +129,14 @@
           ]
         }
       ],
-      "@sentry/react-native"
+      [
+        "@sentry/react-native",
+        {
+          "organization": "ilkiner",
+          "project": "react-native",
+          "url": "https://de.sentry.io/"
+        }
+      ]
     ],
     "extra": {
       "privacyPolicyUrl": "https://ilkiner.github.io/pick-for-me/privacy-policy.html",
