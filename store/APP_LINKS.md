@@ -6,7 +6,20 @@ bir uygulama kaydedebilir ve linkteki `access_token`'ı alabilir — doğrudan h
 ele geçirme. App Links'te Android, alan adından imza parmak izini doğrular.
 
 Uygulama tarafı hazır (`app.json` intent-filter + `src/core/authLinks.ts`).
-Aşağıdakiler **elle** yapılmalı.
+
+> **Durum: 1. ve 2. adım tamamlandı.** `store/assetlinks.json` gerçek parmak
+> izleriyle dolu ve dosya `https://ilkiner.github.io/.well-known/assetlinks.json`
+> adresinde yayında. Google'ın Digital Asset Links API'si iki parmak izini de
+> `com.pickforme.app` için hatasız döndürüyor:
+>
+> ```
+> https://digitalassetlinks.googleapis.com/v1/statements:list\
+> ?source.web.site=https://ilkiner.github.io\
+> &relation=delegate_permission/common.handle_all_urls
+> ```
+>
+> Adımlar, imza anahtarı değişirse (yeni keystore, Play App Signing sıfırlaması)
+> tekrar uygulanmak üzere aşağıda duruyor. 3. ve 4. adım hâlâ elle yapılmalı.
 
 ---
 
