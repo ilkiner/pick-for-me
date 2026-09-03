@@ -45,6 +45,13 @@ function AppInner() {
     const { theme, isDark } = useTheme();
 
     useEffect(() => {
+        // Abonelik burada tutuluyor: initApp bir async fonksiyon, döndürdüğü
+        // temizlik fonksiyonunu useEffect göremez (async çağrı bir Promise
+        // döndürür, temizleyici değil). Eskiden unsubscribe içeriden dönüyordu
+        // ve hiçbir zaman çağrılmıyordu.
+        let authSubscription: { unsubscribe: () => void } | null = null;
+        let disposed = false;
+
         const initApp = async () => {
             try {
                 const savedLang = await AsyncStorage.getItem('appLanguage');
@@ -95,9 +102,10 @@ function AppInner() {
                     }
                 });
 
-                return () => {
-                    subscription.unsubscribe();
-                };
+                // Etki zaten sökülmüşse (hızlı yeniden bağlanma / hot reload)
+                // abonelik hiç kaydedilmeden hemen kapatılır.
+                if (disposed) subscription.unsubscribe();
+                else authSubscription = subscription;
             } catch (e) {
                 console.error('Supabase session error:', e);
                 setIsReady(true);
@@ -105,6 +113,11 @@ function AppInner() {
         };
 
         initApp();
+
+        return () => {
+            disposed = true;
+            authSubscription?.unsubscribe();
+        };
     }, []);
 
     // --- Şifre sıfırlama derin bağlantısı ---
