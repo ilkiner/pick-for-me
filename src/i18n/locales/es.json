@@ -3,7 +3,6 @@
         "cancel": "Cancelar",
         "ok": "OK",
         "back": "Atrás",
-        "clear": "Limpiar",
         "add": "Añadir",
         "error_title": "Algo salió mal",
         "error_body": "Ocurrió un error inesperado. Tranquilo, tus datos están a salvo.",
@@ -73,7 +72,6 @@
         "error_invalid_email": "Escribe un correo válido"
     },
     "home": {
-        "title": "INICIO",
         "subtitle": "¿No te decides? Deja que elijamos por ti.",
         "tools": {
             "wheel": "Ruleta de la Fortuna",
@@ -104,7 +102,6 @@
             "truthordare": "Verdad o Reto",
             "truthordare_desc": "El clásico juego de fiesta"
         },
-        "logout": "Salir",
         "recent": "USADOS RECIENTEMENTE",
         "fav_add": "Añadir a favoritos",
         "fav_remove": "Quitar de favoritos",

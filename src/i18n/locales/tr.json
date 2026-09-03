@@ -3,7 +3,6 @@
         "cancel": "İptal",
         "ok": "Tamam",
         "back": "Geri",
-        "clear": "Temizle",
         "add": "Ekle",
         "error_title": "Bir şeyler ters gitti",
         "error_body": "Beklenmedik bir hata oluştu. Endişelenme, verilerine bir şey olmadı.",
@@ -73,7 +72,6 @@
         "error_invalid_email": "Lütfen geçerli bir e-posta adresi gir"
     },
     "home": {
-        "title": "ANA SAYFA",
         "subtitle": "Kararsız mısın? Bırak biz karar verelim.",
         "tools": {
             "wheel": "Çarkıfelek",
@@ -104,7 +102,6 @@
             "truthordare": "Doğruluk-Cesaret",
             "truthordare_desc": "Klasik parti oyunu"
         },
-        "logout": "Çıkış",
         "recent": "SON KULLANILANLAR",
         "fav_add": "Favorilere ekle",
         "fav_remove": "Favoriden çıkar",

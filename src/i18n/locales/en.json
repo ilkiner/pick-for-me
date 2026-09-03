@@ -3,7 +3,6 @@
         "cancel": "Cancel",
         "ok": "OK",
         "back": "Back",
-        "clear": "Clear",
         "add": "Add",
         "error_title": "Something went wrong",
         "error_body": "An unexpected error occurred. Don't worry — your data is safe.",
@@ -73,7 +72,6 @@
         "error_invalid_email": "Please enter a valid email address"
     },
     "home": {
-        "title": "HOME",
         "subtitle": "Can't decide? Let us pick for you.",
         "tools": {
             "wheel": "Wheel of Fortune",
@@ -104,7 +102,6 @@
             "truthordare": "Truth or Dare",
             "truthordare_desc": "The classic party game"
         },
-        "logout": "Logout",
         "recent": "RECENTLY USED",
         "fav_add": "Add to favorites",
         "fav_remove": "Remove from favorites",
