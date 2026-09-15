@@ -89,11 +89,23 @@ them requires a rebuild.
 > **⚠️ Before release:** make sure the 6 `EXPO_PUBLIC_ADMOB_*` unit IDs are set
 > in the EAS build environment — `.env` is not uploaded with the build.
 
+**Builds given to testers must not serve real ads.** A Play Internal/Closed test
+AAB is a release build running in the production environment, so `__DEV__` is
+false and the real ad units would serve real ads — tester impressions and taps
+count as invalid traffic and can get the AdMob account suspended. Build those with
+the `closed-test` profile, which sets `EXPO_PUBLIC_ADMOB_FORCE_TEST_UNITS=true`
+and falls back to Google's universal test units. See
+`store/BUILD_AND_SUBMIT.md` Step 4.
+
 ## Building & Submitting (EAS)
 
-Build profiles live in `eas.json` (`development` / `preview` / `production`).
-`appVersionSource` is `remote`, so EAS owns `versionCode` / `buildNumber` for
-production builds — the values in `app.json` are not what ships.
+Build profiles live in `eas.json` (`development` / `preview` / `closed-test` /
+`production`). `appVersionSource` is `remote`, so EAS owns `versionCode` /
+`buildNumber` for production builds — the values in `app.json` are not what ships.
+
+`closed-test` extends `production` and differs only in forcing test ad units; use
+it for every AAB/IPA that goes to testers, and `production` only for the public
+release.
 
 ```bash
 eas build --profile production --platform android

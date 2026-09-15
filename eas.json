@@ -30,11 +30,20 @@
     "production": {
       "environment": "production",
       "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_ADMOB_FORCE_TEST_UNITS": "false"
+      },
       "ios": {
         "resourceClass": "m-medium"
       },
       "android": {
         "buildType": "app-bundle"
+      }
+    },
+    "closed-test": {
+      "extends": "production",
+      "env": {
+        "EXPO_PUBLIC_ADMOB_FORCE_TEST_UNITS": "true"
       }
     }
   },

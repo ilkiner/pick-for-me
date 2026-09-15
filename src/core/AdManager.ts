@@ -100,9 +100,15 @@ const TEST_DEVICE_IDS: string[] = String(process.env.EXPO_PUBLIC_ADMOB_TEST_DEVI
 // Karşılığında gerçek birimin yapılandırması (fill oranı, aracı ağlar) test
 // EDİLMEZ; onu doğrulamak için kayıtlı test cihazı gerekir.
 //
-// EAS'te YALNIZCA preview ortamında tanımlanır. Production'da tanımsız kalır —
-// oraya sızarsa uygulama para kazanmayı bırakır, bu yüzden yalnızca birebir
-// "true" kabul ediliyor.
+// Bayrak EAS ortamlarından değil, eas.json'daki build profilinden geliyor:
+// `closed-test` profili "true", `production` profili açıkça "false" yazar. Play
+// Kapalı/Dahili test AAB'si de production ortamını kullandığı için (aynı
+// Supabase/RevenueCat/Sentry yapılandırması) ortam bazlı ayrım yetmiyordu —
+// ayrım build profili düzeyinde yapılmalı. Yayın build'i her zaman `production`
+// profiliyle alınır ve gerçek reklamları gösterir.
+//
+// Yalnızca birebir "true" kabul ediliyor: production'a sızarsa uygulama para
+// kazanmayı bırakır.
 const FORCE_TEST_UNITS =
     String(process.env.EXPO_PUBLIC_ADMOB_FORCE_TEST_UNITS ?? '').trim().toLowerCase() === 'true';
 

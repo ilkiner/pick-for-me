@@ -94,14 +94,49 @@ Install the dev build on a physical device to test:
 
 ---
 
-## Step 4 — Production build
+## Step 4 — Which profile builds what
+
+| Goal | Profile | Ads served |
+|---|---|---|
+| Dev client on your own device | `development` | Google test units (`__DEV__`) |
+| Internal APK passed around by hand | `preview` | Google test units (preview env sets the flag) |
+| **Play Internal / Closed test AAB** | **`closed-test`** | **Google test units** |
+| Public release (production track) | `production` | **Real** ad units |
+
+`closed-test` extends `production`, so it is the *same* build in every other
+respect — production environment, production Supabase/RevenueCat/Sentry keys,
+same signing, `autoIncrement` version code. The only difference is
+`EXPO_PUBLIC_ADMOB_FORCE_TEST_UNITS=true`, set in `eas.json` on the profile.
+
+> **Why not an EAS environment variable?** A Play Closed test AAB runs in the
+> `production` *environment* — that is the point of closed testing. So preview vs.
+> production cannot tell a tester build from a release build; only the build
+> profile can. The flag lives in `eas.json` where it is committed and reviewable,
+> and `production` pins it to `"false"` so the release build can never inherit it.
 
 ```bash
-# Android (AAB — required by Play Store)
+# Tester AAB — Internal test / Closed test tracks
+eas build --platform android --profile closed-test
+
+# Release AAB — production track
 eas build --platform android --profile production
 
-# iOS (IPA)
-eas build --platform ios --profile production
+# iOS
+eas build --platform ios --profile closed-test   # TestFlight testers
+eas build --platform ios --profile production    # App Store release
+```
+
+**Verify before handing an AAB to testers:** install it and confirm the ads are
+labelled *"Test Ad"* by Google. The build log also prints
+`[Ads] Forced test units — Google universal test ad units in use.` If you instead
+see `[Ads] Live ad mode`, stop — that build serves real ads and tester taps will
+be counted as invalid traffic.
+
+Also confirm the flag was never pushed to the EAS production environment, which
+would defeat the pinning above:
+
+```bash
+eas env:list --environment production   # EXPO_PUBLIC_ADMOB_FORCE_TEST_UNITS must be absent
 ```
 
 ---
@@ -134,7 +169,7 @@ If the build is rejected for SDK version, upgrade: `npx expo install expo@~55.0.
    - Data safety form (see section below)
    - Privacy policy: https://ilkiner.github.io/pick-for-me/privacy-policy.html
 
-4. Upload AAB:
+4. Upload AAB — build it with `--profile closed-test` (Step 4), never `production`:
    - Release → Internal testing → Create release → Upload AAB
    - Release notes (EN): "Initial release — all tools, Pro subscription"
    - Release notes (TR): "İlk sürüm — tüm araçlar, Pro aboneliği"
@@ -164,14 +199,21 @@ Notes:
 
 ## Step 8 — EAS Submit (automated upload)
 
-After production build completes:
+After the build completes:
 ```bash
 # Android — uploads to internal test track
-eas submit --platform android --profile production
+eas submit --platform android --profile production --latest
 
 # iOS — uploads to TestFlight
-eas submit --platform ios --profile production
+eas submit --platform ios --profile production --latest
 ```
+
+`--profile` here names a **submit** profile (`submit.production` in `eas.json`),
+which is a different namespace from the build profiles in Step 4 — there is only
+one submit profile and it is used for tester and release uploads alike. It targets
+the `internal` track; for the Closed testing track add `--track alpha` (or your
+custom closed track's name). `--latest` picks the most recent build, so make sure
+that build came from the profile you intended.
 
 For Android automated submit, create a service account:
 - play.google.com/console → Setup → API access → Link to Google Cloud
@@ -191,6 +233,12 @@ For Android automated submit, create a service account:
 
 Internal test → Closed testing (20-100 external testers) → Staged rollout (10% → 50% → 100%)
 
+Internal and Closed test both ship the `closed-test` AAB. The production track is
+the one and only place the `production` AAB goes — **rebuild with
+`--profile production`** before promoting, do not promote the tester AAB. A
+`closed-test` build on the production track would show every real user a Google
+test ad and earn nothing.
+
 Typical timeline: 1-3 days review for Android, 1-7 days for iOS.
 
 ---
@@ -207,5 +255,8 @@ Typical timeline: 1-3 days review for Android, 1-7 days for iOS.
 - [ ] Store description added (EN + TR)
 - [ ] Content rating completed
 - [ ] Internal test APK/AAB installed and smoke-tested
+- [ ] Tester AAB built with `--profile closed-test`, ads confirmed to read "Test Ad"
+- [ ] `EXPO_PUBLIC_ADMOB_FORCE_TEST_UNITS` absent from `eas env:list --environment production`
+- [ ] Release AAB rebuilt with `--profile production` (not promoted from a tester build)
 - [ ] Subscription sandbox tested on physical device
 - [ ] Deep links tested (pickforme://reset-password, pickforme://verify-email)
