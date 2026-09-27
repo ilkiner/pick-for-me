@@ -20,7 +20,7 @@ import * as Localization from 'expo-localization';
 import OnboardingScreen, { ONBOARDING_KEY } from './src/screens/main/OnboardingScreen';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { initAnalytics, track } from './src/core/Analytics';
-import { consumeAuthLink } from './src/core/authLinks';
+import { consumeAuthLink, redactAuthLink } from './src/core/authLinks';
 import { AdManager } from './src/core/AdManager';
 
 const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
@@ -32,6 +32,19 @@ if (sentryEnabled) {
         environment: __DEV__ ? 'development' : 'production',
         tracesSampleRate: __DEV__ ? 0 : 0.2,
     });
+}
+
+/**
+ * Derin bağlantı adımlarını Sentry'ye kırıntı olarak bırakır. Bu akışın tamamı
+ * yalnızca gerçek cihazda, gerçek bir mail linkiyle çalışıyor; bir kullanıcı
+ * "link açılmıyor" dediğinde başvurabileceğimiz tek iz bu.
+ */
+function crumb(message: string, data?: Record<string, unknown>): void {
+    try {
+        Sentry.addBreadcrumb({ category: 'auth.deeplink', level: 'info', message, data });
+    } catch {
+        // Sentry yapılandırılmamış (DSN yok) — sessiz geç
+    }
 }
 
 function AppInner() {
@@ -129,11 +142,21 @@ function AppInner() {
     // olduğu için ikinci işleme "süresi dolmuş" uyarısı üretirdi.
     const handledUrls = useRef<Set<string>>(new Set());
 
-    const handleDeepLink = useCallback(async (url: string | null) => {
-        if (!url || handledUrls.current.has(url)) return;
+    const handleDeepLink = useCallback(async (url: string | null, source: 'cold' | 'warm') => {
+        if (!url) return;
+        if (handledUrls.current.has(url)) {
+            crumb('duplicate delivery ignored', { source });
+            return;
+        }
         handledUrls.current.add(url);
+        crumb('handling link', { source, url: redactAuthLink(url) });
 
         const outcome = await consumeAuthLink(url);
+        crumb('outcome', {
+            source,
+            status: outcome.status,
+            reason: outcome.status === 'error' ? outcome.reason : undefined,
+        });
 
         if (outcome.status === 'ok') {
             if (outcome.kind === 'recovery') {
@@ -157,23 +180,42 @@ function AppInner() {
             return;
         }
         if (outcome.status === 'error') {
-            Alert.alert(t('auth.link_error_title'), outcome.message || t('auth.link_error_msg'));
+            // Hiçbir başarısızlık sessiz kalmamalı: bu akış yalnızca gerçek
+            // cihazda gerçek mailde çalışıyor, kullanıcı ekranda bir şey
+            // görmezse elimizde hiçbir iz kalmıyor.
+            const detail =
+                outcome.reason === 'no_token'
+                    ? t('auth.link_no_token_msg')
+                    : outcome.message || t('auth.link_error_msg');
+            Alert.alert(t('auth.link_error_title'), detail);
         }
         // 'ignored': bizim akışımıza ait değil — React Navigation ilgilensin.
     }, [t]);
 
+    // Dinleyici kurulumu handleDeepLink'in kimliğinden AYRI tutuluyor: efekt
+    // `[handleDeepLink]` ile yeniden çalıştığında araya `sub.remove()` giriyordu
+    // ve tam o anda gelen 'url' olayı kayboluyordu. Kaybolması ölümcül, çünkü
+    // sıcak açılışta (onNewIntent) gelen adresi getInitialURL() tekrar vermiyor:
+    // link sessizce yutuluyor, kullanıcı giriş ekranında kalıyordu. Efekt açılış
+    // dili yüklenince (i18n.changeLanguage -> yeni `t`) her açılışta yeniden
+    // çalıştığı için bu pencere teorik değil.
+    const deepLinkHandler = useRef(handleDeepLink);
+    useEffect(() => { deepLinkHandler.current = handleDeepLink; }, [handleDeepLink]);
+
     useEffect(() => {
         if (!isSupabaseConfigured()) return;
-        let cancelled = false;
-        const onUrl = (url: string | null) => { if (!cancelled) handleDeepLink(url); };
 
         // Uygulama kapalıyken linke tıklandıysa başlangıç URL'i burada gelir.
-        Linking.getInitialURL().then(onUrl).catch(() => {});
+        Linking.getInitialURL()
+            .then(url => deepLinkHandler.current(url, 'cold'))
+            .catch(e => crumb('getInitialURL failed', { error: e?.message }));
         // Uygulama açıkken tıklandıysa olay olarak gelir.
-        const sub = Linking.addEventListener('url', ({ url }) => onUrl(url));
+        const sub = Linking.addEventListener('url', ({ url }) =>
+            deepLinkHandler.current(url, 'warm'),
+        );
 
-        return () => { cancelled = true; sub.remove(); };
-    }, [handleDeepLink]);
+        return () => sub.remove();
+    }, []);
 
     if (!isReady) {
         return (
@@ -183,7 +225,12 @@ function AppInner() {
         );
     }
 
-    if (!onboardingDone) {
+    // Kurtarma linkiyle gelen kullanıcı onboarding'in arkasında kalmasın:
+    // uygulamayı yeni kurmuş biri (kapalı test = taze kurulum) linke dokunduğunda
+    // token işlenip `recovery` açılıyor ama ekranda tanıtım slaytları duruyordu,
+    // yani "yeni şifre belirle" hiç görünmüyordu. Tanıtımı sıfırlamadan sonra
+    // gösteriyoruz.
+    if (!onboardingDone && !recovery) {
         return (
             <GestureHandlerRootView style={{ flex: 1 }}>
                 <StatusBar style={isDark ? 'light' : 'dark'} />

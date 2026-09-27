@@ -18,15 +18,22 @@
 // zorunda (web API'si), yani bu adımı elle yapmak şart.
 
 import * as Linking from 'expo-linking';
+import * as Sentry from '@sentry/react-native';
 import { supabase } from '../storage/supabase';
 
 export type AuthLinkKind = 'recovery' | 'verification';
+
+/** Hata neden başarısız oldu — çağıran taraf doğru mesajı seçebilsin diye. */
+export type AuthLinkFailure =
+    | 'verify_failed'   // Supabase token'ı reddetti
+    | 'no_token'        // yol bizim ama linkte hiç token yok
+    | 'unexpected';     // ağ / depolama / beklenmeyen istisna
 
 export type AuthLinkOutcome =
     | { status: 'ok'; kind: AuthLinkKind }              // oturum kuruldu
     | { status: 'ignored' }                             // bizim akışımıza ait değil
     | { status: 'expired'; kind: AuthLinkKind }         // link süresi dolmuş / kullanılmış
-    | { status: 'error'; kind: AuthLinkKind; message?: string };
+    | { status: 'error'; kind: AuthLinkKind; reason: AuthLinkFailure; message?: string };
 
 // ─── Adresler ────────────────────────────────────────────────────────────────
 // Artık Android App Links kullanıyoruz: doğrulanmış HTTPS bağlantısı.
@@ -39,7 +46,11 @@ export type AuthLinkOutcome =
 // linki AÇAMAZ.
 //
 // Özel şema geriye dönük uyumluluk için tanınmaya devam ediyor (eski mailler,
-// Expo Go), ama yeni gönderilen mailler HTTPS adresini kullanıyor.
+// Expo Go) ve docs/ açılış sayfasındaki "Uygulamada aç" düğmesi de onu
+// kullanıyor — Gmail'in tarayıcısı App Link'i devralamadığında tek çıkış yolu o.
+// Düğme Android'de `intent://...;package=com.pickforme.app;end` üretiyor: paket
+// sabitlendiği için linki başka bir uygulama karşılayamıyor. Ayrıca taşınan şey
+// `access_token` değil tek kullanımlık `token_hash`; tek başına oturum değil.
 const APP_LINK_HOST = 'ilkiner.github.io';
 const APP_LINK_BASE_PATH = '/pick-for-me';
 
@@ -74,10 +85,37 @@ const TYPE_KINDS: Record<string, AuthLinkKind> = {
     magiclink: 'verification',
 };
 
+// Breadcrumb'a ASLA girmeyecek parametreler. Değerleri gizli; yalnızca varlığı
+// ve uzunluğu loglanıyor — Sentry'de token taşımak istemiyoruz.
+const SECRET_PARAMS = ['token_hash', 'token', 'access_token', 'refresh_token', 'code'];
+
+/** Sentry kırıntısı bırak. Sentry kurulu değilse (DSN yok) sessiz geç. */
+function crumb(message: string, data?: Record<string, unknown>): void {
+    try {
+        Sentry.addBreadcrumb({ category: 'auth.deeplink', level: 'info', message, data });
+    } catch {
+        // Sentry yapılandırılmamış — teşhis kırıntısı olmadan devam
+    }
+}
+
+/** Linkin Sentry'ye yazılabilir hâli: yol + parametre adları, değerler gizli. */
+export function redactAuthLink(url: string): string {
+    const path = url.split(/[?#]/)[0];
+    const keys = Object.keys(parseLinkParams(url)).map(k =>
+        SECRET_PARAMS.includes(k) ? `${k}=<redacted>` : k,
+    );
+    return keys.length ? `${path}?${keys.join('&')}` : path;
+}
+
 /**
  * URL'in hem `?query` hem `#fragment` parametrelerini tek sözlükte toplar.
  * expo-linking'in parse()'ı fragment'ı queryParams'a koymadığı için elle
  * ayrıştırıyoruz — implicit akışta token'ların tamamı fragment'ta geliyor.
+ *
+ * '+' KARAKTERİ BOŞLUĞA ÇEVRİLMEZ. O dönüşüm form gövdelerine (x-www-form-
+ * urlencoded) özgü; URL'de '+' geçerli bir veri karakteri. Supabase token'ları
+ * base64 tabanlı olduğu için '+' içerebiliyor ve onu boşluğa çevirmek token'ı
+ * sessizce bozar: link "geçersiz" görünür, sebebi de görünmez.
  */
 export function parseLinkParams(url: string): Record<string, string> {
     const out: Record<string, string> = {};
@@ -91,7 +129,7 @@ export function parseLinkParams(url: string): Record<string, string> {
             if (!rawKey) continue;
             const decode = (s: string) => {
                 try {
-                    return decodeURIComponent(s.replace(/\+/g, ' '));
+                    return decodeURIComponent(s);
                 } catch {
                     return s;
                 }
@@ -130,54 +168,95 @@ export function authLinkKind(url: string): AuthLinkKind | null {
     return null;
 }
 
+/** Supabase hata metni "link tükenmiş" anlamına mı geliyor? */
+function looksExpired(message: string | undefined, code?: string): boolean {
+    if (code === 'otp_expired') return true;
+    return /expired|invalid|already been used|not found/i.test(message ?? '');
+}
+
 /**
  * Linkteki token'ı oturuma çevirir. Link tek kullanımlıktır: aynı URL ikinci
  * kez işlenirse Supabase 'expired' döner, bu yüzden çağıran taraf sonucu tek
  * seferde tüketmeli.
+ *
+ * Her adım Sentry'ye kırıntı bırakıyor: bu akış yalnızca gerçek cihazda, gerçek
+ * mailde çalışıyor — hata aldığımızda elimizde başka iz olmuyor.
  */
 export async function consumeAuthLink(url: string): Promise<AuthLinkOutcome> {
     const kind = authLinkKind(url);
+    crumb('link received', { url: redactAuthLink(url), kind: kind ?? 'none' });
+
     if (!kind) return { status: 'ignored' };
 
     const p = parseLinkParams(url);
 
     // Supabase hatayı da redirect adresine iliştirir; token hiç gelmez.
     if (p.error || p.error_code) {
-        const expired =
-            p.error_code === 'otp_expired' || /expired|invalid/i.test(p.error_description ?? '');
-        return expired
+        crumb('link carries error', { kind, error: p.error, error_code: p.error_code });
+        return looksExpired(p.error_description, p.error_code)
             ? { status: 'expired', kind }
-            : { status: 'error', kind, message: p.error_description || p.error };
+            : {
+                  status: 'error',
+                  kind,
+                  reason: 'verify_failed',
+                  message: p.error_description || p.error,
+              };
     }
 
     try {
         if (p.access_token && p.refresh_token) {
+            crumb('setSession start', { kind });
             const { error } = await supabase.auth.setSession({
                 access_token: p.access_token,
                 refresh_token: p.refresh_token,
             });
-            return error ? { status: 'error', kind, message: error.message } : { status: 'ok', kind };
+            crumb('setSession done', { kind, ok: !error, error: error?.message });
+            if (!error) return { status: 'ok', kind };
+            return looksExpired(error.message)
+                ? { status: 'expired', kind }
+                : { status: 'error', kind, reason: 'verify_failed', message: error.message };
         }
 
         if (p.code) {
+            crumb('exchangeCodeForSession start', { kind });
             const { error } = await supabase.auth.exchangeCodeForSession(p.code);
-            return error ? { status: 'error', kind, message: error.message } : { status: 'ok', kind };
+            crumb('exchangeCodeForSession done', { kind, ok: !error, error: error?.message });
+            if (!error) return { status: 'ok', kind };
+            return looksExpired(error.message)
+                ? { status: 'expired', kind }
+                : { status: 'error', kind, reason: 'verify_failed', message: error.message };
         }
 
         if (p.token_hash) {
             // verifyOtp'nin tipi linkten gelir; yoksa akışın varsayılanı
             const otpType = p.type || (kind === 'recovery' ? 'recovery' : 'signup');
+            crumb('verifyOtp start', { kind, otpType, tokenLength: p.token_hash.length });
             const { error } = await supabase.auth.verifyOtp({
                 type: otpType as any,
                 token_hash: p.token_hash,
             });
-            return error ? { status: 'error', kind, message: error.message } : { status: 'ok', kind };
+            crumb('verifyOtp done', { kind, otpType, ok: !error, error: error?.message });
+            if (!error) return { status: 'ok', kind };
+            return looksExpired(error.message)
+                ? { status: 'expired', kind }
+                : { status: 'error', kind, reason: 'verify_failed', message: error.message };
         }
     } catch (e: any) {
-        return { status: 'error', kind, message: e?.message };
+        // verifyOtp AuthError DIŞINDAKİ her şeyi yeniden fırlatıyor: ağ kopması,
+        // SecureStore yazma hatası, JSON bozulması. Bunlar eskiden mesajsız bir
+        // 'error' olup kullanıcıya boş bir uyarı olarak dönüyordu.
+        crumb('exchange threw', { kind, error: e?.message });
+        try {
+            Sentry.captureException(e, { tags: { area: 'auth_deeplink', kind } });
+        } catch {
+            // Sentry yoksa sessiz geç — kırıntı zaten yazıldı
+        }
+        return { status: 'error', kind, reason: 'unexpected', message: e?.message };
     }
 
     // Yol doğru ama hiçbir token yok — büyük ihtimalle Supabase Dashboard'daki
-    // "Redirect URLs" listesinde bu adres yok ve link Site URL'e düşmüş.
-    return { status: 'error', kind };
+    // "Redirect URLs" listesinde bu adres yok ve link Site URL'e düşmüş, ya da
+    // uygulama linkle değil (Play Store'dan "Aç" gibi) doğrudan açıldı.
+    crumb('no token in link', { kind, params: Object.keys(p).join(',') || 'none' });
+    return { status: 'error', kind, reason: 'no_token' };
 }

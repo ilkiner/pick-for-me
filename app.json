@@ -59,6 +59,23 @@
               "pathPrefix": "/pick-for-me/verify-email"
             }
           ]
+        },
+        {
+          "action": "VIEW",
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ],
+          "data": [
+            {
+              "scheme": "pickforme",
+              "host": "reset-password"
+            },
+            {
+              "scheme": "pickforme",
+              "host": "verify-email"
+            }
+          ]
         }
       ]
     },

@@ -112,8 +112,39 @@ https://developers.google.com/digital-asset-links/tools/generator
 kurduktan sonra yayınlarsan yeniden kurman (ya da `adb shell pm verify-app-links
 --re-verify com.pickforme.app`) gerekir.
 
+## 5. Açılış sayfası yedeği (doğrulama tamamlanmadığında)
+
+App Links her cihazda çalışmıyor ve bunu **cihaz tarafında düzeltemiyoruz**:
+
+- Gmail linkleri kendi iç tarayıcısında (Custom Tab) açıyor.
+- Bazı cihazlarda (Redmi/MIUI, Huawei) `autoVerify` doğrulaması hiç
+  tamamlanmıyor ya da üretici "varsayılan uygulama" ayarıyla eziliyor.
+- Doğrulama yalnızca **kurulum anında** yapılıyor; ağ o an kötüyse sessizce
+  `legacy_failure` olarak kalıyor.
+
+Bu durumda HTTPS link uygulamayı değil `docs/reset-password/` ya da
+`docs/verify-email/` sayfasını açıyor. Sayfa artık çıkmaz sokak değil: linkteki
+token'ı **kendi kullanmadan** uygulamaya devrediyor.
+
+- **Android:** `intent://reset-password?...#Intent;scheme=pickforme;package=com.pickforme.app;end`
+  `package` sabitlendiği için linki **yalnızca bizim uygulamamız** karşılayabilir;
+  düz `pickforme://` şemasının aksine başka bir uygulama kaçıramaz.
+- **Android dışı:** düz `pickforme://` şeması. `access_token` taşıyan (eski
+  implicit akış) linklerde burada devir YAPILMIYOR — access_token tek başına tam
+  bir oturum ve düz şemayı herhangi bir uygulama kaydedebilir.
+- Sayfa açılınca **bir kez** otomatik deniyor (mağaza yedeği olmadan, uygulama
+  kurulu değilse kullanıcı sayfada kalsın diye). Düğme her zaman görünür kalıyor;
+  düğmeye basınca uygulama yoksa Play Store'a düşüyor.
+- Token sayfada gösterilmiyor, hiçbir isteğe konmuyor; `referrer` da kapalı.
+
+Uygulama tarafında `pickforme://` intent-filter'ı `app.json`'da **açıkça** tanımlı
+(prebuild'in `scheme` alanından türettiğine güvenmiyoruz) ve `authLinks.ts`
+`token_hash`, `code`, `access_token`+`refresh_token` ve hata parametrelerinin
+hepsini HTTPS'te olduğu gibi işliyor.
+
 ## Geriye dönük uyumluluk
 
 `pickforme://` şeması `app.json`'da duruyor ve `authLinks.ts` onu tanımaya devam
-ediyor — eski mailler ve Expo Go için. Yeni gönderilen mailler HTTPS kullanıyor
-(`authRedirectUrl()`, geliştirmede yerel şemaya düşer).
+ediyor — eski mailler, Expo Go ve yukarıdaki açılış sayfası yedeği için. Yeni
+gönderilen mailler HTTPS kullanıyor (`authRedirectUrl()`, geliştirmede yerel
+şemaya düşer).

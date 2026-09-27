@@ -53,6 +53,7 @@
         "verify_link_expired_msg": "Bu doğrulama bağlantısı geçersiz ya da daha önce kullanılmış. Giriş ekranından yeni bir doğrulama e-postası isteyebilirsin.",
         "link_error_title": "Bağlantı açılamadı",
         "link_error_msg": "Bağlantı işlenemedi. Lütfen tekrar dene.",
+        "link_no_token_msg": "Bu bağlantı bir giriş anahtarı taşımıyor. E-postandaki bağlantıyı tekrar aç ya da yenisini iste.",
         "show_password": "Şifreyi göster",
         "hide_password": "Şifreyi gizle",
         "verify_title": "E-postanı Kontrol Et",

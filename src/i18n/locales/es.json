@@ -53,6 +53,7 @@
         "verify_link_expired_msg": "Este enlace de confirmación no es válido o ya se usó. Puedes pedir un correo nuevo desde la pantalla de inicio de sesión.",
         "link_error_title": "No se pudo abrir el enlace",
         "link_error_msg": "No pudimos procesar el enlace. Inténtalo de nuevo.",
+        "link_no_token_msg": "Este enlace no traía una clave de acceso. Vuelve a abrir el enlace de tu correo o pide uno nuevo.",
         "show_password": "Mostrar contraseña",
         "hide_password": "Ocultar contraseña",
         "verify_title": "Revisa tu correo",

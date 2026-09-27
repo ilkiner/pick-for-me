@@ -53,6 +53,7 @@
         "verify_link_expired_msg": "This confirmation link is invalid or has already been used. You can request a new confirmation email from the login screen.",
         "link_error_title": "Couldn't open the link",
         "link_error_msg": "We couldn't process the link. Please try again.",
+        "link_no_token_msg": "This link didn't carry a sign-in token. Open the link in your email again, or request a new one.",
         "show_password": "Show password",
         "hide_password": "Hide password",
         "verify_title": "Check Your Email",
