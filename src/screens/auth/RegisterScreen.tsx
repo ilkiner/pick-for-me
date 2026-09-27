@@ -12,6 +12,7 @@ import { useTheme } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
 import { validatePassword, passwordProblemKey, MIN_PASSWORD_LENGTH } from '../../core/passwordPolicy';
 import { authRedirectUrl } from '../../core/authLinks';
+import { GoogleSignInButton } from '../../components/GoogleSignInButton';
 
 function mapAuthError(msg: string, t: (k: string, o?: any) => string): string {
     if (msg.includes('User already registered')) return t('auth.error_already_registered');
@@ -182,6 +183,8 @@ export default function RegisterScreen({ navigation }: any) {
                                 : <Text style={styles.buttonText}>{t('register.submit')}</Text>
                             }
                         </TouchableOpacity>
+
+                        <GoogleSignInButton onError={setError} />
 
                         <TouchableOpacity
                             onPress={() => navigation.goBack()}

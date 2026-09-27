@@ -13,6 +13,7 @@ import { useTheme, ThemeMode } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
 import { useSound } from '../../store/SoundContext';
 import { useNotifications } from '../../store/NotificationContext';
+import { signOutFromGoogle } from '../../core/googleAuth';
 import { track } from '../../core/Analytics';
 import { AdManager } from '../../core/AdManager';
 
@@ -107,6 +108,12 @@ export default function SettingsScreen({ navigation }: any) {
             );
             return;
         }
+        // Google oturumunu da bırak. Bırakılmazsa bir sonraki "Google ile devam
+        // et" hesap seçiciyi hiç göstermeden son hesapla giriyor — cihazı
+        // paylaşan ya da hesap değiştirmek isteyen kullanıcı kendi hesabına
+        // geçemez. Supabase çıkışından önce: bu adım hata verse bile
+        // uygulamadan çıkış yapılmalı, o yüzden kendi içinde yutuluyor.
+        await signOutFromGoogle();
         try {
             await supabase.auth.signOut();
         } catch (e) {

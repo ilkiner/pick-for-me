@@ -70,7 +70,12 @@
         "error_email_not_confirmed": "Please confirm your email before logging in",
         "error_too_many_requests": "Too many attempts. Please try again later.",
         "error_already_registered": "An account with this email already exists",
-        "error_invalid_email": "Please enter a valid email address"
+        "error_invalid_email": "Please enter a valid email address",
+        "or": "or",
+        "continue_with_google": "Continue with Google",
+        "google_unavailable": "Google sign-in is not available on this device right now.",
+        "google_play_services_missing": "Google sign-in needs Google Play services, which this device does not have.",
+        "google_error": "We couldn't finish signing in with Google. Please try again."
     },
     "home": {
         "subtitle": "Can't decide? Let us pick for you.",

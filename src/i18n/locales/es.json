@@ -70,7 +70,12 @@
         "error_email_not_confirmed": "Confirma tu correo antes de iniciar sesión",
         "error_too_many_requests": "Demasiados intentos. Inténtalo más tarde.",
         "error_already_registered": "Ya existe una cuenta con este correo",
-        "error_invalid_email": "Escribe un correo válido"
+        "error_invalid_email": "Escribe un correo válido",
+        "or": "o",
+        "continue_with_google": "Continuar con Google",
+        "google_unavailable": "El acceso con Google no está disponible en este dispositivo ahora mismo.",
+        "google_play_services_missing": "El acceso con Google necesita los servicios de Google Play, que este dispositivo no tiene.",
+        "google_error": "No pudimos completar el acceso con Google. Inténtalo de nuevo."
     },
     "home": {
         "subtitle": "¿No te decides? Deja que elijamos por ti.",

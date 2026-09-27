@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { supabase, isSupabaseConfigured } from '../../storage/supabase';
 import { useTheme } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
+import { GoogleSignInButton } from '../../components/GoogleSignInButton';
 
 function mapAuthError(msg: string, t: (k: string) => string): string {
     if (msg.includes('Invalid login credentials')) return t('auth.error_invalid_credentials');
@@ -179,6 +180,8 @@ export default function LoginScreen({ navigation }: any) {
                                 : <Text style={styles.buttonText}>{t('login.submit')}</Text>
                             }
                         </TouchableOpacity>
+
+                        <GoogleSignInButton onError={setError} />
 
                         <TouchableOpacity
                             onPress={() => navigation.navigate('Register')}
