@@ -180,6 +180,22 @@ function AppInner() {
             return;
         }
         if (outcome.status === 'error') {
+            // Kırıntılar Sentry'ye ancak bir OLAY yakalandığında gidiyor. 'unexpected'
+            // zaten consumeAuthLink içinde captureException ediliyor; diğer iki neden
+            // istisna üretmediği için burada elle bir olay açıyoruz, yoksa yukarıdaki
+            // tüm iz hiçbir zaman yüklenmezdi. 'expired' bilinçli olarak dışarıda:
+            // eski bir linke dokunmak olağan, hata değil.
+            if (outcome.reason !== 'unexpected') {
+                try {
+                    Sentry.captureMessage(`auth deep link failed: ${outcome.reason}`, {
+                        level: 'warning',
+                        tags: { area: 'auth_deeplink', kind: outcome.kind, source },
+                        extra: { supabaseMessage: outcome.message },
+                    });
+                } catch {
+                    // Sentry yapılandırılmamış — kullanıcıya uyarı yine de gösterilecek
+                }
+            }
             // Hiçbir başarısızlık sessiz kalmamalı: bu akış yalnızca gerçek
             // cihazda gerçek mailde çalışıyor, kullanıcı ekranda bir şey
             // görmezse elimizde hiçbir iz kalmıyor.
