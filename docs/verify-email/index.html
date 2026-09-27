@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
+<!-- Token adresin icinde; hicbir istekte Referer olarak sizmasin. -->
+<meta name="referrer" content="no-referrer">
 <title>Pick For Me — Verify Email</title>
 <style>
   :root { color-scheme: dark; }
@@ -22,8 +24,14 @@
   h1 { font-size: 22px; font-weight: 800; margin: 0 0 12px; }
   p { font-size: 15px; line-height: 1.6; color: #94A3B8; margin: 0 0 28px; }
   a.btn {
-    display: inline-block; background: #6366F1; color: #fff; text-decoration: none;
-    font-weight: 700; font-size: 15px; padding: 14px 32px; border-radius: 14px;
+    display: block; width: 100%; background: #6366F1; color: #fff; text-decoration: none;
+    font-weight: 700; font-size: 17px; padding: 18px 24px; border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(99,102,241,0.35);
+  }
+  a.btn:active { background: #4F46E5; }
+  a.alt {
+    display: inline-block; margin-top: 18px; color: #94A3B8; text-decoration: underline;
+    font-size: 14px; padding: 8px;
   }
   .foot { margin-top: 24px; font-size: 12px; color: #64748B; }
 </style>
@@ -32,37 +40,164 @@
   <div class="card">
     <div class="mark">✉️</div>
     <h1 id="title">Open the app to continue</h1>
-    <p id="body">This confirmation link opens inside the Pick For Me app. Install the app, then tap the link in your email again.</p>
-    <a class="btn" id="cta" href="https://play.google.com/store/apps/details?id=com.pickforme.app">Get Pick For Me</a>
+    <p id="body">Tap the button below to finish confirming your email in the Pick For Me app.</p>
+    <a class="btn" id="cta" href="https://play.google.com/store/apps/details?id=com.pickforme.app">Open in app</a>
+    <a class="alt" id="alt" href="https://play.google.com/store/apps/details?id=com.pickforme.app">Install the app</a>
     <div class="foot" id="foot">The link expires after a short time — request a new one if it stops working.</div>
   </div>
 <script>
-// Bu sayfa yalnizca uygulama KURULU DEGILKEN gorunur. Kuruluysa ve App Links
-// dogrulanmissa Android linki dogrudan uygulamada acar.
-// Not: adresteki token '#' sonrasinda oldugu icin sunucuya HIC gonderilmez;
-// bu sayfa da onu okumaz veya baska bir yere iletmez.
+// Bu sayfa linki UYGULAMAYA DEVREDER; token'i kendisi KULLANMAZ.
+//
+// Neden gerekli: Gmail linkleri kendi tarayicisinda aciyor ve bazi cihazlarda
+// (Redmi/MIUI) Android App Links dogrulamasi tamamlanmiyor — yani HTTPS link
+// ilk dokunusta uygulamayi acmiyor. Cihaz tarafinda cozemedigimiz icin acilis
+// sayfasi token'i uygulamaya kendisi aktariyor.
+//
+// Guvenlik notu: Android'de intent:// + package=com.pickforme.app kullaniyoruz.
+// package sabitlenince linki BASKA bir uygulama karsilayamaz — duz pickforme://
+// semasinin aksine kacirilamaz. pickforme:// yalnizca Android disinda yedek.
+// Token hicbir istege konmuyor, hicbir yere gonderilmiyor, sayfada gosterilmiyor;
+// referrer da kapali.
 (function () {
+  var PACKAGE = 'com.pickforme.app';
+  var SCHEME  = 'pickforme';
+  var PATH    = 'verify-email';
+  var STORE   = 'https://play.google.com/store/apps/details?id=' + PACKAGE;
+  var DEFAULT_TYPE = 'email';
+
   var T = {
     en: { title: 'Open the app to continue',
-          body: 'This confirmation link opens inside the Pick For Me app. Install the app, then tap the link in your email again.',
-          cta: 'Get Pick For Me',
+          body: 'Tap the button below to finish confirming your email in the Pick For Me app.',
+          cta: 'Open in app',
+          alt: 'Install the app',
+          noTokenTitle: 'Open the app to continue',
+          noTokenBody: 'This confirmation link opens inside the Pick For Me app. Install the app, then tap the link in your email again.',
+          noTokenCta: 'Get Pick For Me',
           foot: 'The link expires after a short time — request a new one if it stops working.' },
     tr: { title: 'Devam etmek için uygulamayı aç',
-          body: 'Bu doğrulama bağlantısı Pick For Me uygulamasında açılır. Uygulamayı kur, sonra e-postandaki bağlantıya tekrar dokun.',
-          cta: 'Pick For Me’i indir',
+          body: 'E-postanı Pick For Me uygulamasında doğrulamak için aşağıdaki düğmeye dokun.',
+          cta: 'Uygulamada aç',
+          alt: 'Uygulamayı yükle',
+          noTokenTitle: 'Devam etmek için uygulamayı aç',
+          noTokenBody: 'Bu doğrulama bağlantısı Pick For Me uygulamasında açılır. Uygulamayı kur, sonra e-postandaki bağlantıya tekrar dokun.',
+          noTokenCta: 'Pick For Me’i indir',
           foot: 'Bağlantı kısa süre sonra geçersiz olur — çalışmazsa yenisini iste.' },
     es: { title: 'Abre la app para continuar',
-          body: 'Este enlace de confirmación se abre en la app Pick For Me. Instala la app y vuelve a tocar el enlace de tu correo.',
-          cta: 'Descargar Pick For Me',
+          body: 'Toca el botón de abajo para terminar de confirmar tu correo en la app Pick For Me.',
+          cta: 'Abrir en la app',
+          alt: 'Instalar la app',
+          noTokenTitle: 'Abre la app para continuar',
+          noTokenBody: 'Este enlace de confirmación se abre en la app Pick For Me. Instala la app y vuelve a tocar el enlace de tu correo.',
+          noTokenCta: 'Descargar Pick For Me',
           foot: 'El enlace caduca pronto — pide uno nuevo si deja de funcionar.' }
   };
+
   var lang = (navigator.language || 'en').slice(0, 2).toLowerCase();
   var t = T[lang] || T.en;
   document.documentElement.lang = T[lang] ? lang : 'en';
-  document.getElementById('title').textContent = t.title;
-  document.getElementById('body').textContent = t.body;
-  document.getElementById('cta').textContent = t.cta;
+
+  var elTitle = document.getElementById('title');
+  var elBody  = document.getElementById('body');
+  var elCta   = document.getElementById('cta');
+  var elAlt   = document.getElementById('alt');
   document.getElementById('foot').textContent = t.foot;
+
+  // Token hem ?query hem #fragment'ta gelebilir: TokenHash sablonu query,
+  // eski implicit akis fragment kullaniyor. Ikisini de tara.
+  function readParams() {
+    var out = {};
+    var raw = location.search.replace(/^\?/, '') + '&' + location.hash.replace(/^#/, '');
+    var parts = raw.split('&');
+    for (var i = 0; i < parts.length; i++) {
+      var pair = parts[i];
+      if (!pair) continue;
+      var eq = pair.indexOf('=');
+      var k = eq === -1 ? pair : pair.slice(0, eq);
+      var v = eq === -1 ? '' : pair.slice(eq + 1);
+      if (!k) continue;
+      try { out[decodeURIComponent(k)] = decodeURIComponent(v); }
+      catch (e) { out[k] = v; }
+    }
+    return out;
+  }
+
+  var p = readParams();
+
+  // Uygulamaya devredilecek parametreler — beyaz liste. Sayfaya eklenmis baska
+  // hicbir sey (izleme parametresi, elle uydurulmus alanlar) uygulamaya gecmez.
+  var FORWARD = ['token_hash', 'type', 'code', 'access_token', 'refresh_token',
+                 'expires_in', 'token_type', 'error', 'error_code', 'error_description'];
+
+  var hasToken = !!(p.token_hash || p.code || (p.access_token && p.refresh_token));
+  var hasError = !!(p.error || p.error_code);
+  var isAndroid = /android/i.test(navigator.userAgent);
+
+  // access_token TEK BASINA tam bir oturum. Android'de intent:// + package ile
+  // yalnizca bizim uygulamamiza gidiyor, orada risk yok. Android disinda elde
+  // yalnizca duz pickforme:// var — o semayi cihazdaki herhangi bir uygulama
+  // kaydedebilir, yani oturumu ona teslim etmis oluruz. Devretmiyoruz.
+  var tooSensitiveToHandOff = !isAndroid && !!p.access_token;
+
+  // Token da hata da yoksa (dogrudan ziyaret, ya da link bozulmus) uygulamayi
+  // bos yere acmanin anlami yok — "uygulamayi indir" mesajina don.
+  if ((!hasToken && !hasError) || tooSensitiveToHandOff) {
+    elTitle.textContent = t.noTokenTitle;
+    elBody.textContent = t.noTokenBody;
+    elCta.textContent = t.noTokenCta;
+    elCta.href = STORE;
+    elAlt.style.display = 'none';
+    return;
+  }
+
+  elTitle.textContent = t.title;
+  elBody.textContent = t.body;
+  elCta.textContent = t.cta;
+  elAlt.textContent = t.alt;
+  elAlt.href = STORE;
+
+  // Supabase her zaman type gonderiyor; yine de eksikse bu sayfanin akisi belli.
+  if (hasToken && !p.type) p.type = DEFAULT_TYPE;
+
+  var query = '';
+  for (var i = 0; i < FORWARD.length; i++) {
+    var key = FORWARD[i];
+    if (!p[key]) continue;
+    query += (query ? '&' : '') + key + '=' + encodeURIComponent(p[key]);
+  }
+
+  // Android: intent:// — package sabit, yani yalnizca bizim uygulamamiz acar.
+  // withFallback=true ise uygulama yoksa tarayici Play Store'a gider.
+  function intentUrl(withFallback) {
+    return 'intent://' + PATH + '?' + query +
+           '#Intent;scheme=' + SCHEME + ';package=' + PACKAGE + ';' +
+           (withFallback ? 'S.browser_fallback_url=' + encodeURIComponent(STORE) + ';' : '') +
+           'end';
+  }
+  var schemeUrl = SCHEME + '://' + PATH + '?' + query;
+
+  // Dugme: uygulama varsa acar, yoksa magazaya dusurur.
+  elCta.href = isAndroid ? intentUrl(true) : schemeUrl;
+
+  if (!isAndroid) {
+    // Android disinda intent:// yok; sema calismazsa sayfa yerinde kalir, bu
+    // yuzden dokunustan sonra kisa bir sure bekleyip magazaya gecelim.
+    elCta.addEventListener('click', function () {
+      var left = false;
+      var onHide = function () { left = true; };
+      document.addEventListener('visibilitychange', onHide);
+      setTimeout(function () {
+        document.removeEventListener('visibilitychange', onHide);
+        if (!left && !document.hidden) location.href = STORE;
+      }, 1500);
+    });
+  }
+
+  // Acilista BIR kez otomatik dene. Burada bilerek fallback YOK: uygulama
+  // kurulu degilse kullaniciyi habersizce Play Store'a atmak yerine sayfada
+  // birakiyoruz, dugme gorunur kaliyor.
+  setTimeout(function () {
+    try { location.href = isAndroid ? intentUrl(false) : schemeUrl; } catch (e) {}
+  }, 400);
 })();
 </script>
 </body>
