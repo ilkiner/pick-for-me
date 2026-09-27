@@ -22,6 +22,8 @@ import { ErrorBoundary } from './src/components/ErrorBoundary';
 import { initAnalytics, track } from './src/core/Analytics';
 import { consumeAuthLink, redactAuthLink } from './src/core/authLinks';
 import { AdManager } from './src/core/AdManager';
+import * as Notifications from 'expo-notifications';
+import { NotificationProvider } from './src/store/NotificationContext';
 
 const SENTRY_DSN = process.env.EXPO_PUBLIC_SENTRY_DSN;
 const sentryEnabled = Boolean(SENTRY_DSN);
@@ -233,6 +235,55 @@ function AppInner() {
         return () => sub.remove();
     }, []);
 
+    // --- Bildirime dokunma ---
+    // Günün Görevi bildirimi ana ekrana götürüyor: kart listenin en üstünde ve
+    // odaklanınca kendini tazeliyor, yani kullanıcı tam da bildirimin sözünü
+    // ettiği kartın önüne düşüyor. Hareketsizlik dürtmesinin ayrı bir hedefi
+    // yok — uygulamanın açılması zaten amacı.
+    useEffect(() => {
+        let cancelled = false;
+
+        // Soğuk açılışta bildirim yanıtı, NavigationContainer bağlanmadan önce
+        // geliyor. Hazır olana kadar kısa aralıklarla bekliyoruz; üst sınır var
+        // ki oturum kapalıyken (Main yokken) sonsuza kadar dönmesin.
+        const navigateWhenReady = (attempts = 20) => {
+            if (cancelled) return;
+            if (navigationRef.isReady()) {
+                try {
+                    navigationRef.navigate('Main', { screen: 'Home' });
+                } catch {
+                    // Oturum kapalıysa 'Main' yok — kullanıcı giriş ekranında kalsın
+                }
+                return;
+            }
+            if (attempts <= 0) return;
+            setTimeout(() => navigateWhenReady(attempts - 1), 150);
+        };
+
+        // Soğuk açılışta aynı dokunuş hem getLastNotificationResponseAsync'ten
+        // hem dinleyiciden gelebiliyor. Gezinme zararsız (aynı ekran) ama
+        // 'notification_opened' iki kez sayılırdı.
+        const handled = new Set<string>();
+
+        const openTarget = (response: Notifications.NotificationResponse | null) => {
+            if (!response || cancelled) return;
+            const id = response.notification.request.identifier;
+            if (handled.has(id)) return;
+            handled.add(id);
+
+            const kind = (response.notification.request.content.data as any)?.kind;
+            track('notification_opened', { kind: kind ?? 'unknown' });
+            if (kind === 'daily_challenge') navigateWhenReady();
+        };
+
+        // Uygulama kapalıyken dokunulduysa yanıt burada duruyor.
+        Notifications.getLastNotificationResponseAsync().then(openTarget).catch(() => {});
+        // Açıkken/arka plandayken dokunulduysa olay olarak gelir.
+        const sub = Notifications.addNotificationResponseReceivedListener(openTarget);
+
+        return () => { cancelled = true; sub.remove(); };
+    }, []);
+
     if (!isReady) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.colors.background }}>
@@ -279,9 +330,11 @@ function App() {
         <SafeAreaProvider initialMetrics={initialWindowMetrics}>
             <ThemeProvider>
                 <SoundProvider>
-                    <ErrorBoundary>
-                        <AppInner />
-                    </ErrorBoundary>
+                    <NotificationProvider>
+                        <ErrorBoundary>
+                            <AppInner />
+                        </ErrorBoundary>
+                    </NotificationProvider>
                 </SoundProvider>
             </ThemeProvider>
         </SafeAreaProvider>

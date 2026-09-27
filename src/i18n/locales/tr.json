@@ -430,6 +430,22 @@
         "limit_title": "Ücretsiz Limit",
         "item_limit_msg": "Ücretsiz planda liste başına en fazla {{limit}} öğe eklenebilir."
     },
+    "notifications": {
+        "channel_name": "Hatırlatıcılar",
+        "daily_title": "Bugünün görevi hazır",
+        "daily_body": "Yeni bir görev seni bekliyor. Bir dakikanı bile almaz.",
+        "inactive_3_title": "Karar veremediğin bir şey mi var?",
+        "inactive_3_body": "Bırak Pick For Me seçsin. Tek dokunuş yeter.",
+        "inactive_7_title": "Hâlâ kararsız mısın?",
+        "inactive_7_body": "Çarkın, zarın ve görevlerin bıraktığın yerde duruyor.",
+        "permission_title": "Helal olsun! Yarın da hatırlatalım mı?",
+        "permission_msg": "Yeni günlük görev hazır olduğunda sana haber verebiliriz. Hesap gerekmiyor, istediğin zaman Ayarlar’dan kapatabilirsin.",
+        "permission_enable": "Hatırlat",
+        "permission_later": "Şimdi değil",
+        "blocked_title": "Bildirimler kapalı",
+        "blocked_msg": "Hatırlatıcıları alabilmek için sistem ayarlarından Pick For Me bildirimlerini aç.",
+        "open_settings": "Ayarları aç"
+    },
     "onboarding": {
         "skip": "Atla",
         "next": "Devam",
@@ -464,6 +480,8 @@
         "restore_desc": "Önceki aboneliğini aktive et",
         "sound": "Ses efektleri",
         "sound_desc": "Çark, zar, tura sesleri",
+        "notifications": "Hatırlatıcılar",
+        "notifications_desc": "Günün görevi ve uzun süre uğramayınca nazik bir dürtme",
         "logout": "Çıkış Yap",
         "logout_desc": "Oturumu sonlandır",
         "logout_demo": "Demo modunda zaten giriş yapılmamış durumdasın.",

@@ -11,6 +11,8 @@ import { GlassCard } from './GlassCard';
 import { ShareCard, ShareCardHandle } from './ShareCard';
 import SoundManager from '../core/SoundManager';
 import { track } from '../core/Analytics';
+import { useNotifications } from '../store/NotificationContext';
+import { rescheduleReminders } from '../core/notifications';
 import {
     getDailyChallenge,
     isDailyCompleted,
@@ -34,6 +36,7 @@ const CATEGORY_META: Record<ChallengeCategory, { icon: string; color: string }> 
 export function DailyChallengeCard() {
     const { t, i18n } = useTranslation();
     const { theme } = useTheme();
+    const { askAfterFirstChallenge } = useNotifications();
     const styles = useMemo(() => createStyles(theme), [theme]);
 
     const [challenge, setChallenge] = useState<DailyChallenge | null>(null);
@@ -82,6 +85,16 @@ export function DailyChallengeCard() {
         SoundManager.play('winner');
         track('daily_challenge_completed', { id: challenge?.id ?? '' });
         await markDailyCompleted();
+
+        // Bugünün hatırlatıcısı artık gereksiz — görev bitti. Yeniden planlama
+        // bugünü atlayıp sonraki günleri kuruyor.
+        rescheduleReminders().catch(() => {});
+
+        // İzni tam BURADA istiyoruz: kullanıcı günün görevini yeni tamamladı,
+        // yani "yarın da hatırlatalım mı?" sorusunun karşılığı ekranda duruyor.
+        // İlk açılışta sorulsaydı bağlamı olmayan bir sistem kutusu olurdu.
+        // En fazla bir kez sorar; reddedilirse bir daha açılmaz.
+        askAfterFirstChallenge();
     };
 
     // Kartı o gün için gizle. Ertesi gün (yeni tarih anahtarı) kendiliğinden geri gelir.

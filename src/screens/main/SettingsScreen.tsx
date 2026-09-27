@@ -12,6 +12,7 @@ import { usePro } from '../../store/ProContext';
 import { useTheme, ThemeMode } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
 import { useSound } from '../../store/SoundContext';
+import { useNotifications } from '../../store/NotificationContext';
 import { track } from '../../core/Analytics';
 import { AdManager } from '../../core/AdManager';
 
@@ -83,6 +84,7 @@ export default function SettingsScreen({ navigation }: any) {
     const { isPro, openPaywall, restorePurchases, devProOverride, devTogglePro } = usePro();
     const { theme, mode, setMode } = useTheme();
     const { soundEnabled, setSoundEnabled } = useSound();
+    const { enabled: notificationsEnabled, setEnabled: setNotificationsEnabled } = useNotifications();
     const styles = useMemo(() => createStyles(theme), [theme]);
 
     // Rıza toplama AdManager.init() içinde asenkron ilerliyor; ekran ondan önce
@@ -285,6 +287,30 @@ export default function SettingsScreen({ navigation }: any) {
                         <Switch
                             value={soundEnabled}
                             onValueChange={setSoundEnabled}
+                            trackColor={{ false: theme.colors.surface, true: theme.colors.primary }}
+                            thumbColor="#fff"
+                        />
+                    </View>
+                </GlassCard>
+
+                {/* Hatırlatıcılar. Anahtar, uygulama tercihi ile işletim sistemi
+                    izninin İKİSİNİ birden gösteriyor: izin yokken açık görünüp
+                    hiçbir bildirim gelmemesi kullanıcıyı yanıltırdı. Açmaya
+                    çalışmak gerekirse izni de istiyor. */}
+                <GlassCard style={styles.section}>
+                    <View style={styles.row}>
+                        <View style={styles.iconWrapper}>
+                            <Ionicons name="notifications-outline" size={22} color={theme.colors.primary} />
+                        </View>
+                        <View style={styles.rowContent}>
+                            <Text style={styles.rowTitle}>{t('settings.notifications', 'Hatırlatıcılar')}</Text>
+                            <Text style={styles.rowSubtitle}>
+                                {t('settings.notifications_desc', 'Günün görevi ve nazik bir dürtme')}
+                            </Text>
+                        </View>
+                        <Switch
+                            value={notificationsEnabled}
+                            onValueChange={setNotificationsEnabled}
                             trackColor={{ false: theme.colors.surface, true: theme.colors.primary }}
                             thumbColor="#fff"
                         />

@@ -87,6 +87,12 @@
       "expo-localization",
       "expo-asset",
       [
+        "expo-notifications",
+        {
+          "color": "#6366F1"
+        }
+      ],
+      [
         "react-native-google-mobile-ads",
         {
           "androidAppId": "ca-app-pub-4127264894381251~9441567246",

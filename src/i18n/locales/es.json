@@ -148,6 +148,8 @@
         "restore_desc": "Activa una suscripción anterior",
         "sound": "Efectos de sonido",
         "sound_desc": "Sonidos de ruleta, dados y moneda",
+        "notifications": "Recordatorios",
+        "notifications_desc": "El reto diario y un aviso si llevas tiempo sin entrar",
         "logout": "Cerrar sesión",
         "logout_desc": "Finalizar sesión",
         "logout_demo": "Ya estás sin sesión en modo demo.",
@@ -483,6 +485,22 @@
         "free_tier": "gratis",
         "limit_title": "Límite del plan gratis",
         "item_limit_msg": "El plan gratis permite hasta {{limit}} elementos por lista."
+    },
+    "notifications": {
+        "channel_name": "Recordatorios",
+        "daily_title": "El reto de hoy está listo",
+        "daily_body": "Te espera uno nuevo. Solo te llevará un minuto.",
+        "inactive_3_title": "¿No te decides por algo?",
+        "inactive_3_body": "Deja que Pick For Me elija. Un toque y listo.",
+        "inactive_7_title": "¿Sigues dudando?",
+        "inactive_7_body": "Tu ruleta, tus dados y tus retos siguen donde los dejaste.",
+        "permission_title": "¡Bien hecho! ¿Te avisamos mañana?",
+        "permission_msg": "Podemos avisarte cuando haya un nuevo reto diario. No hace falta cuenta y puedes desactivarlo cuando quieras en Ajustes.",
+        "permission_enable": "Avísame",
+        "permission_later": "Ahora no",
+        "blocked_title": "Las notificaciones están desactivadas",
+        "blocked_msg": "Activa las notificaciones de Pick For Me en los ajustes del sistema para recibir recordatorios.",
+        "open_settings": "Abrir ajustes"
     },
     "sync": {
         "failed_title": "No se pudo guardar en la nube",

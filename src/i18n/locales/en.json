@@ -148,6 +148,8 @@
         "restore_desc": "Activate a previous subscription",
         "sound": "Sound effects",
         "sound_desc": "Wheel, dice, coin sounds",
+        "notifications": "Reminders",
+        "notifications_desc": "Daily challenge and a nudge when you have been away",
         "logout": "Log Out",
         "logout_desc": "End session",
         "logout_demo": "You're already signed out in demo mode.",
@@ -483,6 +485,22 @@
         "free_tier": "free",
         "limit_title": "Free Tier Limit",
         "item_limit_msg": "Free plan allows up to {{limit}} items per list."
+    },
+    "notifications": {
+        "channel_name": "Reminders",
+        "daily_title": "Today's challenge is ready",
+        "daily_body": "A fresh one is waiting for you. It only takes a minute.",
+        "inactive_3_title": "Can't decide something?",
+        "inactive_3_body": "Let Pick For Me choose. One tap and you are done.",
+        "inactive_7_title": "Still on the fence?",
+        "inactive_7_body": "Your wheel, dice and challenges are right where you left them.",
+        "permission_title": "Nice one! Want a nudge tomorrow?",
+        "permission_msg": "We can remind you when a new daily challenge is ready. No account needed, and you can turn it off any time in Settings.",
+        "permission_enable": "Remind me",
+        "permission_later": "Not now",
+        "blocked_title": "Notifications are off",
+        "blocked_msg": "Turn notifications on for Pick For Me in your system settings to get reminders.",
+        "open_settings": "Open settings"
     },
     "sync": {
         "failed_title": "Couldn't save to the cloud",
