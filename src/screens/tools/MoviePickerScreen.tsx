@@ -118,6 +118,25 @@ export default function MoviePickerScreen({ navigation }: any) {
         }
     };
 
+    // "Hepsi" çipi: tek tek dokunmak yerine bütün hazır paketleri bir kerede
+    // açıp kapatır. Birlikte Seç modundaki "Hepsi" ile aynı işi görüyor, ama
+    // orası TEK seçimli bir kaynak listesi; burada çipler AÇ/KAPA olduğu için
+    // bu da bir aç/kapa: hepsi yüklüyse ikinci dokunuş hepsini kaldırır.
+    const allPacksLoaded = PACK_KEYS.every(isPackLoaded);
+
+    const toggleAllPacks = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+        const everyTitle = PACK_KEYS.flatMap(packTitles);
+        if (allPacksLoaded) {
+            // Yalnızca paketlerden geleni çıkar; kullanıcının kendi eklediği
+            // başlıklar listede kalır (tek tek çiplerle aynı davranış).
+            const remove = new Set(everyTitle);
+            saveOptions(movies.filter(title => !remove.has(title)));
+        } else {
+            saveOptions(Array.from(new Set([...movies, ...everyTitle])));
+        }
+    };
+
     // Hazır listelerden gelenleri toplu sil — kullanıcının kendi ekledikleri kalır
     const packCount = movies.filter(title => PACK_TITLES.has(title)).length;
 
@@ -259,6 +278,26 @@ export default function MoviePickerScreen({ navigation }: any) {
     const renderRandomMode = () => (
         <>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickAddScroll} contentContainerStyle={styles.quickAddContainer}>
+                {/* Etiket Birlikte Seç'teki ile AYNI anahtardan geliyor; iki mod
+                    aynı şeye farklı isim vermesin. */}
+                <TouchableOpacity
+                    style={[styles.quickAddBtn, allPacksLoaded && styles.quickAddBtnActive]}
+                    onPress={toggleAllPacks}
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: allPacksLoaded }}
+                    accessibilityLabel={t('tools.match.source_all', 'Hepsi')}
+                >
+                    <Ionicons
+                        name={allPacksLoaded ? 'checkmark-done-circle' : 'layers-outline'}
+                        size={14}
+                        color={allPacksLoaded ? '#fff' : theme.colors.textSecondary}
+                    />
+                    <Text style={[styles.quickAddText, allPacksLoaded && styles.quickAddTextActive]}>
+                        {t('tools.match.source_all', 'Hepsi')}
+                    </Text>
+                </TouchableOpacity>
+
                 {PACK_KEYS.map(packKey => {
                     const loaded = isPackLoaded(packKey);
                     const label = packKey === 'classics'
