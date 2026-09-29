@@ -32,7 +32,6 @@
         "backgroundColor": "#0F0F1E"
       },
       "package": "com.pickforme.app",
-      "versionCode": 1,
       "permissions": [
         "INTERNET",
         "ACCESS_NETWORK_STATE",
