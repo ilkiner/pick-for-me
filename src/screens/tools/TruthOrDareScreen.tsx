@@ -11,6 +11,7 @@ import { GlassCard } from '../../components/GlassCard';
 import SoundManager from '../../core/SoundManager';
 import { celebrateWinner } from '../../core/celebrate';
 import TOD_DATA from '../../content/truthOrDare.json';
+import { DismissKeyboardView } from '../../components/DismissKeyboardView';
 
 type CardType = 'truth' | 'dare';
 
@@ -80,114 +81,116 @@ export default function TruthOrDareScreen({ navigation }: any) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-                <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-                    <View style={styles.header}>
-                        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} accessibilityLabel={t('common.back', 'Geri')} accessibilityRole="button">
-                            <Ionicons name="chevron-back" size={26} color={theme.colors.text} />
-                        </TouchableOpacity>
-                        <Text style={styles.title}>{t('tools.truthordare.title', 'Doğruluk mu Cesaret mi?')}</Text>
-                        <View style={{ width: 44 }} />
-                    </View>
-
-                    {/* Oyuncular (opsiyonel) */}
-                    <Text style={styles.sectionLabel}>{t('tools.truthordare.players_label', 'Oyuncular (opsiyonel)')}</Text>
-                    <View style={styles.playerInputRow}>
-                        <TextInput
-                            style={styles.playerInput}
-                            placeholder={t('tools.truthordare.add_player', 'İsim ekle...')}
-                            placeholderTextColor={theme.colors.textSecondary}
-                            value={newPlayer}
-                            onChangeText={setNewPlayer}
-                            onSubmitEditing={addPlayer}
-                        />
-                        <TouchableOpacity style={styles.addBtn} onPress={addPlayer} accessibilityLabel={t('common.add', 'Ekle')} accessibilityRole="button">
-                            <Ionicons name="add" size={24} color="#fff" />
-                        </TouchableOpacity>
-                    </View>
-                    {players.length > 0 && (
-                        <View style={styles.playerChips}>
-                            {players.map((p, i) => (
-                                <TouchableOpacity
-                                    key={`${p}-${i}`}
-                                    style={[styles.playerChip, i === turnIndex && styles.playerChipActive]}
-                                    onPress={() => removePlayer(i)}
-                                    accessibilityLabel={`${p} — ${t('tools.wheel.delete', 'Sil')}`}
-                                    accessibilityRole="button"
-                                >
-                                    <Text style={[styles.playerChipText, i === turnIndex && styles.playerChipTextActive]}>{p}</Text>
-                                    <Ionicons name="close" size={13} color={i === turnIndex ? '#fff' : theme.colors.textSecondary} />
-                                </TouchableOpacity>
-                            ))}
+            <DismissKeyboardView>
+                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+                    <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+                        <View style={styles.header}>
+                            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} accessibilityLabel={t('common.back', 'Geri')} accessibilityRole="button">
+                                <Ionicons name="chevron-back" size={26} color={theme.colors.text} />
+                            </TouchableOpacity>
+                            <Text style={styles.title}>{t('tools.truthordare.title', 'Doğruluk mu Cesaret mi?')}</Text>
+                            <View style={{ width: 44 }} />
                         </View>
-                    )}
 
-                    {/* Sıra göstergesi */}
-                    {currentPlayer && (
-                        <MotiView key={`turn-${turnIndex}-${cardKey}`} from={{ opacity: 0, translateY: -6 }} animate={{ opacity: 1, translateY: 0 }}>
-                            <Text style={styles.turnText}>
-                                {t('tools.truthordare.turn_label', 'Sıra')}: <Text style={styles.turnName}>{currentPlayer}</Text>
-                            </Text>
-                        </MotiView>
-                    )}
+                        {/* Oyuncular (opsiyonel) */}
+                        <Text style={styles.sectionLabel}>{t('tools.truthordare.players_label', 'Oyuncular (opsiyonel)')}</Text>
+                        <View style={styles.playerInputRow}>
+                            <TextInput
+                                style={styles.playerInput}
+                                placeholder={t('tools.truthordare.add_player', 'İsim ekle...')}
+                                placeholderTextColor={theme.colors.textSecondary}
+                                value={newPlayer}
+                                onChangeText={setNewPlayer}
+                                onSubmitEditing={addPlayer}
+                            />
+                            <TouchableOpacity style={styles.addBtn} onPress={addPlayer} accessibilityLabel={t('common.add', 'Ekle')} accessibilityRole="button">
+                                <Ionicons name="add" size={24} color="#fff" />
+                            </TouchableOpacity>
+                        </View>
+                        {players.length > 0 && (
+                            <View style={styles.playerChips}>
+                                {players.map((p, i) => (
+                                    <TouchableOpacity
+                                        key={`${p}-${i}`}
+                                        style={[styles.playerChip, i === turnIndex && styles.playerChipActive]}
+                                        onPress={() => removePlayer(i)}
+                                        accessibilityLabel={`${p} — ${t('tools.wheel.delete', 'Sil')}`}
+                                        accessibilityRole="button"
+                                    >
+                                        <Text style={[styles.playerChipText, i === turnIndex && styles.playerChipTextActive]}>{p}</Text>
+                                        <Ionicons name="close" size={13} color={i === turnIndex ? '#fff' : theme.colors.textSecondary} />
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        )}
 
-                    {/* Kart */}
-                    {card ? (
-                        <MotiView
-                            key={cardKey}
-                            from={{ opacity: 0, scale: 0.7, rotate: '-3deg' }}
-                            animate={{ opacity: 1, scale: 1, rotate: '0deg' }}
-                            transition={{ type: 'spring', damping: 13 }}
-                        >
-                            <GlassCard style={[styles.card, { borderColor: cardColor + '55' }] as any}>
-                                <View style={[styles.typeBadge, { backgroundColor: cardColor + '22' }]}>
-                                    <Ionicons name={card.type === 'truth' ? 'chatbubble-ellipses-outline' : 'flame-outline'} size={14} color={cardColor} />
-                                    <Text style={[styles.typeBadgeText, { color: cardColor }]}>
-                                        {card.type === 'truth' ? t('tools.truthordare.truth', 'Doğruluk') : t('tools.truthordare.dare', 'Cesaret')}
-                                    </Text>
-                                </View>
-                                <Text style={styles.cardText} adjustsFontSizeToFit numberOfLines={6}>{card.text}</Text>
+                        {/* Sıra göstergesi */}
+                        {currentPlayer && (
+                            <MotiView key={`turn-${turnIndex}-${cardKey}`} from={{ opacity: 0, translateY: -6 }} animate={{ opacity: 1, translateY: 0 }}>
+                                <Text style={styles.turnText}>
+                                    {t('tools.truthordare.turn_label', 'Sıra')}: <Text style={styles.turnName}>{currentPlayer}</Text>
+                                </Text>
+                            </MotiView>
+                        )}
+
+                        {/* Kart */}
+                        {card ? (
+                            <MotiView
+                                key={cardKey}
+                                from={{ opacity: 0, scale: 0.7, rotate: '-3deg' }}
+                                animate={{ opacity: 1, scale: 1, rotate: '0deg' }}
+                                transition={{ type: 'spring', damping: 13 }}
+                            >
+                                <GlassCard style={[styles.card, { borderColor: cardColor + '55' }] as any}>
+                                    <View style={[styles.typeBadge, { backgroundColor: cardColor + '22' }]}>
+                                        <Ionicons name={card.type === 'truth' ? 'chatbubble-ellipses-outline' : 'flame-outline'} size={14} color={cardColor} />
+                                        <Text style={[styles.typeBadgeText, { color: cardColor }]}>
+                                            {card.type === 'truth' ? t('tools.truthordare.truth', 'Doğruluk') : t('tools.truthordare.dare', 'Cesaret')}
+                                        </Text>
+                                    </View>
+                                    <Text style={styles.cardText} adjustsFontSizeToFit numberOfLines={6}>{card.text}</Text>
+                                </GlassCard>
+                            </MotiView>
+                        ) : (
+                            <GlassCard style={styles.card}>
+                                <Ionicons name="help-circle-outline" size={54} color={theme.colors.surfaceBorder} />
+                                <Text style={styles.emptyText}>{t('tools.truthordare.empty', 'Seçimini yap: doğruluk mu, cesaret mi?')}</Text>
                             </GlassCard>
-                        </MotiView>
-                    ) : (
-                        <GlassCard style={styles.card}>
-                            <Ionicons name="help-circle-outline" size={54} color={theme.colors.surfaceBorder} />
-                            <Text style={styles.emptyText}>{t('tools.truthordare.empty', 'Seçimini yap: doğruluk mu, cesaret mi?')}</Text>
-                        </GlassCard>
-                    )}
+                        )}
 
-                    {/* Seçim butonları */}
-                    <View style={styles.btnRow}>
+                        {/* Seçim butonları */}
+                        <View style={styles.btnRow}>
+                            <TouchableOpacity
+                                style={[styles.bigBtn, { backgroundColor: TYPE_COLOR.truth }]}
+                                onPress={() => pickCard('truth')}
+                                accessibilityRole="button"
+                                accessibilityLabel={t('tools.truthordare.truth', 'Doğruluk')}
+                            >
+                                <Ionicons name="chatbubble-ellipses" size={26} color="#fff" />
+                                <Text style={styles.bigBtnText}>{t('tools.truthordare.truth', 'Doğruluk')}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.bigBtn, { backgroundColor: TYPE_COLOR.dare }]}
+                                onPress={() => pickCard('dare')}
+                                accessibilityRole="button"
+                                accessibilityLabel={t('tools.truthordare.dare', 'Cesaret')}
+                            >
+                                <Ionicons name="flame" size={26} color="#fff" />
+                                <Text style={styles.bigBtnText}>{t('tools.truthordare.dare', 'Cesaret')}</Text>
+                            </TouchableOpacity>
+                        </View>
                         <TouchableOpacity
-                            style={[styles.bigBtn, { backgroundColor: TYPE_COLOR.truth }]}
-                            onPress={() => pickCard('truth')}
+                            style={styles.randomBtn}
+                            onPress={() => pickCard('random')}
                             accessibilityRole="button"
-                            accessibilityLabel={t('tools.truthordare.truth', 'Doğruluk')}
+                            accessibilityLabel={t('tools.truthordare.random', 'Rastgele')}
                         >
-                            <Ionicons name="chatbubble-ellipses" size={26} color="#fff" />
-                            <Text style={styles.bigBtnText}>{t('tools.truthordare.truth', 'Doğruluk')}</Text>
+                            <Ionicons name="shuffle-outline" size={18} color={theme.colors.text} />
+                            <Text style={styles.randomBtnText}>{t('tools.truthordare.random', 'Rastgele')}</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[styles.bigBtn, { backgroundColor: TYPE_COLOR.dare }]}
-                            onPress={() => pickCard('dare')}
-                            accessibilityRole="button"
-                            accessibilityLabel={t('tools.truthordare.dare', 'Cesaret')}
-                        >
-                            <Ionicons name="flame" size={26} color="#fff" />
-                            <Text style={styles.bigBtnText}>{t('tools.truthordare.dare', 'Cesaret')}</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <TouchableOpacity
-                        style={styles.randomBtn}
-                        onPress={() => pickCard('random')}
-                        accessibilityRole="button"
-                        accessibilityLabel={t('tools.truthordare.random', 'Rastgele')}
-                    >
-                        <Ionicons name="shuffle-outline" size={18} color={theme.colors.text} />
-                        <Text style={styles.randomBtnText}>{t('tools.truthordare.random', 'Rastgele')}</Text>
-                    </TouchableOpacity>
-                </ScrollView>
-            </KeyboardAvoidingView>
+                    </ScrollView>
+                </KeyboardAvoidingView>
+            </DismissKeyboardView>
         </SafeAreaView>
     );
 }

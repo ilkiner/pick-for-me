@@ -90,7 +90,7 @@ export default function OrderTeamScreen({ navigation, route }: any) {
                 <View style={{ width: 44 }} />
             </View>
 
-            <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+            <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
                 {/* Mode toggle */}
                 <View style={styles.modeRow}>
                     <TouchableOpacity

@@ -20,6 +20,7 @@ import { AppTheme } from '../../core/Theme';
 import { GlassCard } from '../../components/GlassCard';
 import { ModernButton } from '../../components/ModernButton';
 import SoundManager from '../../core/SoundManager';
+import { DismissKeyboardView } from '../../components/DismissKeyboardView';
 
 export default function WheelOfFortuneScreen({ navigation, route }: any) {
     const { t } = useTranslation();
@@ -203,92 +204,95 @@ export default function WheelOfFortuneScreen({ navigation, route }: any) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-                <View style={styles.header}>
-                    <TouchableOpacity
-                        onPress={() => navigation.goBack()}
-                        style={styles.backBtn}
-                        accessibilityLabel={t('common.back', 'Geri')}
-                        accessibilityRole="button"
-                    >
-                        <Ionicons name="chevron-back" size={26} color={theme.colors.text} />
-                    </TouchableOpacity>
-                    <Text style={styles.title}>{t('tools.wheel.title')}</Text>
-                    <View style={{ width: 44 }} />
-                </View>
-
-                <View style={styles.wheelArea}>
-                    {options.length > 1 ? renderWheel() : (
-                        <View style={styles.emptyContainer}>
-                            <Ionicons name="aperture-outline" size={80} color={theme.colors.surfaceBorder} />
-                            <Text style={styles.emptyTitle}>{t('tools.wheel.empty')}</Text>
-                            <Text style={styles.emptyHint}>
-                                {options.length === 1
-                                    ? t('tools.wheel.need_more')
-                                    : t('tools.wheel.placeholder')}
-                            </Text>
-                        </View>
-                    )}
-                </View>
-
-                <View style={styles.controls}>
-                    <TouchableOpacity
-                        style={styles.loadListBtn}
-                        onPress={() => navigation.navigate('SavedLists', { pickMode: true, returnScreen: 'WheelOfFortune' })}
-                        accessibilityRole="button"
-                    >
-                        <Ionicons name="bookmark-outline" size={16} color={theme.colors.primary} />
-                        <Text style={styles.loadListText}>{t('lists.load', 'Kayıtlı listeden yükle')}</Text>
-                    </TouchableOpacity>
-                    <View style={styles.inputRow}>
-                        <TextInput
-                            style={styles.input}
-                            placeholder={t('tools.wheel.placeholder')}
-                            placeholderTextColor={theme.colors.textSecondary}
-                            value={newOption}
-                            onChangeText={setNewOption}
-                            onSubmitEditing={addOption}
-                            accessibilityLabel={t('tools.wheel.placeholder')}
-                        />
+            <DismissKeyboardView>
+                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+                    <View style={styles.header}>
                         <TouchableOpacity
-                            style={styles.addBtn}
-                            onPress={addOption}
-                            accessibilityLabel={t('tools.wheel.add_option')}
+                            onPress={() => navigation.goBack()}
+                            style={styles.backBtn}
+                            accessibilityLabel={t('common.back', 'Geri')}
                             accessibilityRole="button"
                         >
-                            <Ionicons name="add" size={28} color="#fff" />
+                            <Ionicons name="chevron-back" size={26} color={theme.colors.text} />
                         </TouchableOpacity>
+                        <Text style={styles.title}>{t('tools.wheel.title')}</Text>
+                        <View style={{ width: 44 }} />
                     </View>
 
-                    <FlatList
-                        data={options}
-                        keyExtractor={item => item.id}
-                        style={styles.list}
-                        contentContainerStyle={styles.listContent}
-                        renderItem={({ item }) => (
-                            <GlassCard style={styles.listItem}>
-                                <Text style={styles.listText} numberOfLines={1}>{item.label}</Text>
-                                <TouchableOpacity
-                                    onPress={() => removeOption(item.id)}
-                                    accessibilityLabel={t('tools.wheel.delete')}
-                                    accessibilityRole="button"
-                                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                                >
-                                    <Ionicons name="trash-outline" size={20} color={theme.colors.error} />
-                                </TouchableOpacity>
-                            </GlassCard>
+                    <View style={styles.wheelArea}>
+                        {options.length > 1 ? renderWheel() : (
+                            <View style={styles.emptyContainer}>
+                                <Ionicons name="aperture-outline" size={80} color={theme.colors.surfaceBorder} />
+                                <Text style={styles.emptyTitle}>{t('tools.wheel.empty')}</Text>
+                                <Text style={styles.emptyHint}>
+                                    {options.length === 1
+                                        ? t('tools.wheel.need_more')
+                                        : t('tools.wheel.placeholder')}
+                                </Text>
+                            </View>
                         )}
-                    />
+                    </View>
 
-                    <ModernButton
-                        title={isSpinning ? t('tools.wheel.spinning') : t('tools.wheel.spin')}
-                        onPress={handleSpin}
-                        disabled={options.length < 2 || isSpinning}
-                        variant="primary"
-                        style={styles.spinBtn}
-                    />
-                </View>
-            </KeyboardAvoidingView>
+                    <View style={styles.controls}>
+                        <TouchableOpacity
+                            style={styles.loadListBtn}
+                            onPress={() => navigation.navigate('SavedLists', { pickMode: true, returnScreen: 'WheelOfFortune' })}
+                            accessibilityRole="button"
+                        >
+                            <Ionicons name="bookmark-outline" size={16} color={theme.colors.primary} />
+                            <Text style={styles.loadListText}>{t('lists.load', 'Kayıtlı listeden yükle')}</Text>
+                        </TouchableOpacity>
+                        <View style={styles.inputRow}>
+                            <TextInput
+                                style={styles.input}
+                                placeholder={t('tools.wheel.placeholder')}
+                                placeholderTextColor={theme.colors.textSecondary}
+                                value={newOption}
+                                onChangeText={setNewOption}
+                                onSubmitEditing={addOption}
+                                accessibilityLabel={t('tools.wheel.placeholder')}
+                            />
+                            <TouchableOpacity
+                                style={styles.addBtn}
+                                onPress={addOption}
+                                accessibilityLabel={t('tools.wheel.add_option')}
+                                accessibilityRole="button"
+                            >
+                                <Ionicons name="add" size={28} color="#fff" />
+                            </TouchableOpacity>
+                        </View>
+
+                        <FlatList
+                            data={options}
+                            keyExtractor={item => item.id}
+                            keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag"
+                            style={styles.list}
+                            contentContainerStyle={styles.listContent}
+                            renderItem={({ item }) => (
+                                <GlassCard style={styles.listItem}>
+                                    <Text style={styles.listText} numberOfLines={1}>{item.label}</Text>
+                                    <TouchableOpacity
+                                        onPress={() => removeOption(item.id)}
+                                        accessibilityLabel={t('tools.wheel.delete')}
+                                        accessibilityRole="button"
+                                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                                    >
+                                        <Ionicons name="trash-outline" size={20} color={theme.colors.error} />
+                                    </TouchableOpacity>
+                                </GlassCard>
+                            )}
+                        />
+
+                        <ModernButton
+                            title={isSpinning ? t('tools.wheel.spinning') : t('tools.wheel.spin')}
+                            onPress={handleSpin}
+                            disabled={options.length < 2 || isSpinning}
+                            variant="primary"
+                            style={styles.spinBtn}
+                        />
+                    </View>
+                </KeyboardAvoidingView>
+            </DismissKeyboardView>
         </SafeAreaView>
     );
 }

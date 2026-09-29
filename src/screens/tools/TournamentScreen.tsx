@@ -124,7 +124,7 @@ export default function TournamentScreen({ navigation, route }: any) {
             </View>
 
             {phase === 'setup' && (
-                <ScrollView contentContainerStyle={styles.setupContent} keyboardShouldPersistTaps="handled">
+                <ScrollView contentContainerStyle={styles.setupContent} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
                     <Text style={styles.sectionLabel}>{t('tools.tournament.participants', 'Katılımcılar')}</Text>
 
                     <TouchableOpacity

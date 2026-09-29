@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import {
     View, Text, StyleSheet, TouchableOpacity, FlatList,
-    TextInput, Alert, Modal, ScrollView,
+    TextInput, Alert, Modal, ScrollView, KeyboardAvoidingView, Platform, Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -84,6 +84,11 @@ function createStyles(theme: AppTheme) {
             shadowOpacity: 0.4, shadowRadius: 8, elevation: 8,
         },
         modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
+        // Sayfanın üstünde kalan boş alan — dokununca klavyeyi kapatır.
+        modalBackdrop: { flex: 1 },
+        // ScrollView içeriği kadar yer kaplasın, ekranı doldurmasın: yoksa
+        // alttan açılan sayfa tam ekrana yayılır.
+        modalSheetScroll: { flexGrow: 0 },
         modalSheet: {
             backgroundColor: theme.colors.modalSheet,
             borderTopLeftRadius: 28, borderTopRightRadius: 28,
@@ -366,8 +371,29 @@ export default function SavedListsScreen({ navigation, route }: Props) {
             />
 
             <Modal visible={modalVisible} animationType="slide" transparent>
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalSheet}>
+                {/* Klavye açıkken Kaydet düğmesi ekranın altında kalıyor ve forma
+                    hiç onay verilemiyordu. KeyboardAvoidingView sayfayı yukarı
+                    itiyor, ScrollView da kısa ekranlarda formun tamamına erişim
+                    bıraktığı için düğme her zaman ulaşılabilir kalıyor. */}
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={styles.modalOverlay}
+                >
+                    {/* Sayfanın üstünde kalan boşluğa dokunmak klavyeyi kapatır;
+                        sayfanın kendisine dokunmak kapatmaz — içinde form var. */}
+                    <TouchableOpacity
+                        style={styles.modalBackdrop}
+                        activeOpacity={1}
+                        onPress={Keyboard.dismiss}
+                        accessible={false}
+                    />
+                    <ScrollView
+                        style={styles.modalSheetScroll}
+                        contentContainerStyle={styles.modalSheet}
+                        keyboardShouldPersistTaps="handled"
+                        keyboardDismissMode="on-drag"
+                        showsVerticalScrollIndicator={false}
+                    >
                         <Text style={styles.modalTitle}>
                             {editTarget ? t('lists.edit', 'Düzenle') : t('lists.create', 'Yeni Liste')}
                         </Text>
@@ -434,8 +460,8 @@ export default function SavedListsScreen({ navigation, route }: Props) {
                                 <Text style={styles.modalSaveText}>{t('lists.save', 'Kaydet')}</Text>
                             </TouchableOpacity>
                         </View>
-                    </View>
-                </View>
+                    </ScrollView>
+                </KeyboardAvoidingView>
             </Modal>
         </SafeAreaView>
     );

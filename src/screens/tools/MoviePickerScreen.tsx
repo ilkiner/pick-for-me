@@ -13,6 +13,7 @@ import { GlassCard } from '../../components/GlassCard';
 import { ModernButton } from '../../components/ModernButton';
 import { MatchFlow } from '../../components/MatchFlow';
 import MOVIES_DATA from '../../content/movies.json';
+import { DismissKeyboardView } from '../../components/DismissKeyboardView';
 
 type Mode = 'random' | 'together';
 type Genre = 'action' | 'comedy' | 'drama' | 'thriller' | 'horror' | 'scifi' | 'romance' | 'animation';
@@ -371,33 +372,35 @@ export default function MoviePickerScreen({ navigation }: any) {
 
     return (
         <SafeAreaView style={styles.container}>
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-                        <Ionicons name="chevron-back" size={28} color={theme.colors.text} />
-                    </TouchableOpacity>
-                    <Text style={styles.title}>{t('tools.movie.title')}</Text>
-                    <View style={{ width: 44 }} />
-                </View>
+            <DismissKeyboardView>
+                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+                    <View style={styles.header}>
+                        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+                            <Ionicons name="chevron-back" size={28} color={theme.colors.text} />
+                        </TouchableOpacity>
+                        <Text style={styles.title}>{t('tools.movie.title')}</Text>
+                        <View style={{ width: 44 }} />
+                    </View>
 
-                {renderModeTabs()}
-                {/* Deste kaydırılırken tür değiştirmek anlamsız — oyun sırasında gizli */}
-                {(mode === 'random' || matchPhase === 'setup') && renderTypeTabs()}
+                    {renderModeTabs()}
+                    {/* Deste kaydırılırken tür değiştirmek anlamsız — oyun sırasında gizli */}
+                    {(mode === 'random' || matchPhase === 'setup') && renderTypeTabs()}
 
-                {mode === 'random' ? (
-                    renderRandomMode()
-                ) : matchPhase === 'setup' ? (
-                    renderTogetherSetup()
-                ) : (
-                    <MatchFlow
-                        key={deckVersion}
-                        deck={deck}
-                        resultI18nKey="tools.match.result_movie"
-                        onRetry={() => startMatch(matchSource)}
-                        onChangeSource={() => setMatchPhase('setup')}
-                    />
-                )}
-            </KeyboardAvoidingView>
+                    {mode === 'random' ? (
+                        renderRandomMode()
+                    ) : matchPhase === 'setup' ? (
+                        renderTogetherSetup()
+                    ) : (
+                        <MatchFlow
+                            key={deckVersion}
+                            deck={deck}
+                            resultI18nKey="tools.match.result_movie"
+                            onRetry={() => startMatch(matchSource)}
+                            onChangeSource={() => setMatchPhase('setup')}
+                        />
+                    )}
+                </KeyboardAvoidingView>
+            </DismissKeyboardView>
         </SafeAreaView>
     );
 }
