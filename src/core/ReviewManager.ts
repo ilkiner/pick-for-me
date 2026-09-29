@@ -1,9 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Keyboard } from 'react-native';
 import * as StoreReview from 'expo-store-review';
 
 const RATED_KEY = '@pickforme:rated';
 const COUNT_KEY = '@pickforme:resultCount';
 const MIN_RESULTS = 5;
+
+// Klavyenin kapanma animasyonu. Hemen ardından istem açılırsa klavye hâlâ
+// ekranda oluyor ve istemin altını örtüyor.
+const KEYBOARD_SETTLE_MS = 350;
 
 /** Sonuç sayacını artırır ve YENİ toplamı döndürür (hata durumunda 0). */
 export async function trackResult(): Promise<number> {
@@ -32,6 +37,18 @@ export async function maybeRequestReview(): Promise<boolean> {
         if (count < MIN_RESULTS) return false;
         const isAvailable = await StoreReview.isAvailableAsync();
         if (!isAvailable) return false;
+
+        // Klavye açıkken istemi AÇMA. Bu istem Google Play'in kendi diyaloğu:
+        // konumunu, boyutunu, hiçbir şeyini biz belirleyemiyoruz. Sonuç ekranına
+        // bir metin alanından gelindiğinde (Çarkıfelek'te seçenek yazıp çevirmek
+        // gibi) klavye açık kalıyor ve diyaloğun onay düğmesinin üstüne biniyor —
+        // kullanıcı puan veremiyor, kapatamıyor da.
+        //
+        // dismiss() eşzamanlı dönüyor ama klavye ~250ms boyunca kayarak
+        // kapanıyor; beklemeden açarsak istem yine klavyenin üstüne denk gelir.
+        Keyboard.dismiss();
+        await new Promise(resolve => setTimeout(resolve, KEYBOARD_SETTLE_MS));
+
         await StoreReview.requestReview();
         await AsyncStorage.setItem(RATED_KEY, 'true');
         return true;
