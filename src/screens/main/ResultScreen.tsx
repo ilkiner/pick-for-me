@@ -18,6 +18,38 @@ import { celebrateWinner } from '../../core/celebrate';
 import { trackResult, maybeRequestReview } from '../../core/ReviewManager';
 import { track } from '../../core/Analytics';
 
+// --- Sonuç yazısının boyu ---
+// Kutu sabit: 300x300, her yandan 32 iç boşluk → yazıya kalan genişlik 236px.
+const RESULT_BOX_SIZE = 300;
+const RESULT_BOX_PADDING = 32;
+const RESULT_TEXT_MAX_SIZE = 56;
+const RESULT_TEXT_MIN_SIZE = 22;
+// Kalın (900) bir sans yazıda ortalama karakter genişliği ≈ punto × 0.6.
+const AVG_GLYPH_RATIO = 0.6;
+
+/**
+ * Başlangıç punto'su: EN UZUN KELİME tek satıra sığacak şekilde.
+ *
+ * Tek başına `adjustsFontSizeToFit` bunu çözmüyor. O, metni `numberOfLines`
+ * kadar satıra SIĞDIRMAYA çalışıyor ve kelimeyi ortadan bölmek de onun için
+ * geçerli bir sığdırma: "The Substance" 56 punto'da "The Sub" / "stance"
+ * olarak iki satıra yerleşince koşul sağlanmış sayılıyor ve küçültme orada
+ * duruyor. Bildirilen hata tam olarak buydu.
+ *
+ * En uzun kelimeyi bir satıra sığdıran punto ile başlayınca bölünecek kelime
+ * kalmıyor; `adjustsFontSizeToFit` + `minimumFontScale` de geri kalanı
+ * (çok kelimeli uzun başlıklar, alışılmadık uzunlukta tek kelimeler) kendi
+ * hallediyor.
+ */
+function resultFontSize(text: string): number {
+    const usableWidth = RESULT_BOX_SIZE - RESULT_BOX_PADDING * 2;
+    const longestWord = text
+        .split(/s+/)
+        .reduce((longest, word) => Math.max(longest, word.length), 1);
+    const fitted = usableWidth / (longestWord * AVG_GLYPH_RATIO);
+    return Math.max(RESULT_TEXT_MIN_SIZE, Math.min(RESULT_TEXT_MAX_SIZE, Math.floor(fitted)));
+}
+
 function createStyles(theme: AppTheme) {
     return StyleSheet.create({
         container: { flex: 1, backgroundColor: theme.colors.background },
@@ -38,8 +70,8 @@ function createStyles(theme: AppTheme) {
         historyContent: { padding: theme.spacing.lg, paddingBottom: theme.spacing.xl },
         content: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: theme.spacing.lg },
         resultContainer: { width: '100%', alignItems: 'center' },
-        resultBox: { width: 300, height: 300, borderRadius: 40, alignItems: 'center', justifyContent: 'center', padding: theme.spacing.xl },
-        resultText: { fontSize: 56, fontWeight: '900', color: theme.colors.text, textAlign: 'center' },
+        resultBox: { width: RESULT_BOX_SIZE, height: RESULT_BOX_SIZE, borderRadius: 40, alignItems: 'center', justifyContent: 'center', padding: RESULT_BOX_PADDING },
+        resultText: { fontWeight: '900', color: theme.colors.text, textAlign: 'center' },
         colorHex: { marginTop: theme.spacing.xl, fontSize: 24, fontWeight: '700', color: theme.colors.textSecondary, letterSpacing: 2 },
         // Sistem gezinme alanı SafeAreaView'ın bottom edge'inden geliyor; burada
         // platforma göre sabit pay vermeye gerek yok (eskiden Android'de xxl idi).
@@ -376,10 +408,18 @@ export default function ResultScreen({ route, navigation }: any) {
                                 styles.resultBox,
                                 type === 'color' ? { backgroundColor: result.hex || result, borderColor: 'rgba(255,255,255,0.3)' } : undefined
                             ] as any}>
-                                <Text style={[
-                                    styles.resultText,
-                                    type === 'color' ? { color: '#fff', textShadowColor: 'rgba(0, 0, 0, 0.3)', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 10 } : undefined
-                                ] as any} adjustsFontSizeToFit numberOfLines={3}>
+                                <Text
+                                    style={[
+                                        styles.resultText,
+                                        { fontSize: resultFontSize(getResultText(result, type)) },
+                                        type === 'color' ? { color: '#fff', textShadowColor: 'rgba(0, 0, 0, 0.3)', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 10 } : undefined,
+                                    ] as any}
+                                    adjustsFontSizeToFit
+                                    minimumFontScale={0.4}
+                                    numberOfLines={3}
+                                    // Android aksi halde uzun kelimeleri tireleyip ortadan bölebiliyor.
+                                    textBreakStrategy="simple"
+                                >
                                     {getResultText(result, type)}
                                 </Text>
                             </GlassCard>
