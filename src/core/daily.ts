@@ -31,7 +31,8 @@ const CHALLENGES = ALL_CHALLENGES as DailyChallenge[];
 // Sürüm tuzu: içerik listesi her büyüdüğünde sondaki sayı artırılır
 // (v2 → v3 → ...), böylece rotasyon herkes için aynı anda yenilenir.
 // v2: içerik 252 → 268 göreve çıktı.
-const DAILY_SALT = 'pfm-daily-v2';
+// v3: içerik 268 → 276 göreve çıktı.
+const DAILY_SALT = 'pfm-daily-v3';
 
 // Cihazın YEREL gününü YYYY-MM-DD olarak verir (UTC değil — görev
 // kullanıcının kendi gece yarısında değişmeli).
