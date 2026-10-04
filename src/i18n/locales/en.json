@@ -135,7 +135,7 @@
         },
         "slide3": {
             "title": "Go unlimited\nwith Pro",
-            "body": "Ad-free, unlimited lists, premium themes, and cloud sync — one subscription."
+            "body": "Ad-free, unlimited lists, a 10-day history, and no watermark — one subscription."
         }
     },
     "settings": {
@@ -146,9 +146,9 @@
         "theme_light": "Light",
         "theme_system": "System",
         "go_pro": "Pick For Me Pro",
-        "go_pro_desc": "Ad-free, unlimited, premium",
+        "go_pro_desc": "Ad-free, unlimited lists, 10-day history",
         "pro_active": "Pro Member ✦",
-        "pro_active_desc": "All features unlocked",
+        "pro_active_desc": "Thanks for supporting Pick For Me",
         "restore": "Restore Purchases",
         "restore_desc": "Activate a previous subscription",
         "sound": "Sound effects",
@@ -477,13 +477,11 @@
         "restore_none_title": "Not Found",
         "restore_none_msg": "No active subscription found for this account.",
         "already_pro": "You're Already Pro! 🎉",
-        "enjoy": "Enjoy all premium features.",
+        "enjoy": "Thanks for supporting Pick For Me.",
         "feature_no_ads": "Completely ad-free experience",
-        "feature_unlimited_lists": "Unlimited saved lists & wheels",
-        "feature_themes": "Premium themes & customization",
-        "feature_cloud_sync": "Cloud sync across devices",
-        "feature_no_watermark": "No watermark on shared results",
-        "feature_all_content": "All content packs"
+        "feature_unlimited_lists": "Unlimited saved lists & items (free: 3 lists, 20 items each)",
+        "feature_history": "10-day result history (free: 48 hours)",
+        "feature_no_watermark": "No watermark on shared results"
     },
     "pro": {
         "upgrade": "Upgrade to Pro",

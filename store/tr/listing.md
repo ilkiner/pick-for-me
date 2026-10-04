@@ -52,7 +52,7 @@ Bir listeyi rastgele sıraya diz veya insanları dengeli rastgele takımlara bö
 ✔ Listelerini kaydeder — aynı seçenekleri tekrar yazmak yok
 ✔ Dürüst para kazanma — az reklam, net Pro fiyatlandırması, hile yok
 
-**Pick For Me Pro**, tüm reklamları kaldırır ve sınırsız kayıtlı listeler, genişletilmiş geçmiş ve premium özelliklerin kilidini açar. Ücretsiz deneme süresine sahip aylık ve yıllık planlar mevcuttur.
+**Pick For Me Pro**, tüm reklamları kaldırır, sınırsız kayıtlı liste ve 10 günlük sonuç geçmişinin (ücretsizde 48 saat) kilidini açar, paylaşılan sonuçlardaki filigranı kaldırır. Ücretsiz deneme süresine sahip aylık ve yıllık planlar mevcuttur.
 
 ---
 

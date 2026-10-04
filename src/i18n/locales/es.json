@@ -135,7 +135,7 @@
         },
         "slide3": {
             "title": "Sin límites\ncon Pro",
-            "body": "Sin anuncios, listas ilimitadas, temas premium y sincronización en la nube — una sola suscripción."
+            "body": "Sin anuncios, listas ilimitadas, historial de 10 días y sin marca de agua — una sola suscripción."
         }
     },
     "settings": {
@@ -146,9 +146,9 @@
         "theme_light": "Claro",
         "theme_system": "Sistema",
         "go_pro": "Pick For Me Pro",
-        "go_pro_desc": "Sin anuncios, ilimitado, premium",
+        "go_pro_desc": "Sin anuncios, listas ilimitadas, historial de 10 días",
         "pro_active": "Miembro Pro ✦",
-        "pro_active_desc": "Todas las funciones desbloqueadas",
+        "pro_active_desc": "Gracias por apoyar Pick For Me",
         "restore": "Restaurar compras",
         "restore_desc": "Activa una suscripción anterior",
         "sound": "Efectos de sonido",
@@ -477,13 +477,11 @@
         "restore_none_title": "No encontrada",
         "restore_none_msg": "No se encontró una suscripción activa para esta cuenta.",
         "already_pro": "¡Ya eres Pro! 🎉",
-        "enjoy": "Disfruta de todas las funciones premium.",
+        "enjoy": "Gracias por apoyar Pick For Me.",
         "feature_no_ads": "Experiencia totalmente sin anuncios",
-        "feature_unlimited_lists": "Listas y ruletas guardadas ilimitadas",
-        "feature_themes": "Temas premium y personalización",
-        "feature_cloud_sync": "Sincronización en la nube entre dispositivos",
-        "feature_no_watermark": "Sin marca de agua al compartir resultados",
-        "feature_all_content": "Todos los paquetes de contenido"
+        "feature_unlimited_lists": "Listas y elementos guardados ilimitados (gratis: 3 listas, 20 elementos cada una)",
+        "feature_history": "Historial de resultados de 10 días (gratis: 48 horas)",
+        "feature_no_watermark": "Sin marca de agua al compartir resultados"
     },
     "pro": {
         "upgrade": "Pásate a Pro",

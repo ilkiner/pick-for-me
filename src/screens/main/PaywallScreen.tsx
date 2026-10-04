@@ -141,13 +141,14 @@ function derivePricing(plans: Plans): Pricing | null {
     };
 }
 
+// Yalnızca gerçekten Pro'ya bağlı olanlar: reklamsızlık, liste limitleri
+// (ProContext.FREE_*), paylaşım filigranı ve geçmiş süresi. Tema ve bulut
+// senkronu herkese açık, kilitli içerik paketi yok — satırı eklemeyin.
 const FEATURES = [
     { icon: 'ban-outline', key: 'no_ads' },
     { icon: 'infinite-outline', key: 'unlimited_lists' },
-    { icon: 'color-palette-outline', key: 'themes' },
-    { icon: 'cloud-upload-outline', key: 'cloud_sync' },
+    { icon: 'time-outline', key: 'history' },
     { icon: 'share-social-outline', key: 'no_watermark' },
-    { icon: 'layers-outline', key: 'all_content' },
 ];
 
 function createStyles(theme: AppTheme) {
@@ -422,7 +423,7 @@ export default function PaywallScreen({ navigation }: any) {
                     <Text style={styles.heroSub}>{t('paywall.hero_sub')}</Text>
                 </MotiView>
 
-                {/* Özellik kartı — 6 satır */}
+                {/* Özellik kartı */}
                 <MotiView
                     from={{ opacity: 0, translateY: 20 }}
                     animate={{ opacity: 1, translateY: 0 }}

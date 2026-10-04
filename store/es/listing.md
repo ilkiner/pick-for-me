@@ -73,9 +73,10 @@ Créalas una vez, úsalas siempre.
 ✔ Guarda tus listas: no vuelvas a escribir las mismas opciones
 ✔ Monetización honesta: anuncios discretos, precio de Pro claro, sin trampas
 
-**Pick For Me Pro** elimina todos los anuncios y desbloquea listas guardadas
-ilimitadas, historial ampliado y funciones premium. Disponible con planes
-mensual y anual, con prueba gratuita.
+**Pick For Me Pro** elimina todos los anuncios, desbloquea listas guardadas
+ilimitadas y un historial de resultados de 10 días (48 horas en la versión
+gratuita) y quita la marca de agua de los resultados compartidos. Disponible
+con planes mensual y anual, con prueba gratuita.
 
 ---
 

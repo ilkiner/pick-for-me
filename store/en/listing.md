@@ -58,8 +58,9 @@ Save and reuse your custom lists across all tools. Create once, use everywhere.
 ✔ Saves your lists — never retype the same options
 ✔ Honest monetization — light ads, clear Pro pricing, no tricks
 
-**Pick For Me Pro** removes all ads and unlocks unlimited saved lists, extended
-history, and premium features. Monthly and yearly plans available with a free trial.
+**Pick For Me Pro** removes all ads, unlocks unlimited saved lists and a 10-day
+result history (48 hours for free), and removes the watermark from shared results.
+Monthly and yearly plans available with a free trial.
 
 ---
 
