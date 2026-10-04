@@ -186,8 +186,42 @@ export async function clearHistoryInCloud(): Promise<ClearHistoryResult> {
     }
 }
 
-// Merge strategy: cloud wins for lists (authoritative), local wins for history
-// (we append local items that aren't in cloud yet)
+// Toplu geçmiş yükleme: misafirken biriken kayıtları ilk girişte hesaba taşır.
+// ignoreDuplicates (ON CONFLICT DO NOTHING): bulutta zaten olan satırlara dokunmaz,
+// yani bu çağrı hiçbir şeyin ÜZERİNE YAZMAZ ve tekrar çalıştırmak zararsızdır.
+const HISTORY_PUSH_CHUNK = 100;
+
+export async function pushHistoryItemsToCloud(items: HistoryItem[]): Promise<SyncOutcome> {
+    if (!isSupabaseConfigured()) return 'local_only';
+    if (items.length === 0) return 'synced';
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return 'local_only';
+
+        for (let i = 0; i < items.length; i += HISTORY_PUSH_CHUNK) {
+            const rows = items.slice(i, i + HISTORY_PUSH_CHUNK).map(item => ({
+                id: item.id,
+                user_id: session.user.id,
+                type: item.type,
+                result: item.result,
+                timestamp: item.timestamp,
+            }));
+            const { error } = await supabase
+                .from('activity_history')
+                .upsert(rows, { onConflict: 'id', ignoreDuplicates: true });
+            if (error) return reportSyncFailure('pushHistoryBatch', error);
+        }
+        return 'synced';
+    } catch (e) {
+        return reportSyncFailure('pushHistoryBatch', e);
+    }
+}
+
+// Merge strategy for lists: a list that exists in the cloud is authoritative;
+// a list that exists ONLY on this device (made as a guest, or while offline) is
+// pushed up AND kept locally. Eskiden yalnızca bulut kopyası geri dönüyordu:
+// misafirken kaydedilen liste buluta gidiyor ama cihazdan siliniyordu, push
+// başarısız olduysa da kalıcı olarak kayboluyordu.
 export async function mergeListsWithCloud(local: SavedList[]): Promise<SavedList[]> {
     const cloud = await pullListsFromCloud();
     if (!cloud) return local;
@@ -199,5 +233,5 @@ export async function mergeListsWithCloud(local: SavedList[]): Promise<SavedList
         await pushListsToCloud(localOnly);
     }
 
-    return cloud;
+    return [...cloud, ...localOnly].sort((a, b) => a.createdAt - b.createdAt);
 }

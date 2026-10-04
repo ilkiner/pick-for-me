@@ -139,8 +139,10 @@ export function RootNavigator({
                 <Stack.Screen name="ResetPassword">
                     {() => <ResetPasswordScreen onDone={onRecoveryDone ?? (() => {})} />}
                 </Stack.Screen>
-            ) : session && session.user ? (
+            ) : (
                 <>
+                    {/* Uygulama oturum açmadan da tamamen kullanılabilir (misafir):
+                        ana ekran ve tüm araçlar her zaman var. */}
                     <Stack.Screen name="Main" component={MainTabNavigator} />
                     <Stack.Screen name="Result" component={ResultScreen} />
                     <Stack.Screen name="Paywall" component={PaywallScreen} options={{ presentation: 'modal' }} />
@@ -155,13 +157,19 @@ export function RootNavigator({
                     <Stack.Screen name="TruthOrDare" component={TruthOrDareScreen} />
                     <Stack.Screen name="OrderTeam" component={OrderTeamScreen} />
                     <Stack.Screen name="SavedLists" component={SavedListsScreen} />
-                </>
-            ) : (
-                <>
-                    <Stack.Screen name="Login" component={LoginScreen} />
-                    <Stack.Screen name="Register" component={RegisterScreen} />
-                    <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-                    <Stack.Screen name="EmailVerification" component={EmailVerificationScreen} />
+
+                    {/* Giriş/kayıt isteğe bağlı: yalnızca misafirken tanımlı. Oturum
+                        kurulunca bu ekranlar navigator'dan kalkar ve React Navigation
+                        odaktaki ekran silindiği için kullanıcıyı bir önceki ekrana
+                        (Ayarlar'a) geri götürür — elle navigate gerekmez. */}
+                    {!(session && session.user) && (
+                        <>
+                            <Stack.Screen name="Login" component={LoginScreen} />
+                            <Stack.Screen name="Register" component={RegisterScreen} />
+                            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+                            <Stack.Screen name="EmailVerification" component={EmailVerificationScreen} />
+                        </>
+                    )}
                 </>
             )}
         </Stack.Navigator>

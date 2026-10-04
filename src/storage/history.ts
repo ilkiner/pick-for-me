@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { clearHistoryInCloud, hasCloudSession, pushHistoryItemToCloud } from './syncService';
-import { HISTORY_MAX_ITEMS } from '../store/ProContext';
+import {
+    clearHistoryInCloud, hasCloudSession, pushHistoryItemToCloud, pushHistoryItemsToCloud, SyncOutcome,
+} from './syncService';
+import { HISTORY_MAX_ITEMS, HISTORY_RETENTION_PRO_MS } from '../store/ProContext';
 
 export interface HistoryItem {
     id: string;
@@ -76,6 +78,15 @@ export const HistoryStorage = {
             console.error('Failed to load history', e);
             return [];
         }
+    },
+
+    // Misafirken (ya da çevrimdışıyken) biriken kayıtları hesaba yükler. Yalnızca
+    // yukarı yönlü ve üzerine yazmaz: buluttaki satırlar olduğu gibi kalır, yerelde
+    // temizlenmiş kayıtlar da geri gelmez. Saklama penceresi PRO süresi — depo
+    // zaten hep o pencereyi tutuyor (bkz. ResultScreen.loadHistory).
+    async syncWithCloud(): Promise<SyncOutcome> {
+        const items = await this.load(HISTORY_RETENTION_PRO_MS);
+        return pushHistoryItemsToCloud(items);
     },
 
     async clear(): Promise<ClearHistoryResult> {

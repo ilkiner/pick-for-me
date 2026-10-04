@@ -50,6 +50,10 @@ async function writeProCache(value: boolean): Promise<void> {
     }
 }
 
+function hasPro(info: any): boolean {
+    return info?.entitlements?.active?.[ENTITLEMENT_PRO] !== undefined;
+}
+
 interface ProContextValue {
     isPro: boolean;
     isLoading: boolean;
@@ -104,29 +108,63 @@ export function ProProvider({ children, navigationRef }: Props) {
         setDevProOverride(prev => (prev === null ? true : prev === true ? false : null));
     }, []);
 
-    // RevenueCat kimliğini Supabase kullanıcısına bağlar (userId null → logOut).
+    // Kimlik değişimleri sıraya girer: hızlı giriş→çıkış'ta iki logIn/logOut iç içe
+    // geçerse linkedUserIdRef ile SDK'nın gerçek kimliği ayrışırdı.
+    const identityQueueRef = useRef<Promise<void>>(Promise.resolve());
+
+    // RevenueCat kimliğini Supabase kullanıcısına bağlar (userId null → misafir).
     // Böylece RevenueCat panelinden belirli bir kullanıcıya promotional
     // entitlement tanımlanabiliyor. Yalnızca configure() başarılı olduktan sonra
     // çağrılmalı; yapılandırılmamış SDK'da logIn/logOut hata verir.
-    const linkRevenueCatIdentity = useCallback(async (userId: string | null) => {
-        if (!Purchases) return;
-        if (linkedUserIdRef.current === userId) return;
+    //
+    // Misafir = anonim RevenueCat kimliği: satın alma ve restore giriş olmadan
+    // çalışır, sonradan girişte entitlement hesaba taşınır (aşağıda).
+    const linkRevenueCatIdentity = useCallback((userId: string | null): Promise<void> => {
+        if (!Purchases) return Promise.resolve();
 
-        try {
-            const customerInfo = userId
-                ? (await Purchases.logIn(userId)).customerInfo
-                : await Purchases.logOut();
+        const run = async () => {
+            if (linkedUserIdRef.current === userId) return;
 
-            linkedUserIdRef.current = userId;
+            try {
+                let customerInfo: any;
 
-            // Kimlik değişince entitlement'lar da değişebilir (ör. o kullanıcıya
-            // tanımlanmış promotional entitlement) — Pro durumunu tazele.
-            const active = customerInfo?.entitlements?.active?.[ENTITLEMENT_PRO] !== undefined;
-            setIsPro(active);
-            await writeProCache(active);
-        } catch (e) {
-            console.warn('[Pro] RevenueCat identity link failed:', e);
-        }
+                if (userId) {
+                    // Misafirken Pro alındıysa abonelik anonim kimliğe bağlı.
+                    // logIn'den ÖNCE soruyoruz; sonra anonim kimlik artık "mevcut" değil.
+                    const wasAnonymous = linkedUserIdRef.current === null;
+                    const guestHadPro = wasAnonymous
+                        ? hasPro(await Purchases.getCustomerInfo())
+                        : false;
+
+                    ({ customerInfo } = await Purchases.logIn(userId));
+
+                    // logIn yalnızca kimliği değiştirir. Hesap RevenueCat'te ilk
+                    // kez görülüyorsa anonim geçmiş ona geçer; hesap DAHA ÖNCE
+                    // var olduğunda geçmeyebilir. İkinci durumda misafir Pro'su
+                    // sessizce kaybolurdu — restore, aboneliği mağaza makbuzundan
+                    // bulup (RevenueCat "restore behavior": transfer) hesaba bağlar.
+                    if (guestHadPro && !hasPro(customerInfo)) {
+                        customerInfo = await Purchases.restorePurchases();
+                    }
+                } else {
+                    customerInfo = await Purchases.logOut();
+                }
+
+                linkedUserIdRef.current = userId;
+
+                // Kimlik değişince entitlement'lar da değişebilir (ör. o kullanıcıya
+                // tanımlanmış promotional entitlement; çıkışta da misafir = ücretsiz)
+                // — Pro durumunu tazele.
+                const active = hasPro(customerInfo);
+                setIsPro(active);
+                await writeProCache(active);
+            } catch (e) {
+                console.warn('[Pro] RevenueCat identity link failed:', e);
+            }
+        };
+
+        identityQueueRef.current = identityQueueRef.current.then(run, run);
+        return identityQueueRef.current;
     }, []);
 
     // Offering çekilemezse offerings null bırakılır — paywall bu durumda fiyat
@@ -205,8 +243,19 @@ export function ProProvider({ children, navigationRef }: Props) {
             if (!configured || cancelled || !isSupabaseConfigured()) return;
 
             try {
+                // RevenueCat kimliği yeniden başlatmalar arasında kalıcı: SDK'nın
+                // gerçekte kim olduğunu sorup ref'i ona göre kuruyoruz. Böylece
+                // oturum yokken (misafir) kalmış eski bir hesap kimliği aşağıda
+                // logOut ile temizlenir, anonim kimlikte gereksiz logOut da çağrılmaz.
+                try {
+                    const anonymous = await Purchases.isAnonymous();
+                    linkedUserIdRef.current = anonymous ? null : await Purchases.getAppUserID();
+                } catch (e) {
+                    console.warn('[Pro] RevenueCat identity read failed:', e);
+                }
+
                 const { data: { session } } = await supabase.auth.getSession();
-                if (session?.user?.id) await linkRevenueCatIdentity(session.user.id);
+                await linkRevenueCatIdentity(session?.user?.id ?? null);
 
                 const { data: { subscription } } = supabase.auth.onAuthStateChange(
                     (event: string, newSession: any) => {

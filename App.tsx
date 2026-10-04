@@ -11,7 +11,8 @@ import { RootNavigator, navigationRef, linking } from './src/navigation';
 import { ProProvider } from './src/store/ProContext';
 import { ThemeProvider, useTheme } from './src/store/ThemeContext';
 import { SoundProvider } from './src/store/SoundContext';
-import { SavedListsStorage } from './src/storage/savedLists';
+import { syncLocalDataToAccount, resetAccountSyncState } from './src/storage/accountSync';
+import { AuthSessionContext } from './src/store/AuthSessionContext';
 import './src/i18n';
 import { isSupabaseConfigured, supabase } from './src/storage/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -96,8 +97,8 @@ function AppInner() {
             AdManager.init().catch(() => {});
 
             if (!isSupabaseConfigured()) {
-                console.warn('Supabase not configured. Running in demo mode.');
-                setSession({ user: { id: 'demo', email: 'demo@pickforme.app' } });
+                // Hesap yok = herkes misafir; uygulama oturumsuz da tam çalışıyor.
+                console.warn('Supabase not configured. Running as guest only.');
                 setIsReady(true);
                 return;
             }
@@ -107,14 +108,25 @@ function AppInner() {
                 setSession(currentSession);
                 setIsReady(true);
 
-                const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: string, newSession: any) => {
+                const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, newSession: any) => {
                     setSession(newSession);
                     // Supabase kurtarma oturumu kurulduğunda bu olayı yayar;
                     // derin bağlantı dinleyicisine ek bir emniyet kemeri.
                     if (_event === 'PASSWORD_RECOVERY') setRecovery(true);
-                    if (_event === 'SIGNED_IN' && newSession) {
-                        SavedListsStorage.syncWithCloud().catch(() => {});
+
+                    // Misafirken biriken liste ve geçmiş ilk girişte hesaba katılır
+                    // (üzerine yazmadan). INITIAL_SESSION da dahil: önceki bir
+                    // senkron yarıda kaldıysa ("bir sonraki açılışta yeniden denenecek")
+                    // açılışta tamamlanır.
+                    if ((_event === 'SIGNED_IN' || _event === 'INITIAL_SESSION') && newSession?.user) {
+                        const userId = newSession.user.id;
+                        // Geri çağrının içinde Supabase çağrısı beklenmez (auth kilidi
+                        // kilitlenir) — bir sonraki turda başlatıyoruz.
+                        setTimeout(() => {
+                            syncLocalDataToAccount(userId).catch(() => {});
+                        }, 0);
                     }
+                    if (_event === 'SIGNED_OUT') resetAccountSyncState();
                 });
 
                 // Etki zaten sökülmüşse (hızlı yeniden bağlanma / hot reload)
@@ -245,14 +257,15 @@ function AppInner() {
 
         // Soğuk açılışta bildirim yanıtı, NavigationContainer bağlanmadan önce
         // geliyor. Hazır olana kadar kısa aralıklarla bekliyoruz; üst sınır var
-        // ki oturum kapalıyken (Main yokken) sonsuza kadar dönmesin.
+        // ki (ör. onboarding sürerken navigator hiç bağlanmaz) sonsuza kadar
+        // dönmesin. Misafir de dahil herkes için 'Main' her zaman var.
         const navigateWhenReady = (attempts = 20) => {
             if (cancelled) return;
             if (navigationRef.isReady()) {
                 try {
                     navigationRef.navigate('Main', { screen: 'Home' });
                 } catch {
-                    // Oturum kapalıysa 'Main' yok — kullanıcı giriş ekranında kalsın
+                    // Beklenmedik gezinme hatası — bildirimi sessizce yut
                 }
                 return;
             }
@@ -310,13 +323,15 @@ function AppInner() {
         <GestureHandlerRootView style={{ flex: 1 }}>
             <ProProvider navigationRef={navigationRef}>
                 <StatusBar style={isDark ? 'light' : 'dark'} />
-                <NavigationContainer ref={navigationRef} linking={linking}>
-                    <RootNavigator
-                        session={session}
-                        recovery={recovery}
-                        onRecoveryDone={() => setRecovery(false)}
-                    />
-                </NavigationContainer>
+                <AuthSessionContext.Provider value={session}>
+                    <NavigationContainer ref={navigationRef} linking={linking}>
+                        <RootNavigator
+                            session={session}
+                            recovery={recovery}
+                            onRecoveryDone={() => setRecovery(false)}
+                        />
+                    </NavigationContainer>
+                </AuthSessionContext.Provider>
             </ProProvider>
         </GestureHandlerRootView>
     );

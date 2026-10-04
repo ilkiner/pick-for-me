@@ -13,6 +13,7 @@ import { useTheme, ThemeMode } from '../../store/ThemeContext';
 import { AppTheme } from '../../core/Theme';
 import { useSound } from '../../store/SoundContext';
 import { useNotifications } from '../../store/NotificationContext';
+import { useAuthSession } from '../../store/AuthSessionContext';
 import { signOutFromGoogle } from '../../core/googleAuth';
 import { track } from '../../core/Analytics';
 import { AdManager } from '../../core/AdManager';
@@ -88,6 +89,13 @@ export default function SettingsScreen({ navigation }: any) {
     const { enabled: notificationsEnabled, setEnabled: setNotificationsEnabled } = useNotifications();
     const styles = useMemo(() => createStyles(theme), [theme]);
 
+    // Hesap isteğe bağlı: oturum yoksa misafir. Çıkış ve hesap silme yalnızca
+    // gerçekten bir hesap varken anlamlı.
+    const session = useAuthSession();
+    const signedInEmail: string | null = session?.user?.email ?? null;
+    const isSignedIn = isSupabaseConfigured() && Boolean(session?.user);
+    const canSignIn = isSupabaseConfigured() && !isSignedIn;
+
     // Rıza toplama AdManager.init() içinde asenkron ilerliyor; ekran ondan önce
     // açılmış olabilir, o yüzden odaklanınca yeniden okunuyor.
     const [privacyOptionsRequired, setPrivacyOptionsRequired] = useState(
@@ -100,14 +108,6 @@ export default function SettingsScreen({ navigation }: any) {
     );
 
     const handleLogout = async () => {
-        if (!isSupabaseConfigured()) {
-            Alert.alert(
-                t('settings.logout', 'Çıkış Yap'),
-                t('settings.logout_demo', 'Demo modunda oturum zaten açık değil.'),
-                [{ text: t('common.ok', 'Tamam') }]
-            );
-            return;
-        }
         // Google oturumunu da bırak. Bırakılmazsa bir sonraki "Google ile devam
         // et" hesap seçiciyi hiç göstermeden son hesapla giriyor — cihazı
         // paylaşan ya da hesap değiştirmek isteyen kullanıcı kendi hesabına
@@ -119,6 +119,8 @@ export default function SettingsScreen({ navigation }: any) {
         } catch (e) {
             console.error('Logout error:', e);
         }
+        // Gerisi kendiliğinden: SIGNED_OUT → ProContext RevenueCat'ten çıkar
+        // (misafir = ücretsiz), navigator giriş ekranlarını yeniden tanımlar.
     };
 
     const [isDeleting, setIsDeleting] = useState(false);
@@ -218,6 +220,41 @@ export default function SettingsScreen({ navigation }: any) {
                         {isPro && <Ionicons name="checkmark-circle" size={22} color={theme.colors.success} />}
                     </TouchableOpacity>
                 </GlassCard>
+
+                {/* Hesap — isteğe bağlı. Misafir: giriş daveti. Girişli: e-posta. */}
+                {canSignIn && (
+                    <GlassCard style={styles.section}>
+                        <TouchableOpacity
+                            style={styles.row}
+                            onPress={() => navigation.navigate('Login')}
+                            accessibilityRole="button"
+                        >
+                            <View style={styles.iconWrapper}>
+                                <Ionicons name="person-circle-outline" size={22} color={theme.colors.primary} />
+                            </View>
+                            <View style={styles.rowContent}>
+                                <Text style={styles.rowTitle}>{t('settings.sign_in')}</Text>
+                                <Text style={styles.rowSubtitle}>{t('settings.sign_in_desc')}</Text>
+                            </View>
+                            <Ionicons name="chevron-forward" size={20} color={theme.colors.primary} />
+                        </TouchableOpacity>
+                    </GlassCard>
+                )}
+                {isSignedIn && (
+                    <GlassCard style={styles.section}>
+                        <View style={styles.row}>
+                            <View style={styles.iconWrapper}>
+                                <Ionicons name="person-circle" size={22} color={theme.colors.primary} />
+                            </View>
+                            <View style={styles.rowContent}>
+                                <Text style={styles.rowTitle} numberOfLines={1}>
+                                    {signedInEmail ?? t('settings.account')}
+                                </Text>
+                                <Text style={styles.rowSubtitle}>{t('settings.signed_in_desc')}</Text>
+                            </View>
+                        </View>
+                    </GlassCard>
+                )}
 
                 {/* Theme */}
                 <GlassCard style={styles.section}>
@@ -360,19 +397,21 @@ export default function SettingsScreen({ navigation }: any) {
                     </TouchableOpacity>
                 </GlassCard>
 
-                {/* Logout */}
-                <GlassCard style={styles.section}>
-                    <TouchableOpacity style={styles.row} onPress={handleLogout}>
-                        <View style={[styles.iconWrapper, { backgroundColor: 'rgba(239, 68, 68, 0.1)' }]}>
-                            <Ionicons name="log-out" size={22} color={theme.colors.error} />
-                        </View>
-                        <View style={styles.rowContent}>
-                            <Text style={[styles.rowTitle, { color: theme.colors.error }]}>{t('settings.logout', 'Çıkış Yap')}</Text>
-                            <Text style={styles.rowSubtitle}>{t('settings.logout_desc', 'Oturumu sonlandır')}</Text>
-                        </View>
-                        <Ionicons name="chevron-forward" size={20} color={theme.colors.surfaceBorder} />
-                    </TouchableOpacity>
-                </GlassCard>
+                {/* Logout — yalnızca girişliyken */}
+                {isSignedIn && (
+                    <GlassCard style={styles.section}>
+                        <TouchableOpacity style={styles.row} onPress={handleLogout}>
+                            <View style={[styles.iconWrapper, { backgroundColor: 'rgba(239, 68, 68, 0.1)' }]}>
+                                <Ionicons name="log-out" size={22} color={theme.colors.error} />
+                            </View>
+                            <View style={styles.rowContent}>
+                                <Text style={[styles.rowTitle, { color: theme.colors.error }]}>{t('settings.logout', 'Çıkış Yap')}</Text>
+                                <Text style={styles.rowSubtitle}>{t('settings.logout_desc', 'Oturumu sonlandır')}</Text>
+                            </View>
+                            <Ionicons name="chevron-forward" size={20} color={theme.colors.surfaceBorder} />
+                        </TouchableOpacity>
+                    </GlassCard>
+                )}
 
                 {/* DEV ONLY — Pro/Free test switch (stripped from production builds) */}
                 {__DEV__ && (
@@ -396,8 +435,9 @@ export default function SettingsScreen({ navigation }: any) {
                     </GlassCard>
                 )}
 
-                {/* Hesabı Sil — Google Play zorunluluğu; demo modda gizli */}
-                {isSupabaseConfigured() && (
+                {/* Hesabı Sil — Google Play zorunluluğu; silinecek hesap yoksa
+                    (misafir / demo) gizli */}
+                {isSignedIn && (
                     <GlassCard style={[styles.section, styles.deleteSection] as any}>
                         <TouchableOpacity style={styles.row} onPress={handleDeleteAccount} disabled={isDeleting}>
                             <View style={[styles.iconWrapper, { backgroundColor: 'rgba(239, 68, 68, 0.1)' }]}>
