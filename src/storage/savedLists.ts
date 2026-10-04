@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LocalStorage } from './local';
 import {
     pushListsToCloud, pullListsFromCloud, deleteListFromCloud, mergeListsWithCloud,
@@ -54,6 +55,12 @@ export const SavedListsStorage = {
         const all = await this.getAll();
         await LocalStorage.setItem(KEY, all.filter(l => l.id !== id));
         return deleteListFromCloud(id).catch(() => 'failed' as SyncOutcome);
+    },
+
+    // Yalnızca bu cihazdaki kopyayı siler, buluta dokunmaz. Çıkışta kullanılır
+    // (bkz. accountSync.clearLocalAccountData).
+    async clearLocal(): Promise<void> {
+        await AsyncStorage.removeItem(KEY);
     },
 
     // Call on app start (after auth) to merge local ↔ cloud

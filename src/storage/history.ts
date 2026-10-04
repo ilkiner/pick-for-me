@@ -89,6 +89,11 @@ export const HistoryStorage = {
         return pushHistoryItemsToCloud(items);
     },
 
+    // Yalnızca bu cihazdaki kopyayı siler, buluta dokunmaz (clear() ikisini de siler).
+    async clearLocal(): Promise<void> {
+        await AsyncStorage.removeItem(KEY);
+    },
+
     async clear(): Promise<ClearHistoryResult> {
         // Önce bulut denenir, sonuç ne olursa olsun yerel geçmiş silinir:
         // bulut hatası kullanıcının cihazındaki veriyi temizlemesini engellememeli.

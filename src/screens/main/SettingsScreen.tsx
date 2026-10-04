@@ -15,6 +15,7 @@ import { useSound } from '../../store/SoundContext';
 import { useNotifications } from '../../store/NotificationContext';
 import { useAuthSession } from '../../store/AuthSessionContext';
 import { signOutFromGoogle } from '../../core/googleAuth';
+import { flushLocalDataToCloud, clearLocalAccountData } from '../../storage/accountSync';
 import { track } from '../../core/Analytics';
 import { AdManager } from '../../core/AdManager';
 
@@ -107,20 +108,57 @@ export default function SettingsScreen({ navigation }: any) {
         }, [])
     );
 
-    const handleLogout = async () => {
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+    const performLogout = async () => {
         // Google oturumunu da bırak. Bırakılmazsa bir sonraki "Google ile devam
         // et" hesap seçiciyi hiç göstermeden son hesapla giriyor — cihazı
         // paylaşan ya da hesap değiştirmek isteyen kullanıcı kendi hesabına
         // geçemez. Supabase çıkışından önce: bu adım hata verse bile
         // uygulamadan çıkış yapılmalı, o yüzden kendi içinde yutuluyor.
         await signOutFromGoogle();
+
+        let signedOut = false;
         try {
-            await supabase.auth.signOut();
+            const { error } = await supabase.auth.signOut();
+            if (error) console.error('Logout error:', error);
+            signedOut = !error;
         } catch (e) {
             console.error('Logout error:', e);
         }
-        // Gerisi kendiliğinden: SIGNED_OUT → ProContext RevenueCat'ten çıkar
-        // (misafir = ücretsiz), navigator giriş ekranlarını yeniden tanımlar.
+
+        // Cihaz boş misafir durumuna döner. Yalnızca çıkış GERÇEKTEN olduysa:
+        // oturum açıkken yerel veriyi silmek (ör. çevrimdışı çıkış denemesi)
+        // kullanıcıyı hesabında verisiz bırakırdı. Bulut kopyasına dokunulmaz,
+        // aynı hesapla girince geri gelir. Gerisi kendiliğinden: SIGNED_OUT →
+        // ProContext RevenueCat'ten çıkar (misafir = ücretsiz), navigator giriş
+        // ekranlarını yeniden tanımlar.
+        if (signedOut) await clearLocalAccountData();
+    };
+
+    const handleLogout = async () => {
+        if (isLoggingOut) return;
+        setIsLoggingOut(true);
+        try {
+            // Yerel kopya silineceği için önce her şeyin bulutta olduğundan emin ol.
+            const safe = await flushLocalDataToCloud();
+            if (safe) {
+                await performLogout();
+                return;
+            }
+            // Buluta gitmemiş veri var (çevrimdışı ya da sunucu hatası): sessizce
+            // silmek yerine kullanıcıya söyle.
+            Alert.alert(
+                t('settings.logout_unsynced_title'),
+                t('settings.logout_unsynced_msg'),
+                [
+                    { text: t('common.cancel', 'İptal'), style: 'cancel' },
+                    { text: t('settings.logout_unsynced_continue'), style: 'destructive', onPress: performLogout },
+                ]
+            );
+        } finally {
+            setIsLoggingOut(false);
+        }
     };
 
     const [isDeleting, setIsDeleting] = useState(false);
@@ -400,7 +438,7 @@ export default function SettingsScreen({ navigation }: any) {
                 {/* Logout — yalnızca girişliyken */}
                 {isSignedIn && (
                     <GlassCard style={styles.section}>
-                        <TouchableOpacity style={styles.row} onPress={handleLogout}>
+                        <TouchableOpacity style={styles.row} onPress={handleLogout} disabled={isLoggingOut}>
                             <View style={[styles.iconWrapper, { backgroundColor: 'rgba(239, 68, 68, 0.1)' }]}>
                                 <Ionicons name="log-out" size={22} color={theme.colors.error} />
                             </View>

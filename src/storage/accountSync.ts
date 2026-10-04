@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SavedListsStorage } from './savedLists';
 import { HistoryStorage } from './history';
+import { pullListsFromCloud, pushListsToCloud, pushHistoryItemsToCloud } from './syncService';
+import { HISTORY_RETENTION_PRO_MS } from '../store/ProContext';
 
 // Cihazdaki verinin (misafirken ya da çevrimdışıyken biriken) hesaba taşınması.
 //
@@ -37,6 +39,41 @@ export function syncLocalDataToAccount(userId: string): Promise<void> {
     })().finally(() => { running = null; });
 
     return running;
+}
+
+// Çıkıştan ÖNCE: cihazdaki her şey bulutta mı? Çıkışta yerel kopya silineceği için
+// buluta hiç gitmemiş bir liste/kayıt (çevrimdışı oluşturulmuş, push'u başarısız
+// olmuş) kalıcı olarak kaybolurdu. Bulutta olmayanları yükler; hepsi bulutta
+// (ya da yeni yüklendi) ise true, doğrulanamadıysa false döner.
+export async function flushLocalDataToCloud(): Promise<boolean> {
+    try {
+        const lists = await SavedListsStorage.getAll();
+        if (lists.length > 0) {
+            const cloud = await pullListsFromCloud();
+            if (!cloud) return false;
+            const cloudIds = new Set(cloud.map(l => l.id));
+            const pending = lists.filter(l => !cloudIds.has(l.id));
+            if (pending.length > 0 && (await pushListsToCloud(pending)) !== 'synced') return false;
+        }
+
+        const history = await HistoryStorage.load(HISTORY_RETENTION_PRO_MS);
+        if (history.length > 0 && (await pushHistoryItemsToCloud(history)) !== 'synced') return false;
+
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+// Çıkışta cihazı boş misafir durumuna döndürür: kayıtlı listeler ve geçmiş silinir.
+// Bulut kopyasına DOKUNMAZ — aynı hesapla girince geri gelir. Ayarlar, tema,
+// dil ve onboarding durumu bilerek korunur (anahtarları burada hiç yok).
+export async function clearLocalAccountData(): Promise<void> {
+    await Promise.all([
+        SavedListsStorage.clearLocal(),
+        HistoryStorage.clearLocal(),
+        resetAccountSyncState(),
+    ]).catch(e => console.warn('[Sync] local clear failed:', e));
 }
 
 export async function resetAccountSyncState(): Promise<void> {
