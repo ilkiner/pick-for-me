@@ -24,7 +24,11 @@ import { supabase, isSupabaseConfigured } from '../storage/supabase';
 // Android istemcisinin kendi ID'si BURAYA GİRİLMEZ: Android istemcisi yalnızca
 // paket adı + SHA-1 ile imzayı doğrulamak için var, id_token'ın `aud` alanı ise
 // web istemcisine ait oluyor ve Supabase'in beklediği de o.
-const WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+//
+// trim() şart: EAS ortam değişkenine yapıştırılan değer sonunda bir satır sonu
+// taşıyordu ("….googleusercontent.com\n") ve olduğu gibi bundle'a gömüldü.
+// Google bu ID'yi eşleştiremeyince her girişte DEVELOPER_ERROR döndü (build 9).
+const WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim();
 
 // Modülü isteğe bağlı yüklüyoruz: Expo Go'da ve yapılandırılmamış derlemelerde
 // yerel modül yok ve import etmek anında çökerdi. Aynı desen AdManager ve

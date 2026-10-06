@@ -237,6 +237,7 @@ Sık karşılaşılan hatalar:
 |---|---|
 | Hesap seçici açılıyor, `idToken` boş geliyor | `webClientId` yanlış ya da Web istemcisi değil |
 | `DEVELOPER_ERROR` / seçici hemen kapanıyor | SHA-1 eksik/yanlış ya da paket adı uyuşmuyor |
+| `DEVELOPER_ERROR`, SHA-1 ve paket adı doğru olduğu halde | EAS'taki `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` değerinin başında/sonunda boşluk ya da satır sonu var. Değer olduğu gibi bundle'a gömülüyor. Kontrol: `npx eas env:list --environment production --format long --include-sensitive` — değerin altında boş satır görünüyorsa sonda `\n` var; doğru uzunluk 72 karakter. Düzelt, sonra yeni build al (OTA yetmez). |
 | Supabase "Invalid token" diyor | Supabase'e Web yerine Android client ID girilmiş |
 | Play sürümünde çalışmıyor, APK'da çalışıyor | Play App Signing SHA-1'i eklenmemiş |
 
