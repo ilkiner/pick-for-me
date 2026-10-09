@@ -490,6 +490,8 @@
         "logout_unsynced_title": "Bazı veriler yedeklenmemiş",
         "logout_unsynced_msg": "Bazı listelerin veya geçmişin hesabına yüklenemedi — bağlantını kontrol et. Çıkış yapınca bu cihazdaki kopya silinir, yani onlar kaybolur. Yine de çıkış yapılsın mı?",
         "logout_unsynced_continue": "Yine de çıkış yap",
+        "logout_failed_title": "Çıkış yapılamadı",
+        "logout_failed_msg": "Sunucuya ulaşılamadı; oturumun hâlâ açık ve bu cihazdan hiçbir şey silinmedi. Bağlantını kontrol edip tekrar dene.",
         "sign_in": "Giriş yap",
         "sign_in_desc": "Listelerini cihazların arasında senkronlamak için giriş yap",
         "account": "Hesabın",

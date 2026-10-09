@@ -160,6 +160,8 @@
         "logout_unsynced_title": "Algunos datos no tienen copia de seguridad",
         "logout_unsynced_msg": "No se pudieron subir a tu cuenta algunas de tus listas o parte del historial — revisa tu conexión. Al cerrar sesión se elimina la copia de este dispositivo y se perderían. ¿Cerrar sesión de todos modos?",
         "logout_unsynced_continue": "Cerrar sesión de todos modos",
+        "logout_failed_title": "No se pudo cerrar sesión",
+        "logout_failed_msg": "No pudimos conectar con el servidor: sigues con la sesión iniciada y no se borró nada de este dispositivo. Revisa tu conexión e inténtalo de nuevo.",
         "sign_in": "Iniciar sesión",
         "sign_in_desc": "Inicia sesión para sincronizar tus listas entre dispositivos",
         "account": "Tu cuenta",

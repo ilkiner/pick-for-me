@@ -160,6 +160,8 @@
         "logout_unsynced_title": "Some data isn't backed up",
         "logout_unsynced_msg": "Some of your lists or history couldn't be uploaded to your account — check your connection. Logging out removes this device's copy, so they would be lost. Log out anyway?",
         "logout_unsynced_continue": "Log out anyway",
+        "logout_failed_title": "Couldn't log out",
+        "logout_failed_msg": "We couldn't reach the server, so you're still signed in and nothing was removed from this device. Check your connection and try again.",
         "sign_in": "Sign in",
         "sign_in_desc": "Sign in to sync your lists across devices",
         "account": "Your account",

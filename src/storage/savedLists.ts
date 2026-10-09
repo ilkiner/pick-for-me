@@ -63,11 +63,14 @@ export const SavedListsStorage = {
         await AsyncStorage.removeItem(KEY);
     },
 
-    // Call on app start (after auth) to merge local ↔ cloud
-    async syncWithCloud(): Promise<void> {
+    // Call on app start (after auth) to merge local ↔ cloud.
+    // isCancelled: birleştirme ağdayken çıkış yapıldıysa sonuç cihaza YAZILMAZ —
+    // yoksa hesabın listeleri temizlikten sonra cihaza geri dönerdi.
+    async syncWithCloud(isCancelled?: () => boolean): Promise<void> {
         try {
             const local = await this.getAll();
             const merged = await mergeListsWithCloud(local);
+            if (isCancelled?.()) return;
             await LocalStorage.setItem(KEY, merged);
         } catch (e) {
             console.warn('[Sync] syncWithCloud failed:', e);

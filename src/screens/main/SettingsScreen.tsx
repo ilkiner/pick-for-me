@@ -6,7 +6,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GlassCard } from '../../components/GlassCard';
-import { isSupabaseConfigured, supabase } from '../../storage/supabase';
+import { isSupabaseConfigured } from '../../storage/supabase';
 import { deleteAccount } from '../../storage/accountDeletion';
 import { usePro } from '../../store/ProContext';
 import { useTheme, ThemeMode } from '../../store/ThemeContext';
@@ -15,7 +15,7 @@ import { useSound } from '../../store/SoundContext';
 import { useNotifications } from '../../store/NotificationContext';
 import { useAuthSession } from '../../store/AuthSessionContext';
 import { signOutFromGoogle } from '../../core/googleAuth';
-import { flushLocalDataToCloud, clearLocalAccountData } from '../../storage/accountSync';
+import { flushLocalDataToCloud, signOutAndClearLocal } from '../../storage/accountSync';
 import { track } from '../../core/Analytics';
 import { AdManager } from '../../core/AdManager';
 
@@ -111,29 +111,26 @@ export default function SettingsScreen({ navigation }: any) {
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     const performLogout = async () => {
+        // Çıkış başarılıysa cihaz boş misafir durumuna döner (liste + geçmiş
+        // silinir, bulut kopyasına dokunulmaz). Gerisi kendiliğinden: SIGNED_OUT
+        // → ProContext RevenueCat'ten çıkar (misafir = ücretsiz), navigator giriş
+        // ekranlarını yeniden tanımlar.
+        const result = await signOutAndClearLocal();
+
+        if (result === 'failed') {
+            // Genelde çevrimdışı. Hiçbir şey değişmedi: oturum açık, veri yerinde.
+            // Sessiz kalmak "buton çalışmıyor" gibi görünüyordu.
+            Alert.alert(t('settings.logout_failed_title'), t('settings.logout_failed_msg'));
+            return;
+        }
+
         // Google oturumunu da bırak. Bırakılmazsa bir sonraki "Google ile devam
         // et" hesap seçiciyi hiç göstermeden son hesapla giriyor — cihazı
         // paylaşan ya da hesap değiştirmek isteyen kullanıcı kendi hesabına
-        // geçemez. Supabase çıkışından önce: bu adım hata verse bile
-        // uygulamadan çıkış yapılmalı, o yüzden kendi içinde yutuluyor.
+        // geçemez. Uygulamadan çıkış başarılı olduktan SONRA: başarısız bir
+        // çıkışta kullanıcıyı Google'dan da düşürmenin anlamı yok. Hatasını
+        // kendi içinde yutuyor.
         await signOutFromGoogle();
-
-        let signedOut = false;
-        try {
-            const { error } = await supabase.auth.signOut();
-            if (error) console.error('Logout error:', error);
-            signedOut = !error;
-        } catch (e) {
-            console.error('Logout error:', e);
-        }
-
-        // Cihaz boş misafir durumuna döner. Yalnızca çıkış GERÇEKTEN olduysa:
-        // oturum açıkken yerel veriyi silmek (ör. çevrimdışı çıkış denemesi)
-        // kullanıcıyı hesabında verisiz bırakırdı. Bulut kopyasına dokunulmaz,
-        // aynı hesapla girince geri gelir. Gerisi kendiliğinden: SIGNED_OUT →
-        // ProContext RevenueCat'ten çıkar (misafir = ücretsiz), navigator giriş
-        // ekranlarını yeniden tanımlar.
-        if (signedOut) await clearLocalAccountData();
     };
 
     const handleLogout = async () => {
