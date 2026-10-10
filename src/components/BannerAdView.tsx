@@ -24,11 +24,10 @@ export function BannerAdView({ style }: Props) {
     const [gaveUp, setGaveUp] = useState(false);
     const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+    // Hazır olsa bile abone kal: kullanıcı rızasını Ayarlar'dan geri çekerse
+    // AdManager hazır durumunu false yapar ve banner kaybolmalı.
     useEffect(() => {
-        if (AdManager.isReady) {
-            setSdkReady(true);
-            return;
-        }
+        setSdkReady(AdManager.isReady);
         return AdManager.subscribeReady(setSdkReady);
     }, []);
 
@@ -71,8 +70,14 @@ export function BannerAdView({ style }: Props) {
 }
 
 const styles = StyleSheet.create({
+    // Reklam, dokunulabilir öğelerden görsel olarak ayrılsın: üst/alt ince çizgi
+    // + iç boşluk. Dış boşluk çağıranın (HomeScreen) — toplamda ≥ 32dp.
     container: {
         alignItems: 'center',
         width: '100%',
+        paddingVertical: 8,
+        borderTopWidth: StyleSheet.hairlineWidth,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderColor: 'rgba(127,127,127,0.35)',
     },
 });

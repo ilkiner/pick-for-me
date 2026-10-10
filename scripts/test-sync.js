@@ -27,6 +27,33 @@ const db = { saved_lists: new Map(), activity_history: new Map() };
 const net = { offline: false, delay: 0, session: null, calls: [] };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+// ─── Şema: id sütununun kabul ettiği biçim, migration'lardan okunur ───────────
+// Sahte veritabanı eskiden HER id'yi kabul ediyordu; gerçek sütun uuid iken
+// uygulama "17915700785991sk8d" gibi id'ler ürettiği için üretimde her yazma
+// reddediliyordu ve testler bunu göremedi. Artık biçim gerçek şemadan geliyor:
+// CREATE TABLE ... (id uuid ...) → uuid; sonradan eklenen <tablo>_id_format
+// CHECK kısıtı → o regex. PFM_SCHEMA_UPTO=002 ile eski şemaya karşı koşturulabilir.
+const fs = require('fs');
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function readIdFormats() {
+    const dir = path.join(__dirname, '..', 'supabase', 'migrations');
+    const upto = process.env.PFM_SCHEMA_UPTO;
+    const files = fs.readdirSync(dir).filter(f => f.endsWith('.sql')).sort()
+        .filter(f => !upto || f.slice(0, upto.length) <= upto);
+    const formats = {};
+    for (const f of files) {
+        const sql = fs.readFileSync(path.join(dir, f), 'utf8');
+        for (const t of Object.keys(db)) {
+            if (new RegExp(`CREATE TABLE[^;]*public\\.${t}\\s*\\(\\s*id\\s+uuid`, 'i').test(sql)) formats[t] = { re: UUID_RE, kind: 'uuid' };
+            const m = sql.match(new RegExp(`${t}_id_format CHECK \\(id ~ '([^']+)'\\)`));
+            if (m) formats[t] = { re: new RegExp(m[1]), kind: 'text' };
+        }
+    }
+    for (const t of Object.keys(db)) if (!formats[t]) throw new Error(`schema: no id format found for ${t}`);
+    return { formats, files };
+}
+const schema = readIdFormats();
+
 function builder(table) {
     const q = { table, op: 'select', filters: [], rows: null, opts: null };
     const b = {
@@ -54,6 +81,19 @@ async function send(q) {
     if (q.op === 'delete') {
         for (const r of mine.filter(r => q.filters.every(f => f(r)))) t.delete(r.id);
         return { data: null, error: null };
+    }
+    // Postgres gibi: tek bir hatalı satır bütün ifadeyi reddeder, hiçbiri yazılmaz.
+    const fmt = schema.formats[q.table];
+    for (const r of q.rows) {
+        if (typeof r.id !== 'string' || !fmt.re.test(r.id)) {
+            const message = fmt.kind === 'uuid'
+                ? `invalid input syntax for type uuid: "${r.id}"`
+                : `new row for relation "${q.table}" violates check constraint "${q.table}_id_format"`;
+            return { data: null, error: { message } };
+        }
+        if (r.user_id !== uid) {
+            return { data: null, error: { message: `new row violates row-level security policy for table "${q.table}"` } };
+        }
     }
     for (const r of q.rows) {
         if (t.has(r.id) && q.opts?.ignoreDuplicates) continue; // ON CONFLICT DO NOTHING
@@ -132,6 +172,19 @@ const quiet = fn => async () => {
 };
 
 const tests = [
+    // Üretimdeki hata: id sütunu uuid, uygulama uuid olmayan id üretiyordu →
+    // girişli kullanıcının hiçbir listesi/geçmişi buluta yazılamadı.
+    ['T0 uygulamanın ürettiği id\'ler gerçek şemaya uyar', quiet(async () => {
+        reset();
+        login('S');
+        const s = await SavedListsStorage.save({ name: 'schema check', type: 'general', items: ['a'] });
+        check(`liste id'si şemaya uyuyor (${s.list.id})`, schema.formats.saved_lists.re.test(s.list.id));
+        check('girişliyken liste kaydı buluta yazılır', s.sync === 'synced' && db.saved_lists.has(s.list.id), s.sync);
+        const h = await HistoryStorage.add('dice', 3);
+        check(`geçmiş id'si şemaya uyuyor (${h && h.id})`, !!h && schema.formats.activity_history.re.test(h.id));
+        await sleep(0);
+        check('girişliyken geçmiş buluta yazılır', !!h && db.activity_history.has(h.id));
+    })],
     ['T1 misafir listesi + geçmişi ilk girişte birleşir (üzerine yazmadan)', async () => {
         reset();
         seedCloudList('U', 'cloudA', 'from other device');

@@ -54,7 +54,10 @@ function createStyles(theme: AppTheme) {
             elevation: 4,
         },
         proBadgeText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700', letterSpacing: 0.3 },
-        banner: { marginTop: theme.spacing.md, marginBottom: theme.spacing.sm },
+        // Dokunulabilir öğelerden (son kullanılanlar çipleri, araç kartları) en az
+        // 24dp dış boşluk; BannerAdView'in kendi 8dp iç boşluğu + ayırıcı çizgisiyle
+        // reklam alanı ile ilk dokunulabilir öğe arası 32dp.
+        banner: { marginTop: theme.spacing.lg, marginBottom: theme.spacing.lg },
         title: { fontSize: 30, fontWeight: '800', color: theme.colors.text, letterSpacing: -0.8 },
         subtitle: { fontSize: 13, color: theme.colors.textSecondary, marginTop: 5, fontWeight: '400', letterSpacing: 0 },
         columnWrapper: { justifyContent: 'space-between' },

@@ -25,6 +25,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../store/ThemeContext';
+import { AdManager } from '../core/AdManager';
 
 export const navigationRef = createNavigationContainerRef<any>();
 
@@ -144,7 +145,18 @@ export function RootNavigator({
                     {/* Uygulama oturum açmadan da tamamen kullanılabilir (misafir):
                         ana ekran ve tüm araçlar her zaman var. */}
                     <Stack.Screen name="Main" component={MainTabNavigator} />
-                    <Stack.Screen name="Result" component={ResultScreen} />
+                    <Stack.Screen
+                        name="Result"
+                        component={ResultScreen}
+                        listeners={{
+                            // Sonuç ekranı kapanış geçişini bitirdiğinde kullanıcı
+                            // gittiği ekranı (aracı ya da ana ekranı) görüyor: sıraya
+                            // alınmış interstitial burada, doğal bir duraklamada açılır.
+                            transitionEnd: (e: any) => {
+                                if (e?.data?.closing) AdManager.flushPendingInterstitial();
+                            },
+                        }}
+                    />
                     <Stack.Screen name="Paywall" component={PaywallScreen} options={{ presentation: 'modal' }} />
                     <Stack.Screen name="WheelOfFortune" component={WheelOfFortuneScreen} />
                     <Stack.Screen name="Dice" component={DiceScreen} />

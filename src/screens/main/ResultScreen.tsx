@@ -153,9 +153,12 @@ export default function ResultScreen({ route, navigation }: any) {
     const interstitialPending = useRef(false);
 
     const leaveResult = useCallback((go: () => void) => {
+        // Reklam dokunuş ile gezinme ARASINA girmez: önce gezin, reklam geçiş
+        // bitince hedef ekranda açılır (AdManager.flushPendingInterstitial,
+        // navigation/index.tsx'teki transitionEnd dinleyicisi).
         if (interstitialPending.current) {
             interstitialPending.current = false;
-            AdManager.showInterstitial(isPro);
+            if (!isPro) AdManager.queueInterstitialAfterNavigation();
         }
         go();
     }, [isPro]);

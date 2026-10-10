@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Switch, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Switch, ScrollView, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
@@ -16,8 +16,9 @@ import { useNotifications } from '../../store/NotificationContext';
 import { useAuthSession } from '../../store/AuthSessionContext';
 import { signOutFromGoogle } from '../../core/googleAuth';
 import { flushLocalDataToCloud, signOutAndClearLocal } from '../../storage/accountSync';
-import { track } from '../../core/Analytics';
+import { track, isAnalyticsEnabled, setAnalyticsEnabled, subscribeAnalytics } from '../../core/Analytics';
 import { AdManager } from '../../core/AdManager';
+import { PRIVACY_URL, TERMS_URL } from '../../core/legalLinks';
 
 function createStyles(theme: AppTheme) {
     return StyleSheet.create({
@@ -107,6 +108,26 @@ export default function SettingsScreen({ navigation }: any) {
             setPrivacyOptionsRequired(AdManager.isPrivacyOptionsRequired);
         }, [])
     );
+
+    // Anonim kullanım verisi (PostHog). Anahtar ETKİN durumu gösterir: kullanıcı
+    // hiç dokunmadıysa rızaya göre (bkz. core/Analytics.ts) açık ya da kapalı.
+    const [analyticsOn, setAnalyticsOn] = useState(() => isAnalyticsEnabled());
+    React.useEffect(() => {
+        setAnalyticsOn(isAnalyticsEnabled());
+        return subscribeAnalytics(setAnalyticsOn);
+    }, []);
+    const toggleAnalytics = (value: boolean) => {
+        setAnalyticsOn(value);
+        setAnalyticsEnabled(value);
+    };
+
+    // Gizlilik formu rızayı değiştirmiş olabilir: kapandıktan sonra formun
+    // gerekliliğini (ve analytics durumunu) yeniden oku.
+    const openAdPrivacy = async () => {
+        await AdManager.showPrivacyOptions();
+        setPrivacyOptionsRequired(AdManager.isPrivacyOptionsRequired);
+        setAnalyticsOn(isAnalyticsEnabled());
+    };
 
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -403,7 +424,7 @@ export default function SettingsScreen({ navigation }: any) {
                     <GlassCard style={styles.section}>
                         <TouchableOpacity
                             style={styles.row}
-                            onPress={() => AdManager.showPrivacyOptions()}
+                            onPress={openAdPrivacy}
                             accessibilityRole="button"
                         >
                             <View style={styles.iconWrapper}>
@@ -417,6 +438,25 @@ export default function SettingsScreen({ navigation }: any) {
                         </TouchableOpacity>
                     </GlassCard>
                 )}
+
+                {/* Anonim kullanım verisi — PostHog; rıza gereken bölgede varsayılan kapalı */}
+                <GlassCard style={styles.section}>
+                    <View style={styles.row}>
+                        <View style={styles.iconWrapper}>
+                            <Ionicons name="analytics-outline" size={22} color={theme.colors.primary} />
+                        </View>
+                        <View style={styles.rowContent}>
+                            <Text style={styles.rowTitle}>{t('settings.analytics')}</Text>
+                            <Text style={styles.rowSubtitle}>{t('settings.analytics_desc')}</Text>
+                        </View>
+                        <Switch
+                            value={analyticsOn}
+                            onValueChange={toggleAnalytics}
+                            trackColor={{ false: theme.colors.surface, true: theme.colors.primary }}
+                            thumbColor="#fff"
+                        />
+                    </View>
+                </GlassCard>
 
                 {/* Restore purchases */}
                 <GlassCard style={styles.section}>
@@ -488,6 +528,30 @@ export default function SettingsScreen({ navigation }: any) {
                         </TouchableOpacity>
                     </GlassCard>
                 )}
+
+                {/* Yasal — Play kullanıcı verisi politikası, gizlilik politikasının
+                    uygulama içinden de erişilebilir olmasını istiyor. */}
+                <GlassCard style={styles.section}>
+                    {[
+                        { key: 'privacy', icon: 'document-lock-outline', url: PRIVACY_URL, label: t('settings.privacy_policy') },
+                        { key: 'terms', icon: 'document-text-outline', url: TERMS_URL, label: t('settings.terms') },
+                    ].map((item, i) => (
+                        <TouchableOpacity
+                            key={item.key}
+                            style={[styles.row, i > 0 && { marginTop: theme.spacing.md }]}
+                            onPress={() => Linking.openURL(item.url).catch(() => {})}
+                            accessibilityRole="link"
+                        >
+                            <View style={styles.iconWrapper}>
+                                <Ionicons name={item.icon as any} size={22} color={theme.colors.primary} />
+                            </View>
+                            <View style={styles.rowContent}>
+                                <Text style={styles.rowTitle}>{item.label}</Text>
+                            </View>
+                            <Ionicons name="open-outline" size={18} color={theme.colors.textSecondary} />
+                        </TouchableOpacity>
+                    ))}
+                </GlassCard>
 
                 <View style={styles.versionContainer}>
                     <Text style={styles.versionText}>Pick For Me v1.0.0</Text>

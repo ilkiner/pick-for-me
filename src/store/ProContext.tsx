@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { isSupabaseConfigured, supabase } from '../storage/supabase';
+import { AdManager } from '../core/AdManager';
 
 // RevenueCat — graceful fallback when native module not available (Expo Go / simulator)
 let Purchases: any = null;
@@ -324,6 +325,10 @@ export function ProProvider({ children, navigationRef }: Props) {
     }, [navigationRef]);
 
     const effectiveIsPro = __DEV__ && devProOverride !== null ? devProOverride : isPro;
+
+    // Pro kullanıcı için interstitial hiç yüklenmesin (yalnızca gösterilmemesi
+    // yetmiyor: boşa istek atmak AdMob eşleşme oranını düşürür).
+    useEffect(() => { AdManager.setPro(effectiveIsPro); }, [effectiveIsPro]);
 
     return (
         <ProContext.Provider value={{

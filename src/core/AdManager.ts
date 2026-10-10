@@ -9,6 +9,7 @@ let AdEventType: any = null;
 let RewardedAdEventType: any = null;
 let AdsConsent: any = null;
 let AdsConsentDebugGeography: any = null;
+let MaxAdContentRating: any = null;
 
 try {
     const lib = require('react-native-google-mobile-ads');
@@ -22,6 +23,7 @@ try {
     RewardedAdEventType = lib.RewardedAdEventType;
     AdsConsent = lib.AdsConsent;
     AdsConsentDebugGeography = lib.AdsConsentDebugGeography;
+    MaxAdContentRating = lib.MaxAdContentRating;
 } catch {
     // native module not linked
 }
@@ -35,7 +37,7 @@ export { BannerAd, BannerAdSize, TestIds };
 // gömüldüğü için tam üye ifadesi olarak (dinamik key'siz) yazılmalıdır.
 import { Platform } from 'react-native';
 import * as Sentry from '@sentry/react-native';
-import { track } from './Analytics';
+import { track, setAnalyticsConsent } from './Analytics';
 
 export type AdUnitKind = 'banner' | 'interstitial' | 'rewarded';
 
@@ -180,6 +182,14 @@ export const INTERSTITIAL_EVERY_N_RESULTS = 4;
 
 // Yükleme başarısız olursa üstel geri çekilme ile yeniden dene. Eskiden tek
 // deneme vardı ve başarısız olursa `loaded` oturum boyunca false kalıyordu.
+/**
+ * Sonuçtan çıkarken "sıraya alınan" interstitial, gezinme bittiğinde gösterilir
+ * (bkz. queueInterstitialAfterNavigation). Geçiş bu süre içinde bitmezse —
+ * ör. animasyonsuz bir dönüş — reklam hiç gösterilmez; geç kalmış bir reklamın
+ * kullanıcının bir sonraki dokunuşuna denk gelmesinden iyidir.
+ */
+const PENDING_INTERSTITIAL_TTL_MS = 3000;
+
 const RETRY_BASE_MS = 4000;
 const RETRY_MAX_MS = 5 * 60 * 1000;
 const RETRY_MAX_ATTEMPTS = 6;
@@ -199,6 +209,12 @@ class AdManagerClass {
     private readyListeners = new Set<(ready: boolean) => void>();
     private privacyOptionsRequired = false;
 
+    private sdkInitialized = false;
+    // Pro kullanıcıda reklam İSTENMEZ (gösterilmemesi yetmez: boşa giden istekler
+    // AdMob'da eşleşme oranını düşürür). ProContext setPro ile günceller.
+    private isPro = false;
+    private pendingInterstitialAt = 0;
+
     private lastInterstitialTime = 0;
     private interstitialAd: any = null;
     private interstitialUnsubs: Array<() => void> = [];
@@ -216,23 +232,49 @@ class AdManagerClass {
         if (this.initPromise) return this.initPromise;
 
         this.initPromise = (async () => {
-            if (!MobileAds) return false;
-
-            // Rıza HER ŞEYDEN ÖNCE: SDK başlatılmadan ve tek bir reklam
-            // istenmeden önce toplanmalı.
-            if (!(await this.gatherConsent())) {
-                this.ready = false;
-                this.readyListeners.forEach(l => { try { l(false); } catch {} });
+            if (!MobileAds) {
+                // Reklam SDK'sı yok (Expo Go) → rıza formu da yok; analytics
+                // rıza gerekmeyen bölge varsayımıyla karar versin.
+                setAnalyticsConsent({ required: false });
                 return false;
             }
 
+            // Rıza HER ŞEYDEN ÖNCE: SDK başlatılmadan ve tek bir reklam
+            // istenmeden önce toplanmalı.
+            return this.applyCanRequestAds(await this.gatherConsent());
+        })();
+
+        return this.initPromise;
+    }
+
+    private notifyReady() {
+        this.readyListeners.forEach(l => { try { l(this.ready); } catch {} });
+    }
+
+    /**
+     * Rıza sonucunu uygular: izin varsa SDK'yı (bir kez) başlatır ve reklamları
+     * açar; yoksa reklamları durdurur. Açılışta ve gizlilik seçenekleri formu
+     * kapandıktan sonra çağrılır — kullanıcı rızasını geri çekerse aynı oturumda
+     * reklam istemeyi bırakmalıyız.
+     */
+    private async applyCanRequestAds(canRequest: boolean): Promise<boolean> {
+        if (!canRequest) {
+            this.ready = false;
+            this.clearInterstitial();
+            this.notifyReady();
+            return false;
+        }
+
+        if (!this.sdkInitialized) {
             try {
                 // setRequestConfiguration initialize'DAN ÖNCE çağrılmalı, yoksa
-                // ilk reklam isteği yapılandırmayı görmez.
+                // ilk reklam isteği yapılandırmayı görmez. İçerik derecesi 'G':
+                // uygulama herkese uygun (PEGI 3) — reklamlar da öyle olmalı.
+                await MobileAds().setRequestConfiguration({
+                    maxAdContentRating: MaxAdContentRating?.G ?? 'G',
+                    ...(TEST_DEVICE_IDS.length > 0 ? { testDeviceIdentifiers: TEST_DEVICE_IDS } : {}),
+                });
                 if (TEST_DEVICE_IDS.length > 0) {
-                    await MobileAds().setRequestConfiguration({
-                        testDeviceIdentifiers: TEST_DEVICE_IDS,
-                    });
                     console.log(
                         `[Ads] Test device mode: ${TEST_DEVICE_IDS.length} device(s) registered — ` +
                         `real ad units will serve TEST ads on these devices.`
@@ -249,20 +291,55 @@ class AdManagerClass {
                 }
 
                 await MobileAds().initialize();
-                this.ready = true;
-                this.loadInterstitial();
-                // Rewarded bilerek ÖN YÜKLENMİYOR: hiçbir ekrana bağlı değil ve
-                // gösterilmeyen istekler AdMob'da eşleşme oranını düşürür.
-                // Bağlandığında showRewarded ilk çağrıda yükleyecek.
+                this.sdkInitialized = true;
             } catch (e) {
                 reportAdIssue('sdk_init', e);
                 this.ready = false;
+                this.notifyReady();
+                return false;
             }
-            this.readyListeners.forEach(l => { try { l(this.ready); } catch {} });
-            return this.ready;
-        })();
+        }
 
-        return this.initPromise;
+        this.ready = true;
+        this.loadInterstitial();
+        // Rewarded bilerek ÖN YÜKLENMİYOR: hiçbir ekrana bağlı değil ve
+        // gösterilmeyen istekler AdMob'da eşleşme oranını düşürür.
+        // Bağlandığında showRewarded ilk çağrıda yükleyecek.
+        this.notifyReady();
+        return true;
+    }
+
+    /**
+     * UMP sonucunu analytics'e (PostHog) iletir. Rıza gereken bölgede yalnızca
+     * kullanıcı "içerik performansını ölçme" ve "cihazda bilgi saklama"
+     * amaçlarına izin verdiyse anonim kullanım verisi gönderilir.
+     */
+    private async reportAnalyticsConsent(info: any): Promise<void> {
+        const required = info?.status !== 'NOT_REQUIRED';
+        if (!required) {
+            setAnalyticsConsent({ required: false });
+            return;
+        }
+        let measurementAllowed = false;
+        try {
+            const choices = await AdsConsent.getUserChoices();
+            measurementAllowed = !!(choices?.measureContentPerformance && choices?.storeAndAccessInformationOnDevice);
+        } catch {
+            // Seçimler okunamadı → izin yok say
+        }
+        setAnalyticsConsent({ required: true, measurementAllowed });
+    }
+
+    /** Pro durumu değişince ProContext çağırır. */
+    setPro(isPro: boolean) {
+        if (this.isPro === isPro) return;
+        this.isPro = isPro;
+        if (isPro) {
+            this.clearInterstitial();
+            this.pendingInterstitialAt = 0;
+        } else if (this.ready) {
+            this.loadInterstitial();
+        }
     }
 
     /**
@@ -275,7 +352,10 @@ class AdManagerClass {
      * reklam da dolmazdı.
      */
     private async gatherConsent(): Promise<boolean> {
-        if (!CONSENT_ENABLED || !AdsConsent) return true;
+        if (!CONSENT_ENABLED || !AdsConsent) {
+            setAnalyticsConsent({ required: false });
+            return true;
+        }
 
         try {
             const info = await AdsConsent.gatherConsent({
@@ -287,6 +367,7 @@ class AdManagerClass {
                     : undefined,
             });
             this.privacyOptionsRequired = info?.privacyOptionsRequirementStatus === 'REQUIRED';
+            await this.reportAnalyticsConsent(info);
             track('ads_consent', {
                 status: String(info?.status ?? 'UNKNOWN'),
                 can_request_ads: !!info?.canRequestAds,
@@ -298,8 +379,10 @@ class AdManagerClass {
             try {
                 const cached = await AdsConsent.getConsentInfo();
                 this.privacyOptionsRequired = cached?.privacyOptionsRequirementStatus === 'REQUIRED';
+                await this.reportAnalyticsConsent(cached);
                 return !!cached?.canRequestAds;
             } catch {
+                // Rıza durumu hiç bilinmiyor: analytics kapalı kalır (karar yok).
                 return false;
             }
         }
@@ -313,13 +396,30 @@ class AdManagerClass {
         return this.privacyOptionsRequired;
     }
 
-    /** Gizlilik seçenekleri formunu açar (rızayı geri çekme / değiştirme). */
+    /**
+     * Gizlilik seçenekleri formunu açar (rızayı geri çekme / değiştirme). Form
+     * kapanınca rıza yeniden okunur: geri çekildiyse reklam istemek DURUR ve
+     * analytics kapanır; verildiyse ikisi de açılır — uygulamayı yeniden
+     * başlatmak gerekmez.
+     */
     async showPrivacyOptions(): Promise<void> {
         if (!AdsConsent) return;
         try {
             await AdsConsent.showPrivacyOptionsForm();
         } catch (e) {
             reportAdIssue('consent_privacy_form', e);
+        }
+        try {
+            const info = await AdsConsent.getConsentInfo();
+            this.privacyOptionsRequired = info?.privacyOptionsRequirementStatus === 'REQUIRED';
+            await this.reportAnalyticsConsent(info);
+            track('ads_consent_changed', {
+                status: String(info?.status ?? 'UNKNOWN'),
+                can_request_ads: !!info?.canRequestAds,
+            });
+            await this.applyCanRequestAds(!!info?.canRequestAds);
+        } catch (e) {
+            reportAdIssue('consent_recheck', e);
         }
     }
 
@@ -353,7 +453,7 @@ class AdManagerClass {
     }
 
     private loadInterstitial() {
-        if (!InterstitialAd || !this.ready) return;
+        if (!InterstitialAd || !this.ready || this.isPro) return;
         const unitId = getAdUnit('interstitial');
         if (!unitId) return;
 
@@ -403,7 +503,7 @@ class AdManagerClass {
      * @param isPro Pro kullanıcıda atlanır
      */
     showInterstitial(isPro: boolean): boolean {
-        if (isPro || !this.interstitialAd) return false;
+        if (isPro || this.isPro || !this.ready || !this.interstitialAd) return false;
         const now = Date.now();
         if (now - this.lastInterstitialTime < INTERSTITIAL_GAP_MS) return false;
         try {
@@ -419,6 +519,26 @@ class AdManagerClass {
             reportAdIssue('interstitial_show', e);
         }
         return false;
+    }
+
+    /**
+     * Interstitial'ı bir dokunuşla gezinmesi ARASINA değil, gezinme bittikten
+     * sonraya erteler. Sonuç ekranı çıkarken bunu çağırır, ardından gezinir;
+     * navigator geçiş tamamlanınca flushPendingInterstitial'ı çağırır (bkz.
+     * navigation/index.tsx). Böylece reklam, kullanıcının dokunduğu şeyin
+     * sonucunu (gittiği ekranı) gördükten sonra, doğal bir duraklamada açılır.
+     */
+    queueInterstitialAfterNavigation(): void {
+        if (this.isPro) return;
+        this.pendingInterstitialAt = Date.now();
+    }
+
+    /** Navigator, sonuç ekranının kapanış geçişi bitince çağırır. */
+    flushPendingInterstitial(): boolean {
+        const at = this.pendingInterstitialAt;
+        this.pendingInterstitialAt = 0;
+        if (!at || Date.now() - at > PENDING_INTERSTITIAL_TTL_MS) return false;
+        return this.showInterstitial(this.isPro);
     }
 
     /**
