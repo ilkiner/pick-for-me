@@ -132,7 +132,20 @@ export function RootNavigator({
     onRecoveryDone?: () => void;
 }) {
     return (
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Navigator
+            screenOptions={{ headerShown: false }}
+            screenListeners={{
+                // Sonuçtan çıkarken sıraya alınan interstitial, GİDİLEN ekran
+                // görünür olup geçişini bitirdiğinde açılır (aracın kendisi ya da
+                // ana ekran): kullanıcı dokunuşunun sonucunu görmüş olur, reklam
+                // doğal bir duraklamaya denk gelir. Kapanan Result ekranına
+                // dinleyici bağlamak işe yaramıyor — native-stack onun olayını
+                // ekran durumdan çıktıktan sonra yayınlıyor, dinleyici çağrılmıyor.
+                transitionEnd: (e: any) => {
+                    if (!e?.data?.closing) AdManager.flushPendingInterstitial();
+                },
+            }}
+        >
             {/* Kurtarma modu her şeyin önünde: sıfırlama linkiyle gelen kullanıcı
                 yeni şifresini belirlemeden uygulamaya geçemesin. Bu noktada
                 Supabase oturumu kurulmuş durumda, yani session da doludur. */}
@@ -145,18 +158,7 @@ export function RootNavigator({
                     {/* Uygulama oturum açmadan da tamamen kullanılabilir (misafir):
                         ana ekran ve tüm araçlar her zaman var. */}
                     <Stack.Screen name="Main" component={MainTabNavigator} />
-                    <Stack.Screen
-                        name="Result"
-                        component={ResultScreen}
-                        listeners={{
-                            // Sonuç ekranı kapanış geçişini bitirdiğinde kullanıcı
-                            // gittiği ekranı (aracı ya da ana ekranı) görüyor: sıraya
-                            // alınmış interstitial burada, doğal bir duraklamada açılır.
-                            transitionEnd: (e: any) => {
-                                if (e?.data?.closing) AdManager.flushPendingInterstitial();
-                            },
-                        }}
-                    />
+                    <Stack.Screen name="Result" component={ResultScreen} />
                     <Stack.Screen name="Paywall" component={PaywallScreen} options={{ presentation: 'modal' }} />
                     <Stack.Screen name="WheelOfFortune" component={WheelOfFortuneScreen} />
                     <Stack.Screen name="Dice" component={DiceScreen} />

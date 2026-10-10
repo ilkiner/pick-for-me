@@ -12,11 +12,39 @@ import { AppTheme } from '../../core/Theme';
 import { track } from '../../core/Analytics';
 import { useTheme } from '../../store/ThemeContext';
 import { usePro } from '../../store/ProContext';
+import { PRIVACY_URL, TERMS_URL, manageSubscriptionUrl } from '../../core/legalLinks';
 
 type Plan = 'monthly' | 'yearly';
 
-const PRIVACY_URL = 'https://ilkiner.github.io/pick-for-me/privacy-policy.html';
-const TERMS_URL = 'https://ilkiner.github.io/pick-for-me/terms.html';
+// ─── Ücretsiz deneme ──────────────────────────────────────────────────────────
+// Deneme süresi koda gömülmez: ürünün varsayılan teklifinden (defaultOption)
+// okunur. Google Play yalnızca kullanıcının UYGUN olduğu teklifleri döndürür;
+// daha önce deneme kullanmış birinin defaultOption'ında freePhase olmaz. Yani
+// freePhase yoksa kullanıcı denemeye uygun değil ya da ürünün denemesi yok —
+// her iki durumda da deneme metni GÖSTERİLMEZ.
+export interface TrialInfo {
+    count: number;
+    unit: 'day' | 'week' | 'month' | 'year';
+}
+
+export function trialOf(pkg: any): TrialInfo | null {
+    const period = pkg?.product?.defaultOption?.freePhase?.billingPeriod;
+    const count = Number(period?.value);
+    if (!period || !Number.isFinite(count) || count <= 0) return null;
+    switch (period.unit) {
+        case 'DAY': return { count, unit: 'day' };
+        case 'WEEK': return { count, unit: 'week' };
+        case 'MONTH': return { count, unit: 'month' };
+        case 'YEAR': return { count, unit: 'year' };
+        default: return null; // bilinmeyen birim: yanlış süre yazmaktansa hiç yazma
+    }
+}
+
+// Çoğul eki kodda seçiliyor: i18next'in _one/_other çözümü Intl.PluralRules'a
+// dayanıyor, Hermes'te her zaman garanti değil.
+function trialLength(t: (k: string, o?: any) => string, trial: TrialInfo): string {
+    return t(`paywall.trial_${trial.unit}${trial.count === 1 ? '' : 's'}`, { count: trial.count });
+}
 
 // ─── Fiyatlandırma ────────────────────────────────────────────────────────────
 // Fiyatlar koda gömülmez ve uydurulmaz: yalnızca RevenueCat offering'inden,
@@ -302,7 +330,7 @@ function createStyles(theme: AppTheme) {
             fontSize: 10, marginBottom: theme.spacing.sm, opacity: 0.8,
             paddingHorizontal: theme.spacing.lg, lineHeight: 15,
         },
-        linksRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6, marginBottom: theme.spacing.sm },
+        linksRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: 6, marginBottom: theme.spacing.sm },
         linkText: { color: theme.colors.primary, fontSize: 12, fontWeight: '600', padding: 4 },
         linkDot: { color: theme.colors.textSecondary, fontSize: 12 },
 
@@ -325,6 +353,15 @@ export default function PaywallScreen({ navigation }: any) {
 
     const selectedPackage = selectedPlan === 'yearly' ? plans.annual : plans.monthly;
     const pricesLoading = isLoading || retrying;
+    // Deneme, SEÇİLİ planın teklifine göre: planlardan birinde deneme olup
+    // diğerinde olmayabilir, ya da kullanıcı hiçbirine uygun olmayabilir.
+    const trial = useMemo(() => trialOf(selectedPackage), [selectedPackage]);
+    const ctaLabel = trial ? t('paywall.cta_trial') : t('paywall.cta_subscribe');
+    const manageUrl = manageSubscriptionUrl(selectedPackage?.product?.identifier);
+    const openManage = (url: string) => {
+        track('manage_subscription_opened');
+        Linking.openURL(url).catch(() => {});
+    };
 
     React.useEffect(() => { track('paywall_viewed'); }, []);
 
@@ -340,6 +377,14 @@ export default function PaywallScreen({ navigation }: any) {
                     <Ionicons name="checkmark-circle" size={72} color={theme.colors.success} />
                     <Text style={styles.alreadyProTitle}>{t('paywall.already_pro')}</Text>
                     <Text style={styles.alreadyProSub}>{t('paywall.enjoy')}</Text>
+                    {/* Aktif abonenin iptal/plan değişikliği yolu */}
+                    <TouchableOpacity
+                        onPress={() => openManage(manageSubscriptionUrl())}
+                        style={styles.restoreBtn}
+                        accessibilityRole="link"
+                    >
+                        <Text style={styles.restoreText}>{t('paywall.manage_subscription')}</Text>
+                    </TouchableOpacity>
                 </View>
             </SafeAreaView>
         );
@@ -544,11 +589,16 @@ export default function PaywallScreen({ navigation }: any) {
                     animate={{ opacity: 1, translateY: 0 }}
                     transition={{ type: 'spring', stiffness: 200, damping: 20, delay: 300 }}
                 >
-                    <View style={styles.trialBadgeWrap}>
-                        <View style={styles.trialBadge}>
-                            <Text style={styles.trialBadgeText}>{t('paywall.trial_badge')}</Text>
+                    {/* Deneme rozeti yalnızca seçili planda ve kullanıcı uygunsa */}
+                    {trial && (
+                        <View style={styles.trialBadgeWrap}>
+                            <View style={styles.trialBadge}>
+                                <Text style={styles.trialBadgeText}>
+                                    {t('paywall.trial_badge', { length: trialLength(t, trial) })}
+                                </Text>
+                            </View>
                         </View>
-                    </View>
+                    )}
 
                     <TouchableOpacity
                         style={[styles.ctaBtn, (purchasing || !selectedPackage) && styles.ctaBtnDisabled]}
@@ -556,19 +606,23 @@ export default function PaywallScreen({ navigation }: any) {
                         disabled={purchasing || isLoading || !selectedPackage}
                         activeOpacity={0.9}
                         accessibilityRole="button"
-                        accessibilityLabel={t('paywall.cta_trial')}
+                        accessibilityLabel={ctaLabel}
                     >
                         {purchasing ? (
                             <ActivityIndicator color="#fff" />
                         ) : (
-                            <Text style={styles.ctaText}>{t('paywall.cta_trial')}</Text>
+                            <Text style={styles.ctaText}>{ctaLabel}</Text>
                         )}
                     </TouchableOpacity>
                 </MotiView>
                 <Text style={styles.ctaNote}>
                     {selectedPlan === 'yearly'
-                        ? t('paywall.cta_note_yearly', { price: pricing.yearly })
-                        : t('paywall.cta_note_monthly', { price: pricing.monthly })}
+                        ? (trial
+                            ? t('paywall.cta_note_yearly', { price: pricing.yearly, length: trialLength(t, trial) })
+                            : t('paywall.cta_note_yearly_no_trial', { price: pricing.yearly }))
+                        : (trial
+                            ? t('paywall.cta_note_monthly', { price: pricing.monthly, length: trialLength(t, trial) })
+                            : t('paywall.cta_note_monthly_no_trial', { price: pricing.monthly }))}
                 </Text>
                   </>
                 )}
@@ -587,6 +641,10 @@ export default function PaywallScreen({ navigation }: any) {
                     <Text style={styles.linkDot}>•</Text>
                     <TouchableOpacity onPress={() => Linking.openURL(TERMS_URL).catch(() => {})}>
                         <Text style={styles.linkText}>{t('paywall.terms')}</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.linkDot}>•</Text>
+                    <TouchableOpacity onPress={() => openManage(manageUrl)} accessibilityRole="link">
+                        <Text style={styles.linkText}>{t('paywall.manage_subscription')}</Text>
                     </TouchableOpacity>
                 </View>
 
